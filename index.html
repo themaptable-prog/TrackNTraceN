@@ -21,12 +21,21 @@
 
 .tool-button{min-height:35px;padding:6px 10px;font-size:12px;font-weight:800;white-space:nowrap}
 #sound{font-size:12px;font-weight:850;padding:0 8px}
-.development{padding:8px 12px;margin-top:12px;border:1px solid var(--edge);border-radius:10px;background:#213938;color:var(--muted);font-size:12px}
-.development summary{cursor:pointer;font-weight:800}.development[open] summary{margin-bottom:8px}
-#tuning-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:6px 16px;margin:8px 0}
-#tuning-controls label{display:grid;grid-template-columns:110px 1fr 44px;align-items:center;gap:4px}
+.development{margin-top:12px;background:#213938;color:var(--muted)}
+.modal-layer[data-view=tuning] .dialog{width:min(1260px,100%);display:flex;flex-direction:column;overflow:hidden;padding:clamp(12px,2vw,22px)}
+.modal-layer[data-view=tuning] #modal-body{display:flex;flex-direction:column;min-height:0}
+#tuning-controls{overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:0 9px 4px 1px}
+#tuning-controls h3{margin:9px 0 4px}
+#tuning-controls h3:not(:first-child){margin-top:20px}
+#tuning-controls label{display:grid;grid-template-columns:clamp(125px,23%,235px) minmax(0,1fr) 70px;gap:clamp(8px,1.65vw,22px);align-items:center;min-height:47px;border-top:1px solid var(--edge);font-size:clamp(12px,1.7vw,15px)}
 #tuning-controls input,.editor-tools input[type=range]{min-width:0;accent-color:var(--orange)}
+#tuning-controls input{width:100%;height:36px;margin:0;cursor:pointer}
 #tuning-controls output,.editor-tools output{font-family:var(--mono);color:var(--cream);text-align:right}
+.tuning-footer{display:flex;justify-content:flex-end;flex-shrink:0;border-top:1px solid var(--edge);padding-top:10px}
+@media(max-width:520px){
+ #tuning-controls label{grid-template-columns:minmax(0,1fr) auto;gap:0 8px;padding-top:7px}
+ #tuning-controls input{grid-column:1/-1;grid-row:2}
+}
 .settings-text{width:100%;box-sizing:border-box;margin:2px 0 7px;background:#142728;border:1px solid var(--edge);border-radius:8px;padding:8px;color:var(--cream);font:12px var(--mono);resize:vertical}
 #creator{height:100dvh;overflow:auto;padding:clamp(10px,1.8vw,24px);background:var(--ink)}
 .editor-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}.editor-head h1{font-size:clamp(19px,3.3vw,32px);margin:0 auto 0 0;letter-spacing:-.045em}
@@ -70,9 +79,7 @@
     <p class="hint" id="hint"></p>
    </section>
   </div>
-  <details class="development"><summary>Development tuning</summary>
-    <div id="tuning-controls"></div><button id="settings-exchange" class="tool-button">Copy or paste settings</button>
-  </details>
+  <button id="tuning-open" class="tool-button development" aria-haspopup="dialog">Development tuning</button>
  </div>
 </main>
 <main id="creator" hidden>
@@ -1019,7 +1026,7 @@ class GameAudio {
   }
 }
 const audio = new GameAudio();
-const DAMAGE_STEPS=[0,.08,.16,.25,.40,.55,.75,1];
+const originalDamageSteps=[0,8,16,25,40,55,75,100];
 const damageControls={
   contact:['Base contact',2],normal:['Speed into surface',4],overlap:['Overlap',1],
   adjacent:['Adjacent sections',5],core:['Centre section',5],curb:['Curb wear',4],props:['Movable props',2]
@@ -1029,43 +1036,87 @@ const timeControls={
   avoid:['Wall assist duration',1000,250,2500,50],stall:['Clear stalled path after',500,250,1500,25],
   rub:['Dry rubbing interval',300,180,700,10],squeal:['Tyre sound cooldown',450,200,1000,25]
 };
-const defaultTuning=Object.fromEntries([...Object.entries(damageControls),...Object.entries(timeControls)].map(([key,data])=>[key,data[1]]));
+// Preserve the original positions and endpoints, then add one extra position near the low end.
+function doubleSteps(values,precision) {
+  const scale=10**precision;
+  const round=value=>Math.round(value*scale)/scale;
+  const [low,second]=values;
+  return [low,round(low+(second-low)/4),...values.slice(1).flatMap((value,i)=>[
+    round((values[i]+value)/2),value
+  ])];
+}
+const DAMAGE_STEPS=doubleSteps(originalDamageSteps,1);
+const originalDamageIndices=originalDamageSteps.map(value=>DAMAGE_STEPS.indexOf(value));
+const timingSteps=Object.fromEntries(Object.entries(timeControls).map(([key,[,,min,max,step]])=>[
+  key,doubleSteps(Array.from({length:(max-min)/step+1},(_,i)=>min+i*step),0)
+]));
+const defaultTuning=Object.fromEntries([
+  ...Object.entries(damageControls).map(([key,[,index]])=>[key,originalDamageIndices[index]]),
+  ...Object.entries(timeControls).map(([key,[,value]])=>[key,value])
+]);
 let tuning={...defaultTuning};
-const damageFactor=(game,key)=>DAMAGE_STEPS[game.rules[key]];
+const damageFactor=(game,key)=>DAMAGE_STEPS[game.rules[key]]/100;
 function damageMode(config) {
   return config.damage===false||config.damage==='off'?'off':config.damage==='open'?'open':'total';
 }
 function tuningId(rules) {
-  return Object.keys(defaultTuning).map(key=>rules[key].toString(36)).join('.');
+  return Object.keys(defaultTuning).map(key=>{
+    const value=rules[key];
+    if(!Object.hasOwn(damageControls,key)) return value.toString(36);
+    const originalIndex=originalDamageIndices.indexOf(value);
+    return originalIndex>=0?originalIndex.toString(36):'+'+value.toString(36);
+  }).join('.');
 }
-function tuningUI() {
-  const controls=$('tuning-controls');controls.replaceChildren();
-  for(const [key,definition] of Object.entries({...damageControls,...timeControls})) {
-    const label=document.createElement('label'), input=document.createElement('input'), output=document.createElement('output');
-    const isDamage=key in damageControls;
-    label.append(document.createTextNode(definition[0]),input,output);
-    input.type='range';input.min=isDamage?'0':definition[2];input.max=isDamage?'7':definition[3];
-    input.step=isDamage?'1':definition[4];input.value=tuning[key];input.setAttribute('aria-label',definition[0]);
-    const update=()=>output.textContent=isDamage?Math.round(DAMAGE_STEPS[tuning[key]]*100)+'%':tuning[key]+' ms';
-    input.addEventListener('input',()=>{tuning[key]=Number(input.value);update();});
+function addTuningRows(controls,title,definitions,isDamage) {
+  const heading=document.createElement('h3');
+  heading.textContent=title;controls.append(heading);
+  for(const [key,[name]] of Object.entries(definitions)) {
+    const label=document.createElement('label'), caption=document.createElement('span');
+    const input=document.createElement('input'), output=document.createElement('output');
+    const steps=isDamage?DAMAGE_STEPS:timingSteps[key];
+    caption.textContent=name;
+    label.append(caption,input,output);
+    input.type='range';input.min='0';input.max=steps.length-1;input.step='1';
+    input.value=isDamage?tuning[key]:steps.indexOf(tuning[key]);input.setAttribute('aria-label',name);
+    const update=()=>{
+      const value=steps[Number(input.value)] + (isDamage?'%':' ms');
+      output.textContent=value;input.setAttribute('aria-valuetext',value);
+    };
+    input.addEventListener('input',()=>{
+      tuning[key]=isDamage?Number(input.value):steps[Number(input.value)];update();
+    });
     input.addEventListener('change',renderSetup);
     update();controls.append(label);
   }
 }
+function openTuning() {
+  openModal('tuning','Development tuning',body=>{
+    const controls=document.createElement('div'), footer=document.createElement('div');
+    controls.id='tuning-controls';footer.className='tuning-footer';
+    addTuningRows(controls,'Damage',damageControls,true);
+    addTuningRows(controls,'Timing',timeControls,false);
+    footer.append(button('Copy or paste settings',exchangeSettings));
+    body.append(controls,footer);
+  });
+}
 function tuningText() {
-  return JSON.stringify({format:'Track’n’Trace’n settings',version:1,tuning,
+  return JSON.stringify({format:'Track’n’Trace’n settings',version:2,tuning,
     setup:{course:courses[options.course].id,vehicle:options.type,colors:options.colors,laps:options.laps,
       event:options.mode,drag:options.drag,release:options.release,damage:options.damage,ghost:options.ghost,audio:audio.mode}},null,2);
 }
 function applyTuningText(text) {
   const data=JSON.parse(text);
-  if(data.format!=='Track’n’Trace’n settings'||data.version!==1||!data.tuning) throw Error('Choose a Track’n’Trace’n settings export.');
+  if(data?.format!=='Track’n’Trace’n settings'||![1,2].includes(data.version)||!data.tuning) throw Error('Choose a Track’n’Trace’n settings export.');
   const next={...tuning};
   for(const [key,value] of Object.entries(data.tuning)) {
-    if(key in damageControls&&Number.isInteger(value)&&value>=0&&value<=7) next[key]=value;
-    if(key in timeControls&&Number.isFinite(value)) {
+    if(Object.hasOwn(damageControls,key)&&Number.isInteger(value)) {
+      const index=data.version===1?originalDamageIndices[value]:value;
+      if(index>=0&&index<DAMAGE_STEPS.length) next[key]=index;
+    }
+    if(Object.hasOwn(timeControls,key)&&Number.isFinite(value)) {
       const [, , min,max,step]=timeControls[key];
-      next[key]=clamp(min+Math.round((value-min)/step)*step,min,max);
+      next[key]=data.version===1?clamp(min+Math.round((value-min)/step)*step,min,max):
+        timingSteps[key].reduce((closest,point)=>Math.abs(point-value)<Math.abs(closest-value)?point:closest,min);
     }
   }
   tuning=next;
@@ -1086,14 +1137,14 @@ function applyTuningText(text) {
     if(audioStates[s.audio]) audio.setMode(s.audio);
     if(options.damage==='off') options.mode='race';
   }
-  tuningUI();renderSetup();
+  renderSetup();
 }
 function exchangeSettings() {
-  openModal('settings','Development settings',body=>{
+  openModal('settings','Copy or paste settings',body=>{
     const area=document.createElement('textarea'), row=document.createElement('div'), message=document.createElement('p');
     area.value=tuningText();area.rows=14;area.className='settings-text';area.setAttribute('aria-label','Settings to copy or paste');
     row.className='buttons';
-    row.append(button('Copy',async()=>{
+    row.append(button('Back to tuning',openTuning),button('Copy',async()=>{
       area.select();
       try {
         if(navigator.clipboard) await navigator.clipboard.writeText(area.value);
@@ -2534,7 +2585,7 @@ function updateHud(force=false) {
 function openModal(kind,title,fill) {
   const modal=$('modal');
   if(modal.hidden) modalSource=document.activeElement;
-  modalType=kind;$('modal-title').textContent=title;$('modal-body').replaceChildren();
+  modalType=kind;modal.dataset.view=kind;$('modal-title').textContent=title;$('modal-body').replaceChildren();
   fill($('modal-body'));modal.hidden=false;
   $('setup').inert=true;$('play').inert=true;$('close-modal').focus({preventScroll:true});
 }
@@ -2718,7 +2769,7 @@ onSegment('event-select',value=>{options.mode=value;});
 onSegment('drag-select',value=>{options.drag=value;});
 onSegment('damage-select',value=>{options.damage=value;if(value==='off') options.mode='race';});
 onSegment('release-select',value=>{options.release=value;});
-$('settings-exchange').addEventListener('click',exchangeSettings);
+$('tuning-open').addEventListener('click',openTuning);
 $('less-laps').addEventListener('click',()=>applyLap(-1));
 $('more-laps').addEventListener('click',()=>applyLap(1));
 $('laps-value').addEventListener('click',()=>applyLap(1,true));
@@ -2778,7 +2829,7 @@ function animate(now) {
   } else audio.tick(false,false,0,0,false);
   requestAnimationFrame(animate);
 }
-renderSetup();tuningUI();initializeEditor();
+renderSetup();initializeEditor();
 records.ready.then(()=>{if(!run) renderSetup();});
 requestAnimationFrame(animate);
 
