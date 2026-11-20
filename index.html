@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n</title>
+<title>Track’n’Trace’n v0.07</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -56,56 +56,189 @@
 .tabs{flex-wrap:wrap;gap:2px clamp(8px,2vw,16px)}
 .hud-run-info{display:flex;gap:4px;flex-wrap:wrap}
 #score-hud{color:var(--green)}#chain-hud{color:var(--orange-hot)}
+/* Setup and course creator */
+:root{--panel-deep:#172d2c;--line:#65807560;--field:#233d3b}
+#setup{padding:clamp(12px,2vw,25px) max(14px,env(safe-area-inset-right)) 22px max(14px,env(safe-area-inset-left))}
+.masthead{align-items:center;padding-bottom:clamp(14px,2.5vh,28px)}
+.brand{display:flex;align-items:baseline;gap:8px;min-width:0}
+.version{color:var(--muted);font:650 10px var(--mono);letter-spacing:.025em;white-space:nowrap}
+.wordmark{font-size:clamp(24px,4.8vw,58px)}
+.mast-actions .tool-button{background:transparent;color:var(--cream)}
+.layout{grid-template-columns:minmax(0,1.63fr) minmax(285px,1fr);gap:clamp(12px,2.2vw,24px)}
+.course-area{display:grid;gap:9px}.tabbar{margin:0}
+.tabs{display:flex;flex-wrap:nowrap;gap:4px;padding:4px;background:var(--panel-deep);border:1px solid var(--line);border-radius:10px;width:100%}
+.tabs button{flex:1;min-height:37px;padding:5px 8px;border:0;border-radius:7px;font-weight:780}
+.tabs button[aria-pressed=true]{color:#182d29;background:#d7ec9b}
+.course-hero{min-height:0;border-radius:13px;border-color:#647d6a}
+.course-hero canvas{display:block;width:100%;height:auto;aspect-ratio:1200/660;max-height:45vh;object-fit:contain}
+.course-hero .course-heading{padding:36px 13px 12px;align-items:end;background:linear-gradient(transparent,#172e2bdc 61%,#122827)}
+.course-heading h2{font-size:clamp(20px,3.2vw,37px)}
+.course-heading p{font-size:clamp(8px,1vw,10px);letter-spacing:.07em}
+.pager{gap:6px}.pager button{min-width:42px;min-height:40px;border-color:#819385}
+.carousel-surface{touch-action:pan-y;user-select:none}
+.carousel-surface canvas{pointer-events:none}
+.carousel-surface .slide-surface{transform:translateX(var(--swipe-shift,0px));transition:transform .2s ease-out;pointer-events:none}
+.carousel-surface.swiping .slide-surface{transition:none}
+#courses{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:5px;max-height:none;overflow:hidden;padding:0}
+#courses button{display:grid;min-width:0;min-height:0;overflow:hidden;padding:0;background:#1b3331;border:1px solid var(--line);border-radius:8px;color:var(--muted);text-align:left}
+#courses button canvas{width:100%;aspect-ratio:2.7;object-fit:cover;display:block;opacity:.75;background:#314a3f}
+#courses button[aria-pressed=true]{border-color:#aec88c;color:var(--cream);background:#34493d}
+#courses button[aria-pressed=true] canvas{opacity:1}
+.course-tile-name{display:block;padding:5px;font-size:clamp(9px,1.15vw,12px);line-height:1.12;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.course-footer{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.course-footer button{min-height:38px;background:#25403b;border-color:var(--line)}
+.course-position{margin-right:auto;color:var(--muted);font:650 11px var(--mono)}
+.garage{display:grid;gap:8px;padding:clamp(10px,1.5vw,16px);background:linear-gradient(154deg,#29443e,#182f2e 70%);border-color:var(--line)}
+.garage h2{margin:0;color:var(--cream);font-size:13px;letter-spacing:.12em}
+.vehicle-preview{grid-template-columns:minmax(52px,1fr) minmax(0,1.9fr) minmax(52px,1fr);gap:4px;padding:4px;background:repeating-linear-gradient(135deg,#29474480 0 5px,#253e3980 5px 10px),#2a453f;overflow:hidden}
+.vehicle-preview .neighbor{display:grid;justify-items:center;align-content:center;align-self:stretch;min-width:0;min-height:56px;padding:3px;background:#162f2b88;border-color:#5a7768;color:var(--muted)}
+.vehicle-preview .neighbor canvas{width:100%;height:clamp(27px,6vh,47px);opacity:.78;object-fit:contain}
+.vehicle-preview .neighbor span{font-size:19px;line-height:.7}
+.vehicle-preview #vehicle{height:clamp(62px,14vh,126px);object-fit:contain}
+.vehicle-name{margin:0;font-size:clamp(19px,3vw,34px)}
+.paint-heading{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;font-weight:700}
+.paint-heading output{color:var(--cream)}
+.swatches{width:100%;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:5px;margin:0}
+.swatches button{width:100%;min-height:26px;height:clamp(26px,3.9vh,33px);border-radius:5px;border:2px solid #243c36;box-shadow:0 0 0 1px #6c8571}
+.swatches button[aria-pressed=true]{box-shadow:0 0 0 2px var(--cream)}
+.launch{margin:0;display:grid;grid-template-columns:1fr;gap:7px}
+.launch .primary{min-height:49px;font-size:14px}
+.rules-button{display:grid;grid-template-columns:1fr auto;align-items:center;text-align:left;gap:2px 7px;width:100%;padding:8px 10px;min-height:49px;background:#213b36;border-color:#6a857568}
+.rules-button strong{font-size:12px;line-height:1.05}
+.rules-button small{grid-column:1;color:var(--muted);font-size:11px;line-height:1.25}
+.rules-button span{grid-column:2;grid-row:1/3;font-size:23px;line-height:1;color:var(--orange)}
+#hint{margin:0;color:var(--muted);font-size:11px;min-height:0}
+.development{background:transparent;border-color:var(--line)}
+@media(max-width:700px){.layout{grid-template-columns:1fr}.wordmark{font-size:clamp(23px,5.5vw,42px)}.brand{gap:5px}.version{font-size:9px}}
+@media(max-width:400px){.mast-actions .tool-button{font-size:10px;white-space:normal}.mast-actions .icon{width:29px;min-width:29px}.brand{display:grid;gap:2px}.tabs button{font-size:10px}}
+@media(orientation:landscape) and (max-height:530px){.masthead{padding-bottom:10px}.garage{gap:6px}.vehicle-preview #vehicle{height:55px}.course-hero canvas{max-height:calc(100dvh - 157px)}.swatches button{min-height:22px;height:22px}.launch .primary,.rules-button{min-height:42px}.course-footer button,.tabs button{min-height:32px}}
+/* Shared dialogs keep actions on screen while content scrolls. */
+.modal-layer{background:#0d1e1ddd;padding:clamp(7px,2vw,18px)}
+.dialog,.modal-layer[data-view=tuning] .dialog{display:flex;flex-direction:column;overflow:hidden;max-height:calc(100dvh - 2*clamp(7px,2vw,18px));padding:0;border-color:#6a8573;background:#213a35}
+.dialog{width:min(600px,100%)}
+.modal-layer[data-view=rules] .dialog,.modal-layer[data-view=records] .dialog{width:min(696px,100%)}
+.dialog-header{margin:0;padding:clamp(9px,2vw,19px);gap:11px;border-bottom:1px solid var(--line);flex-shrink:0}
+.dialog-header .icon{min-width:42px;min-height:42px}
+#modal-body{overflow:auto;min-height:0;padding:clamp(10px,2vw,19px);overscroll-behavior:contain}
+#modal-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px;flex-shrink:0;padding:9px clamp(10px,2vw,19px);border-top:1px solid var(--line);background:#1b322e}
+#modal-actions button{min-height:42px;padding:6px 13px}
+#modal-actions .danger{background:#754137;border-color:#c07762;color:#fff0d5}
+.dialog #tuning-controls{padding-top:0}
+.dialog h3{margin-top:13px}
+.rule-course{margin:0 0 11px!important;font-weight:750}
+.rule-field{padding:8px 0;border-top:1px solid var(--line);display:grid;grid-template-columns:105px 1fr;gap:7px;align-items:center}
+.rule-field>.label,.rule-field>label{font-size:13px;font-weight:760;color:var(--cream)}
+.rule-field .segmented button,.rule-field select{min-height:42px;font-size:12px;padding:6px}
+.rule-field select{width:100%;border-radius:8px;background:var(--field);border:1px solid var(--line)}
+#event-select button{padding-left:3px;padding-right:3px}
+.rule-explanation{grid-column:2;margin:0!important;font-size:11px!important}
+.modal-notice{display:block;margin-top:9px;color:var(--green);font-size:12px}
+.dialog .record{padding:9px 0}
+.dialog .stats{gap:7px}
+.dialog .stats div{padding:11px}
+.settings-text{margin:0;min-height:130px;max-height:45vh}
+@media(max-width:420px){.rule-field{grid-template-columns:1fr}.rule-explanation{grid-column:1}}
+/* The route workspace keeps tool controls and selection beside a stable canvas. */
+#creator{padding:0 max(11px,env(safe-area-inset-right)) 15px max(11px,env(safe-area-inset-left))}
+.editor-head{position:sticky;top:0;z-index:3;margin:0 0 8px;padding:10px 0;background:var(--ink);border-bottom:1px solid var(--line)}
+.editor-head .tool-button{min-height:39px}
+.editor-layout{grid-template-columns:minmax(0,1fr) minmax(235px,302px);gap:12px;align-items:start}
+.editor-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:6px 8px;background:#243e38;border:1px solid var(--line);border-radius:10px;margin-bottom:6px}
+.editor-toolbar #creator-mode{width:min(290px,100%);margin-right:auto}
+.editor-toolbar #creator-mode button{min-height:36px;font-size:12px}
+.editor-map{border-color:#6a8370}
+.editor-map-note{margin:7px 2px;min-height:1.5em;color:var(--muted);font-size:12px}
+.editor-tools{gap:8px;padding:11px;border-color:var(--line)}
+.editor-tools h2,.editor-group h3{margin:0;color:var(--cream);font-size:13px}
+.editor-tools label{font-size:12px}
+.editor-course-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(80px,.65fr);gap:6px}
+.editor-course-header input,.editor-course-header select{display:block;width:100%;margin-top:3px}
+.editor-group{border-top:1px solid var(--line);padding-top:9px;gap:7px}
+.editor-group button{min-height:38px}
+.editor-group select{min-height:35px}
+#creator-stack{background:#253e38;padding:8px;border-radius:8px}
+.prop-tray{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;overflow:visible}
+.prop-tray button{min-width:0;display:flex;align-items:center;gap:4px;text-align:left;padding:3px;line-height:1.1;touch-action:none}
+.prop-tray canvas{flex:0 0 32px;width:32px;height:26px;pointer-events:none}
+@media(max-width:720px){.editor-layout{grid-template-columns:1fr}.editor-tools{margin-bottom:8px}}
+/* In-race overlays share the same large touch targets as setup dialogs. */
+.pause-tray{gap:7px;background:#1b322ef2;border-color:#697f72}
+.pause-tray button,.orientation button{min-height:42px}
+.orientation section{width:min(400px,100%);border-color:#6a8573;box-shadow:0 14px 44px #0d1e1dbf}
+.orientation button{padding-inline:15px}
+@media(prefers-reduced-motion:reduce){.carousel-surface .slide-surface{transition:none}}
+
 </style>
 </head>
 <body>
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <h1 class="wordmark">Track’n’<em>Trace’n</em></h1>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.07</span></div>
    <div class="mast-actions"><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div class="layout">
    <section class="course-area" aria-label="Course selection">
-    <div class="course-hero"><canvas id="preview" width="960" height="528" aria-hidden="true"></canvas>
-     <div class="course-heading"><div><p id="course-kind"></p><h2 id="course-name"></h2></div><div class="pager"><button id="prev-course" aria-label="Previous course">‹</button><button id="next-course" aria-label="Next course">›</button></div></div>
+    <div class="tabbar"><div class="tabs"><button id="races-tab" aria-pressed="true">Race courses</button><button id="damage-tab" aria-pressed="false">Damage events</button><button id="training-tab" aria-pressed="false">Training</button></div></div>
+    <div class="course-hero carousel-surface" id="course-carousel" role="group" aria-label="Course carousel" tabindex="0"><canvas class="slide-surface" id="preview" width="960" height="528" aria-hidden="true"></canvas>
+     <div class="course-heading"><div aria-live="polite"><p id="course-kind"></p><h2 id="course-name"></h2></div><div class="pager"><button id="prev-course" aria-label="Previous course">‹</button><button id="next-course" aria-label="Next course">›</button></div></div>
     </div>
-    <div class="tabbar"><div class="tabs"><button id="races-tab" aria-pressed="true">Race courses</button><button id="damage-tab" aria-pressed="false">Damage events</button><button id="training-tab" aria-pressed="false">Training grounds</button></div></div>
-    <div id="courses" class="course-list"></div>
+    <div id="courses" class="course-list" aria-label="Nearby courses"></div>
+    <div class="course-footer"><output id="course-position" class="course-position"></output><button id="edit-course" class="tool-button">Edit course</button><button id="records" class="tool-button">Records</button></div>
    </section>
-   <section class="garage" aria-label="Vehicle and race setup">
+   <section class="garage" aria-label="Vehicle and start">
     <h2>Garage</h2>
-    <div class="vehicle-preview"><button class="icon" id="prev-vehicle" aria-label="Previous vehicle">‹</button><canvas id="vehicle" width="360" height="130" aria-hidden="true"></canvas><button class="icon" id="next-vehicle" aria-label="Next vehicle">›</button></div>
-    <div class="vehicle-name" id="vehicle-name"></div><div class="swatches" id="swatches" aria-label="Vehicle colour"></div>
-    <div class="config">
-     <div class="config-row" id="mode-row"><span class="label">Event</span><div class="segmented" id="event-select"><button data-value="race">Race</button><button data-value="damage">Damage challenge</button></div></div>
-     <div class="config-row"><span class="label">Drag</span><div class="segmented" id="drag-select"><button data-value="trace">Draw path</button><button data-value="free">Free drag</button></div></div>
-     <div class="config-row"><span class="label">Damage</span><div class="segmented" id="damage-select"><button data-value="off">Off</button><button data-value="open">Damage only</button><button data-value="total">Can total</button></div></div>
-     <div class="config-row" id="lap-row"><span class="label">Laps</span><div class="segmented"><button id="less-laps" aria-label="Fewer laps">−</button><button id="laps-value" aria-label="Lap count, press to increase">3</button><button id="more-laps" aria-label="More laps">+</button></div></div>
-     <div class="config-row" id="ghost-row"><label for="ghost-select">Ghost</label><select id="ghost-select" aria-label="Ghost"></select></div>
+    <div class="vehicle-preview carousel-surface" id="vehicle-carousel" role="group" aria-label="Vehicle carousel" tabindex="0">
+     <button class="neighbor" id="prev-vehicle" aria-label="Previous vehicle"><canvas id="vehicle-prev-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">‹</span></button>
+     <canvas class="slide-surface" id="vehicle" width="260" height="130" aria-hidden="true"></canvas>
+     <button class="neighbor" id="next-vehicle" aria-label="Next vehicle"><canvas id="vehicle-next-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">›</span></button>
     </div>
-    <div class="launch"><button id="start" class="primary">Start race</button><button id="records" class="secondary">Records</button></div>
+    <div class="vehicle-name" id="vehicle-name" aria-live="polite"></div>
+    <div class="paint-heading"><span>Paint colour</span><output id="paint-name"></output></div>
+    <div class="swatches" id="swatches" aria-label="Vehicle colour"></div>
+    <div class="launch">
+     <button class="rules-button" id="rules-open" aria-haspopup="dialog"><strong>Race rules</strong><small id="rules-summary"></small><span aria-hidden="true">›</span></button>
+     <button id="start" class="primary">Start race</button>
+    </div>
     <p class="hint" id="hint"></p>
    </section>
   </div>
   <button id="tuning-open" class="tool-button development" aria-haspopup="dialog">Development tuning</button>
+  <div id="rule-storage" hidden>
+   <div id="rule-fields">
+    <p id="rule-course" class="rule-course"></p>
+    <div class="rule-field" id="mode-row"><span class="label">Event</span><div class="segmented" id="event-select"><button data-value="race">Race</button><button data-value="one-hit">One Hit Loss</button><button data-value="damage">Damage challenge</button></div><p id="event-explanation" class="rule-explanation" hidden></p></div>
+    <div class="rule-field"><span class="label">Steering</span><div class="segmented" id="drag-select"><button data-value="trace">Draw path</button><button data-value="free">Free drag</button></div></div>
+    <div class="rule-field"><span class="label">Damage</span><div class="segmented" id="damage-select"><button data-value="off">Off</button><button data-value="open">Damage only</button><button data-value="total">Can total</button></div></div>
+    <div class="rule-field" id="lap-row"><span class="label">Laps</span><div class="segmented"><button id="less-laps" aria-label="Fewer laps">−</button><button id="laps-value" aria-label="Lap count, press to increase">3</button><button id="more-laps" aria-label="More laps">+</button></div></div>
+    <div class="rule-field" id="ghost-row"><label for="ghost-select">Ghost</label><select id="ghost-select" aria-label="Ghost"></select></div>
+   </div>
+  </div>
  </div>
 </main>
 <main id="creator" hidden>
  <div class="wrap">
   <header class="editor-head"><button id="creator-close" class="icon" aria-label="Back to menu">‹</button><h1>Course creator</h1>
-   <div class="buttons"><button id="creator-new" class="tool-button">New</button><button id="creator-template" class="tool-button">Use selected course</button><button id="creator-import" class="tool-button">Import</button><input id="creator-file" type="file" accept=".json,application/json" hidden><button id="creator-export" class="tool-button">Export</button><button id="creator-save" class="primary tool-button">Save course</button></div>
+   <div class="buttons"><button id="creator-new" class="tool-button">New track</button><button id="creator-import" class="tool-button">Import</button><input id="creator-file" type="file" accept=".json,application/json" hidden><button id="creator-export" class="tool-button">Export</button><button id="creator-save" class="primary tool-button">Save course</button></div>
   </header>
   <div class="editor-layout">
    <div>
+    <div class="editor-toolbar">
+     <div class="segmented" id="creator-mode"><button data-value="track">Route</button><button data-value="river">River</button><button data-value="objects">Objects</button></div>
+     <span class="version" id="creator-selection"></span>
+    </div>
     <div class="editor-map"><canvas id="creator-map" width="1200" height="660" aria-label="Course editor map"></canvas></div>
+    <p id="creator-map-note" class="editor-map-note"></p>
     <p id="creator-status" role="status" class="hint"></p>
    </div>
    <aside class="editor-tools">
-    <label for="creator-name">Course name</label><input id="creator-name" type="text" maxlength="55">
-    <label for="creator-theme">Style</label><select id="creator-theme"></select>
-    <div class="segmented" id="creator-mode"><button data-value="track">Track</button><button data-value="river">River</button><button data-value="objects">Objects</button></div>
+    <h2>Course settings</h2>
+    <div class="editor-course-header">
+     <label>Course name<input id="creator-name" type="text" maxlength="55"></label>
+     <label>Style<select id="creator-theme"></select></label>
+    </div>
     <div id="creator-track-tools" class="editor-group">
+     <h3>Route point</h3>
      <div class="segmented"><button id="creator-add">Add point</button><button id="creator-remove">Remove</button><button id="creator-startline">Set start</button></div>
      <label>Track width <output id="creator-width-value"></output><input id="creator-width" type="range" min="49" max="152"></label>
      <label for="creator-road">Road to the next point</label><select id="creator-road"><option value="">Style default</option><option value="asphalt">Asphalt</option><option value="dirt">Dirt</option><option value="grass">Grass</option></select>
@@ -126,12 +259,13 @@
      </div>
     </div>
     <div id="creator-river-tools" class="editor-group" hidden>
+     <h3>River</h3>
      <div class="segmented"><button id="river-add">Add river point</button><button id="river-remove">Remove point</button><button id="river-clear">Clear river</button></div>
      <label>River width <output id="river-width-value"></output><input id="river-width" type="range" min="10" max="110"></label>
     </div>
     <div id="creator-object-tools" class="editor-group" hidden>
-     <button id="prop-tray-toggle">Object tray</button>
-     <div class="prop-tray" id="prop-tray" hidden></div>
+     <h3>Movable objects</h3>
+     <div class="prop-tray" id="prop-tray"></div>
      <label>Rotation <output id="prop-angle-value"></output><input id="prop-angle" type="range" min="0" max="359"></label>
      <label for="prop-level">Route level</label><select id="prop-level"><option value="-2">−2 Tunnel</option><option value="-1">−1 Tunnel</option><option value="0">Ground</option><option value="1">+1 Deck</option><option value="2">+2 Deck</option><option value="3">+3 Deck</option></select>
      <button id="prop-remove">Remove object</button>
@@ -157,9 +291,9 @@
   <div class="buttons" id="finish-controls" hidden><button id="damage-result" class="primary">Results</button><button id="damage-retry">Retry</button><button id="damage-exit">Exit</button></div>
   <div class="replay-bar" id="replay-controls" hidden><button id="replay-toggle" aria-label="Pause replay">Ⅱ</button><input id="seek" aria-label="Replay position" type="range" min="0" max="1000" value="0"><button id="replay-exit">Exit replay</button></div>
  </div></div>
- <div id="rotation" class="orientation" hidden><section><div class="rotate-icon" aria-hidden="true">↻</div><h2 id="rotation-title">Return to landscape</h2><p id="rotation-note">Restore the original orientation to resume.</p><button id="rotation-exit">Back to menu</button></section></div>
+ <div id="rotation" class="orientation" hidden><section role="dialog" aria-modal="true" aria-labelledby="rotation-title" aria-describedby="rotation-note"><div class="rotate-icon" aria-hidden="true">↻</div><h2 id="rotation-title">Return to landscape</h2><p id="rotation-note">Restore the original orientation to resume.</p><button id="rotation-exit">Back to menu</button></section></div>
 </main>
-<div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div></section></div>
+<div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div><div id="modal-actions" hidden></div></section></div>
 <script>
 'use strict';
 
@@ -319,7 +453,7 @@ function runoffInfo(course, i, side) {
   const n=course.samples.length, sample=course.samples[mod(i,n)], p=mod(i,n)/n;
   const base=course.widthAt[mod(i,n)], section=course.edgeSections?.find(z=>z.side===side&&segmentIn(sample.u,z.from,z.to));
   const zone = course.runoff?.find(([a,b,s]) => s===side && p>=a && p<=b);
-  if(!zone&&!section) return {width:base,type:null,curb:false};
+  if(section?.surface===null||!zone&&!section) return {width:base,type:null,curb:false};
   const taper=section?1:clamp(Math.min(p-zone[0],zone[1]-p)/.011,0,1);
   return {width:base+23*taper,type:taper>.16?(section?.surface||zone[3]):null,curb:section?.curb!==false};
 }
@@ -361,7 +495,7 @@ function prepareDefinition(definition,index=0,scale=1.35) {
   if(!course.openYard||course.park) {
     if(course.park) {
       course.practice=true;course.points=parkLoop;course.width=31;course.runoff=[];course.bridges=true;
-      course.props=[{type:'tyres',x:330,y:375,a:0},{type:'barrier',x:494,y:270,a:-.45}];
+      course.props??=[{type:'tyres',x:330,y:375,a:0},{type:'barrier',x:494,y:270,a:-.45}];
     }
     setRouteData(course);
     if(course.park&&!course.physicalElevation) {
@@ -515,7 +649,7 @@ function paintBarrier(ctx,x,y,w,h,a) {
   ctx.restore();
 }
 function renderMap(ctx,course) {
-  const c=course.colors, rand=random(673+course.index*87);
+  const c=course.colors, rand=random(course.scenerySeed??(673+course.index*87));
   ctx.fillStyle=c.ground;ctx.fillRect(0,0,W,H);
   for (let i=0;i<19;i++) {
     const y=i*38;
@@ -571,7 +705,7 @@ function renderMap(ctx,course) {
       if(i%4===0) oval(ctx,x+4,y-3,r*.48,r*.32,c.leaf[0]);
     }
   }
-  if(course.id==='oval') {
+  if(course.id==='oval'||course.grandstand) {
     paintStand(ctx,240,52,240);paintStand(ctx,508,52,235);paintStand(ctx,770,52,167);
     paintStand(ctx,410,566,182);paintStand(ctx,620,566,181);
     rounded(ctx,485,280,228,102,13,'#91b17b');
@@ -1578,7 +1712,7 @@ class GameAudio {
   tick(active,intense,speed,type,engaged) {
     if(!this.ready) return;
     const now=this.audio.currentTime, r=clamp(speed / vehicles[type].max,0,1.25);
-    this.engineGain.gain.setTargetAtTime(active&&engaged ? .027+.073*r : 0,now,.04);
+    this.engineGain.gain.setTargetAtTime(active&&engaged ? .037+.072*r : 0,now,.04);
     this.engine.frequency.setTargetAtTime([75,60,42,89][type]*(1+r*1.77),now,.032);
     this.filter.frequency.setTargetAtTime(140+460*r,now,.075);
     const playMusic=active&&['both','music'].includes(this.mode);
@@ -1674,12 +1808,12 @@ function addTuningRows(controls,title,definitions,isDamage) {
 }
 function openTuning() {
   openModal('tuning','Development tuning',body=>{
-    const controls=document.createElement('div'), footer=document.createElement('div');
-    controls.id='tuning-controls';footer.className='tuning-footer';
+    const controls=document.createElement('div');
+    controls.id='tuning-controls';
     addTuningRows(controls,'Damage',damageControls,true);
     addTuningRows(controls,'Timing',timeControls,false);
-    footer.append(button('Copy or paste settings',exchangeSettings));
-    body.append(controls,footer);
+    body.append(controls);
+    setModalActions(button('Copy or paste settings',exchangeSettings),button('Done',closeModal,'primary'));
   });
 }
 function tuningText() {
@@ -1713,21 +1847,20 @@ function applyTuningText(text) {
       options.colors=s.colors.map((v,i)=>vehicles[i].palette[v]?Number(v):0);
     }
     if(Number.isInteger(s.laps)) options.laps=clamp(s.laps,1,10);
-    if(['race','damage'].includes(s.event)) options.mode=s.event;
+    if(['race','one-hit','damage'].includes(s.event)) options.mode=s.event;
     if(['trace','free'].includes(s.drag)) options.drag=s.drag;
     if(['off','open','total'].includes(s.damage)) options.damage=s.damage;
     if(['none','fast','clean'].includes(s.ghost)) options.ghost=s.ghost;
     if(audioStates[s.audio]) audio.setMode(s.audio);
-    if(options.damage==='off') options.mode='race';
+    if(options.damage==='off'&&options.mode==='damage') options.mode='race';
   }
   renderSetup();
 }
 function exchangeSettings() {
   openModal('settings','Copy or paste settings',body=>{
-    const area=document.createElement('textarea'), row=document.createElement('div'), message=document.createElement('p');
+    const area=document.createElement('textarea'),message=document.createElement('p');
     area.value=tuningText();area.rows=14;area.className='settings-text';area.setAttribute('aria-label','Settings to copy or paste');
-    row.className='buttons';
-    row.append(button('Back to tuning',openTuning),button('Copy',async()=>{
+    setModalActions(button('Back to tuning',openTuning),button('Copy',async()=>{
       area.select();
       try {
         if(navigator.clipboard) await navigator.clipboard.writeText(area.value);
@@ -1738,8 +1871,8 @@ function exchangeSettings() {
       try {applyTuningText(area.value);area.value=tuningText();message.textContent='Settings applied.';}
       catch(error) {message.textContent=error instanceof SyntaxError?'Paste a complete settings export.':error.message;}
     },'primary'));
-    message.setAttribute('aria-live','polite');body.append(area,row,message);
-  });
+    message.setAttribute('aria-live','polite');body.append(area,message);
+  },openTuning);
 }
 function propSetup(course) {
   return (course.props||[]).map((o,i)=>({...o,id:'prop-'+i,vx:0,vy:0,spin:0,bounces:0,shot:null}));
@@ -1950,7 +2083,11 @@ function logHit(game,hit) {
   if(!game.course.training) saveFrame(game,true);
   audio.effect(hit.prop?'prop':'impact',clamp(hit.strength,.18,1.25));
   spark(game,hit.x,hit.y,'impact',hit.strength,Math.atan2(-hit.ny,-hit.nx),hit.burst||1);
-  if(damageMode(game.config)==='total') checkDamageEnd(game);
+  if(game.config.mode==='one-hit') {
+    game.lossHit=hit;
+    finish(game,'One Hit Loss');
+  }
+  else if(damageMode(game.config)==='total') checkDamageEnd(game);
 }
 function drawScars(ctx,game,level=0,accept=null) {
   for(const mark of game.scars) {
@@ -2227,6 +2364,7 @@ function sweep(game,x,y,angle,velocity) {
     total+=moved;game.totalDistance+=moved;
     car.surface=surfaceAt(game.course,car.x,car.y,car.index);
     if(q.wall) wallImpact(game,q.wall,velocity,steeredX,steeredY,moved);
+    if(game.finished) break;
     if(velocity>50 && touchesCurb(game)) {
       if(game.elapsed-game.bumpTime>.165) {
         audio.effect('curb',clamp(velocity/300,.42,1.15));game.bumpTime=game.elapsed;
@@ -2646,15 +2784,26 @@ function drawScene(game) {
   }
   drawVehicle(ctx,car.x,car.y,car.a,game.config.type,game.color,car.damage,{lights:car.speed<26&&game.started});
 }
-const designer={file:null,mode:'track',point:0,riverPoint:null,prop:null,deck:null,selectedPasses:[],tool:'',pointer:null,drag:null,preview:null,frame:0};
+const designer={file:null,mode:'track',point:0,riverPoint:null,prop:null,deck:null,selectedPasses:[],tool:'',pointer:null,drag:null,preview:null,frame:0,baseline:''};
 const creatorKey='track-and-trace-courses-v1',maxCourseProps=72;
 const newCourseId=()=>window.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2,10);
 const jsonCopy=value=>JSON.parse(JSON.stringify(value));
-const edges={wall:'Wall',grass:'Grass + curb',dirt:'Dirt + curb',grassPlain:'Grass runoff',dirtPlain:'Dirt runoff'};
+const edges={inherit:'Course default',wall:'Wall',grass:'Grass + curb',dirt:'Dirt + curb',grassPlain:'Grass runoff',dirtPlain:'Dirt runoff'};
 function finite(value,min,max,fallback) {
   return Number.isFinite(value)?clamp(value,min,max):fallback;
 }
 function courseFromFile(file,asReplay=false) {
+  const shared={
+    id:file.id,name:file.name,kind:'Custom course',theme:file.theme,props:file.props,
+    damageEvent:!!file.damageEvent,custom:true,revision:file.revision,courseFile:file,
+    scenerySeed:file.scenerySeed
+  };
+  if(file.layout==='yard') return {
+    ...shared,kind:file.arena?'Custom damage arena':file.park?'Custom practice park':'Custom training yard',
+    training:!file.arena,park:!!file.park,arena:file.arena,floor:file.floor,
+    parking:file.parking,patches:file.patches,physicalElevation:true,
+    elevation:file.park?courseOptions(true).map(i=>courses[i]).find(c=>c.park&&!c.custom)?.elevation:undefined
+  };
   const points=file.points.map(p=>[p.x,p.y]);
   const edgeSections=[],roadSections=[];
   file.points.forEach((p,i)=>{
@@ -2662,20 +2811,24 @@ function courseFromFile(file,asReplay=false) {
     if(p.road) roadSections.push({from:i,to,surface:p.road});
     for(const [key,side] of [['left',1],['right',-1]]) {
       const style=p[key];
-      if(style!=='wall') edgeSections.push({from:i,to,side,surface:style.startsWith('grass')?'grass':'dirt',curb:!style.endsWith('Plain')});
+      if(style==='inherit') continue;
+      edgeSections.push({from:i,to,side,surface:style==='wall'?null:style.startsWith('grass')?'grass':'dirt',
+        curb:style!=='wall'&&!style.endsWith('Plain')});
     }
   });
-  return {id:file.id,name:file.name,kind:'Custom course',theme:file.theme,points,width:40,
-    widthsByPoint:file.points.map(p=>p.width*.5),smoothing:file.curve,edgeSections,roadSections,
-    dirt:editorThemes[file.theme].surface==='dirt',bridges:true,crossings:file.crossings,river:file.river,
-    props:file.props,physicalElevation:!asReplay||file.version>=2,pointIds:file.points.map((p,i)=>p.id||'p'+i),
-    elevation:file.points.map(p=>p.elevation||'auto'),elevationOrders:file.elevationOrders,custom:true,revision:file.revision,courseFile:file};
+  return {...shared,points,width:40,widthsByPoint:file.points.map(p=>p.width*.5),smoothing:file.curve,
+    edgeSections,roadSections,runoff:file.runoff,puddles:file.puddles,grandstand:file.grandstand,
+    dirt:file.dirt??(editorThemes[file.theme].surface==='dirt'),bridges:true,crossings:file.crossings,river:file.river,
+    physicalElevation:!asReplay||file.version>=2,pointIds:file.points.map((p,i)=>p.id||'p'+i),
+    elevation:file.points.map(p=>p.elevation||'auto'),elevationOrders:file.elevationOrders};
 }
 function normalizeCourseFile(source) {
   if(source?.format!=='Track’n’Trace’n course'||![1,2].includes(source.version)) throw Error('Choose a Track’n’Trace’n course file.');
-  if(!Array.isArray(source.points)||source.points.length<4||source.points.length>62) throw Error('A course needs 4–62 track points.');
+  const open=source.layout==='yard';
+  const anchors=open?[]:source.points;
+  if(!Array.isArray(anchors)||!open&&(anchors.length<4||anchors.length>62)) throw Error('A course needs 4–62 track points.');
   const pointIds=new Set();
-  const points=source.points.map((p,i)=>{
+  const points=anchors.map((p,i)=>{
     if(!Number.isFinite(p?.x)||!Number.isFinite(p?.y)) throw Error('A track point has an invalid position.');
     let id=typeof p.id==='string'&&/^[\w-]{1,80}$/.test(p.id)?p.id:'p'+i;
     if(pointIds.has(id)) id=newCourseId();
@@ -2699,9 +2852,24 @@ function normalizeCourseFile(source) {
       at:finite(ref?.at,0,.999999,0),t:finite(ref?.t,0,1,0),
       from:pointIds.has(ref?.from)?ref.from:undefined,to:pointIds.has(ref?.to)?ref.to:undefined
     }))})):[];
+  const arena=open&&Number.isFinite(source.arena)&&source.arena>0?clamp(Math.round(source.arena),15,300):0;
+  const floor=typeof source.floor==='string'&&/^#[0-9a-f]{6}$/i.test(source.floor)?source.floor:undefined;
+  const patches=open&&Array.isArray(source.patches)?source.patches.slice(0,16).filter(p=>p&&
+    ['grass','dirt'].includes(p.type)&&typeof p.fill==='string'&&/^#[0-9a-f]{6}$/i.test(p.fill))
+    .map(p=>({x:finite(p.x,0,W,W/2),y:finite(p.y,0,H,H/2),rx:finite(p.rx,10,400,80),
+      ry:finite(p.ry,10,240,45),type:p.type,fill:p.fill})):undefined;
+  const runoff=Array.isArray(source.runoff)?source.runoff.filter(p=>Array.isArray(p)&&
+    Number.isFinite(p[0])&&Number.isFinite(p[1])&&[-1,1].includes(p[2])&&['grass','dirt'].includes(p[3]))
+    .slice(0,30).map(([a,b,side,surface])=>[clamp(a,0,1),clamp(b,0,1),side,surface]):[];
+  const puddles=Array.isArray(source.puddles)?source.puddles.filter(p=>Array.isArray(p)&&
+    Number.isFinite(p[0])&&Number.isFinite(p[1])).slice(0,30).map(([at,r])=>[clamp(at,0,.998),clamp(r,5,45)]):[];
   return {format:'Track’n’Trace’n course',version:source.version,id:typeof source.id==='string'&&/^[\w-]{1,80}$/.test(source.id)?source.id:newCourseId(),
     name:(typeof source.name==='string'?source.name.trim().slice(0,55):'')||'Untitled course',
     theme:Object.hasOwn(editorThemes,source.theme)?source.theme:'speedway',points,props,river,crossings,elevationOrders,
+    layout:open?'yard':undefined,arena,park:open&&!arena&&!!source.park,damageEvent:!!arena||!open&&source.damageEvent===true,
+    floor,parking:open&&Array.isArray(source.parking)?source.parking.filter(Number.isFinite).slice(0,16).map(y=>clamp(y,0,H)):undefined,
+    patches,runoff,puddles,dirt:typeof source.dirt==='boolean'?source.dirt:undefined,grandstand:source.grandstand===true,
+    scenerySeed:Number.isFinite(source.scenerySeed)?Math.round(source.scenerySeed):undefined,
     revision:Math.round(finite(source.revision,0,100000,0)),curve:finite(source.curve,0,100,50)};
 }
 function loadCustomCourses() {
@@ -2712,38 +2880,69 @@ function loadCustomCourses() {
     }
   } catch {}
 }
-function copyTemplate(index) {
+function copyTemplate(index,duplicate=false) {
   const c=prepare(index);
-  if(c.custom) return jsonCopy(c.courseFile);
-  if(c.openYard) return copyTemplate(0);
-  const points=c.points.map(([x,y],i)=>{
-    const sample=c.samples.findIndex(p=>p.u>=i+.38);
-    const edge=side=>{
-      const item=c.widths[Math.max(0,sample)][side];
-      return item.type?item.type+(item.curb?'':'Plain'):'wall';
-    };
-    return {x,y,id:'p'+i,elevation:c.elevation?.[i]||'auto',width:Math.round((c.widthsByPoint?.[i]??c.width)*2),road:c.dirt?'dirt':'asphalt',left:edge(1),right:edge(0)};
-  });
-  const river=riverSpec(c), stride=river&&Math.max(1,Math.floor(river.points.length/7));
-  return {format:'Track’n’Trace’n course',version:2,id:newCourseId(),name:c.name+' copy',theme:c.theme,points,
-    crossings:[],elevationOrders:[],props:c.props.map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:0})),curve:50,revision:0,
-    river:river?{width:river.width,points:river.points.filter((_,i)=>i%stride===0||i===river.points.length-1)}:null};
+  if(c.custom) {
+    const file=jsonCopy(c.courseFile);
+    return duplicate?{...file,id:newCourseId(),name:(c.name+' copy').slice(0,55),revision:0}:file;
+  }
+  const common={format:'Track’n’Trace’n course',version:2,id:newCourseId(),name:c.name+' copy',
+    theme:c.theme,damageEvent:!!c.damageEvent,crossings:jsonCopy(c.crossings||[]),elevationOrders:jsonCopy(c.elevationOrders||[]),
+    props:(c.props||[]).map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:p.level||0})),
+    curve:c.smoothing??50,revision:0,scenerySeed:c.scenerySeed??(673+c.index*87)};
+  if(c.openYard) return {...common,layout:'yard',points:[],park:!!c.park,arena:c.arena||0,
+    floor:c.floor,parking:c.parking,patches:c.patches?jsonCopy(c.patches):undefined};
+  const points=c.points.map(([x,y],i)=>({x,y,id:'p'+i,elevation:c.elevation?.[i]||'auto',
+    width:(c.widthsByPoint?.[i]??c.width)*2,road:'',left:'inherit',right:'inherit'}));
+  const river=riverSpec(c);
+  return {...common,points,grandstand:c.id==='oval'||c.grandstand,dirt:!!c.dirt,
+    runoff:jsonCopy(c.runoff||[]),puddles:jsonCopy(c.puddles||[]),
+    river:river?{width:river.width,points:jsonCopy(river.points)}:null};
 }
 function editorStatus(message) {$('creator-status').textContent=message;}
-function newDraft(template=0,rename=false) {
-  designer.file=copyTemplate(template);
+function resetDraftSelection() {
+  designer.mode=designer.file.layout==='yard'?'objects':'track';
+  designer.point=0;designer.prop=null;designer.deck=null;designer.selectedPasses=[];
+  designer.riverPoint=null;designer.tool='';designer.preview=null;
+  designer.baseline=JSON.stringify(designer.file);
+}
+function newDraft(template=0,rename=false,duplicate=false) {
+  designer.file=copyTemplate(template,duplicate);
   if(rename) {designer.file.name='Untitled course';designer.file.id=newCourseId();}
-  designer.point=0;designer.prop=null;designer.deck=null;designer.selectedPasses=[];designer.riverPoint=null;designer.tool='';
-  editorRender(true);
+  resetDraftSelection();editorRender(true);
+}
+function guardDraft(title,action) {
+  if(!designer.file||designer.baseline===JSON.stringify(designer.file)) {action();return;}
+  openModal('draft',title,body=>{
+    body.append(paragraph('This replaces the unsaved changes in your current draft.'));
+    setModalActions(button('Keep working',closeModal),button('Replace draft',()=>{
+      closeModal();action();
+    },'primary'));
+  });
+}
+function showCreator() {
+  $('setup').hidden=true;$('creator').hidden=false;$('creator').scrollTop=0;
+  editorRender(true);$('creator-close').focus({preventScroll:true});
 }
 function startCreator() {
-  $('setup').hidden=true;$('creator').hidden=false;
   if(!designer.file) {
     newDraft(courses[options.course].custom?options.course:0,!courses[options.course].custom);
-    editorStatus('Drag points to shape the course. Tap a crossing badge to swap its passes.');
-  } else editorRender(true);
+    editorStatus('');
+  }
+  showCreator();
 }
-function closeCreator() {$('creator').hidden=true;$('setup').hidden=false;renderSetup();}
+function editSelectedCourse() {
+  const source=options.course;
+  guardDraft('Open a course copy?',()=>{
+    newDraft(source,false,true);showCreator();
+    editorStatus('Editing a copy of '+courses[source].name+'.');
+  });
+}
+function closeCreator() {
+  $('creator').hidden=true;$('setup').hidden=false;
+  renderSetup();
+  const trigger=$(designer.returnTo||'creator-open');trigger.focus({preventScroll:true});
+}
 function editMode(mode) {
   designer.mode=mode;designer.tool='';
   editorRender(false);
@@ -2756,15 +2955,15 @@ function storeDraft() {
   try {
     const file=editorPickCourse(), index=courses.findIndex(c=>c.custom&&c.id===file.id);
     const preview=prepareDefinition(courseFromFile(file),0,.6);
-    if(preview.elevationData.warnings.length) throw Error(preview.elevationData.warnings[0]);
+    if(preview.elevationData?.warnings.length) throw Error(preview.elevationData.warnings[0]);
     const prior=index<0?0:courses[index].revision;
     file.revision=Math.max(prior,file.revision)+1;
     const files=courses.slice(builtInCount).filter(c=>c.id!==file.id).map(c=>c.courseFile);
     localStorage.setItem(creatorKey,JSON.stringify([...files,file]));
     const place=index<0?courses.length:index;
     courses[place]=courseFromFile(file);prepared.delete(place);
-    designer.file=jsonCopy(file);
-    training=false;raceCourse=place;options.course=place;saveOptions();
+    designer.file=jsonCopy(file);designer.baseline=JSON.stringify(designer.file);
+    selectCourseState(place);saveOptions();editorRender(true);
     editorStatus('Saved. Return to the menu to drive '+file.name+'.');
   } catch(error) {editorStatus(error.message||'This browser could not save the course. Use Export for a local copy.');}
 }
@@ -2849,6 +3048,14 @@ function editorRender(rebuild) {
   if($('creator-name').value!==file.name) $('creator-name').value=file.name;
   $('creator-theme').value=file.theme;
   segmentation('creator-mode',designer.mode);
+  $('creator-mode').hidden=file.layout==='yard';
+  const tips={
+    track:designer.tool==='add'?'Tap the map to insert a route point.':'Tap a point to edit it, or drag to move it. Tap a crossing badge to change pass order.',
+    river:designer.tool==='river'?'Tap the map to add a river point.':'Add or drag points to shape the river.',
+    objects:designer.tool?'Tap the map to place '+propTypes[designer.tool].name.toLowerCase()+'.':'Choose an object to place it, or tap a placed object to move or rotate it.'
+  };
+  $('creator-map-note').textContent=tips[designer.mode];
+  $('creator-selection').textContent=file.name;
   for(const mode of ['track','river','object']) {
     const active=designer.mode===(mode==='object'?'objects':mode);
     $('creator-'+mode+'-tools').hidden=!active;
@@ -2863,17 +3070,17 @@ function editorRender(rebuild) {
     $('creator-road').value=point.road;$('creator-left').value=point.left;$('creator-right').value=point.right;
   }
   $('creator-curve').value=file.curve;$('creator-curve-value').textContent=file.curve;
-  const data=designer.preview.elevationData, anchor=data.anchors[designer.point]??0;
+  const data=designer.preview.elevationData,anchor=data?.anchors[designer.point]??0;
   $('creator-elevation-point').textContent='Point '+(designer.point+1)+' · '+heightText(routeLevelAt(designer.preview,anchor));
   segmentation('creator-elevation',point?.elevation||'auto');
   for(const choice of $('creator-elevation').querySelectorAll('button')) choice.disabled=designer.point===0;
-  const portal=data.portals.find(p=>p.index===anchor);
+  const portal=data?.portals.find(p=>p.index===anchor);
   $('creator-portal').hidden=!portal;
   $('creator-portal').textContent=portal?.entry?'Tunnel entry':'Tunnel exit';
-  $('creator-elevation-warning').hidden=data.warnings.length===0;
-  $('creator-elevation-warning').textContent=data.warnings[0]||'';
-  if(designer.deck!=null&&!data.groups[designer.deck]) {designer.deck=null;designer.selectedPasses=[];}
-  const selected=data.groups[designer.deck], passes=$('creator-passes');
+  $('creator-elevation-warning').hidden=!data?.warnings.length;
+  $('creator-elevation-warning').textContent=data?.warnings[0]||'';
+  if(designer.deck!=null&&!data?.groups[designer.deck]) {designer.deck=null;designer.selectedPasses=[];}
+  const selected=data?.groups[designer.deck], passes=$('creator-passes');
   $('creator-stack').hidden=!selected;passes.replaceChildren();
   if(selected) for(const [i,pass] of selected.order.entries()) {
     const edge=Math.floor(designer.preview.samples[pass.index].u);
@@ -2984,15 +3191,20 @@ function initializeEditor() {
   const action=(id,fn)=>$(id).addEventListener('click',fn);
   const listen=(id,event,fn)=>$(id).addEventListener(event,e=>fn(e.target.value,e));
   const update=(key,value)=>{designer.file.points[designer.point][key]=value;editorRender(true);};
-  action('creator-open',startCreator);action('creator-close',closeCreator);
-  action('creator-new',()=>{newDraft(0,true);editorStatus('New course. Drag a point or add one to change the route.');});
-  action('creator-template',()=>{newDraft(options.course,false);editorStatus('Selected course loaded.');});
-  action('creator-save',storeDraft);action('creator-export',exportDraft);action('creator-import',()=>$('creator-file').click());
+  action('creator-open',()=>{designer.returnTo='creator-open';startCreator();});
+  action('edit-course',()=>{designer.returnTo='edit-course';editSelectedCourse();});
+  action('creator-close',closeCreator);
+  action('creator-new',()=>guardDraft('Start a new track?',()=>{newDraft(0,true);editorStatus('');}));
+  action('creator-save',storeDraft);action('creator-export',exportDraft);
+  action('creator-import',()=>$('creator-file').click());
   listen('creator-file','change',async(_,event)=>{
     try {
-      designer.file=normalizeCourseFile(JSON.parse(await event.target.files[0].text()));
-      designer.point=0;designer.riverPoint=null;designer.prop=null;designer.deck=null;designer.selectedPasses=[];designer.tool='';
-      editorRender(true);editorStatus('Course imported. Save it to add it to the race menu.');
+      if(!event.target.files.length) return;
+      const file=normalizeCourseFile(JSON.parse(await event.target.files[0].text()));
+      guardDraft('Import another course?',()=>{
+        designer.file=file;resetDraftSelection();editorRender(true);
+        editorStatus('Course imported. Save it to add it to the menu.');
+      });
     } catch(error) {if(event.target.files.length) editorStatus(error.message);}
     event.target.value='';
   });
@@ -3001,7 +3213,11 @@ function initializeEditor() {
     for(const [key,name] of Object.entries(edges)) $(id).add(new Option(name,key));
   }
   listen('creator-name','input',value=>designer.file.name=value);
-  listen('creator-theme','change',value=>{designer.file.theme=value;editorRender(true);});
+  listen('creator-theme','change',value=>{
+    designer.file.theme=value;designer.file.dirt=editorThemes[value].surface==='dirt';
+    if(designer.file.layout==='yard') designer.file.floor=undefined;
+    editorRender(true);
+  });
   onSegment('creator-mode',editMode,false);
   action('creator-add',()=>{designer.tool=designer.tool==='add'?'':'add';editorRender(false);});
   action('creator-remove',()=>{designer.file.points.splice(designer.point,1);designer.point=0;editorRender(true);});
@@ -3032,13 +3248,17 @@ function initializeEditor() {
     designer.riverPoint=null;editorRender(true);
   });
   listen('river-width','input',value=>{designer.file.river.width=Number(value);editorRender(true);});
-  action('prop-tray-toggle',()=>$('prop-tray').hidden=!$('prop-tray').hidden);
   for(const [key,definition] of Object.entries(propTypes)) {
     let start=null,dropped=false;
-    const item=button(definition.name,()=>{
+    const item=button('',()=>{
       if(dropped) {dropped=false;return;}
       designer.tool=key;editorRender(false);
     });
+    const art=document.createElement('canvas'),label=document.createElement('span');
+    art.width=68;art.height=54;art.setAttribute('aria-hidden','true');
+    const artCtx=art.getContext('2d');artCtx.scale(1.38,1.38);
+    drawProp(artCtx,{type:key,x:24.6,y:19.5,a:-.18});
+    label.textContent=definition.name;item.append(art,label);
     item.dataset.value=key;
     item.addEventListener('pointerdown',e=>{dropped=false;start={x:e.clientX,y:e.clientY};item.setPointerCapture(e.pointerId);});
     item.addEventListener('pointermove',e=>{
@@ -3064,6 +3284,175 @@ function initializeEditor() {
     if(designer.pointer!==e.pointerId) return;
     designer.pointer=null;designer.drag=null;editorRender(true);
   });
+}
+const paintChoices=[
+  ['Vermilion','#f66c50'],['Coral','#fc7461'],['Tangerine','#f88851'],
+  ['Apricot','#ffac5e'],['Gold','#f9be56'],['Lemon','#ffe081'],
+  ['Lime','#b9d75e'],['Leaf','#b0dd79'],['Mint','#76dcae'],
+  ['Teal','#43c1d2'],['Sky','#5bcee0'],['Lagoon','#58bcdf'],
+  ['Periwinkle','#899afa'],['Orchid','#d685f5'],['Rose','#ed6d98'],
+  ['Ivory','#eee9cc'],['Graphite','#505e66'],['White','#f7f5e8']
+];
+for(const spec of vehicles) {
+  for(const [,colour] of paintChoices) if(!spec.palette.includes(colour)) spec.palette.push(colour);
+}
+const eventNames={race:'Race','one-hit':'One Hit Loss',damage:'Damage challenge',training:'Training'};
+const damageNames={off:'Damage off',open:'Damage only',total:'Can total'};
+const courseTileCache=new Map();
+let drawnCourse=null, drawnVehicle='';
+function setupCourseList() {
+  return courseOptions(courses[options.course].damageEvent?'damage':training);
+}
+function nearbyCourses(list,index) {
+  const shifts=list.length<4?[0,1,2]:[-1,0,1,2];
+  return [...new Set(shifts.map(shift=>list[mod(index+shift,list.length)]))];
+}
+function drawCourseTile(canvas,index) {
+  const definition=courses[index], key=definition.id+':'+(definition.revision||0);
+  let art=courseTileCache.get(key);
+  if(!art) {
+    art=document.createElement('canvas');art.width=180;art.height=100;
+    const ctx=art.getContext('2d');
+    ctx.scale(.15,.15);drawCoursePreview(ctx,prepare(index));
+    if(courseTileCache.size>=64) courseTileCache.delete(courseTileCache.keys().next().value);
+    courseTileCache.set(key,art);
+  }
+  canvas.getContext('2d').drawImage(art,0,0,canvas.width,canvas.height);
+}
+function renderCoursePicker(course) {
+  const list=setupCourseList(),index=list.indexOf(options.course);
+  $('course-name').textContent=course.name;$('course-kind').textContent=course.kind;
+  $('course-position').textContent=(index+1)+' / '+list.length;
+  $('races-tab').setAttribute('aria-pressed',!training&&!course.damageEvent);
+  $('training-tab').setAttribute('aria-pressed',training);
+  $('damage-tab').setAttribute('aria-pressed',!!course.damageEvent);
+  if(drawnCourse===courses[options.course]) return;
+  drawnCourse=courses[options.course];
+  const ctx=$('preview').getContext('2d');
+  ctx.save();ctx.scale(.8,.8);drawCoursePreview(ctx,course);ctx.restore();
+  const mount=$('courses'),focused=document.activeElement?.dataset?.courseTile!=null;
+  mount.replaceChildren();let selected=null;
+  for(const i of nearbyCourses(list,index)) {
+    const item=button('',()=>setCourse(i));
+    item.dataset.courseTile=String(i);
+    item.setAttribute('aria-pressed',i===options.course);item.title=courses[i].name;
+    const art=document.createElement('canvas'), name=document.createElement('span');
+    art.width=180;art.height=84;art.setAttribute('aria-hidden','true');
+    drawCourseTile(art,i);name.className='course-tile-name';name.textContent=courses[i].name;
+    item.append(art,name);mount.append(item);
+    if(i===options.course) selected=item;
+  }
+  if(focused) selected?.focus({preventScroll:true});
+}
+function vehicleColour(type) {
+  return vehicles[type].palette[options.colors[type]]||vehicles[type].palette[0];
+}
+function drawPickerVehicle(canvas,type,scale) {
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawVehicle(ctx,canvas.width/2,canvas.height/2,-.18,type,vehicleColour(type),zeroDamage(),{scale});
+}
+function renderVehiclePicker() {
+  const current=options.type, key=[current,...options.colors].join('/');
+  if(key===drawnVehicle) return;
+  drawnVehicle=key;
+  const left=mod(current-1,vehicles.length),right=mod(current+1,vehicles.length);
+  drawPickerVehicle($('vehicle'),current,3.02);
+  drawPickerVehicle($('vehicle-prev-art'),left,1.45);
+  drawPickerVehicle($('vehicle-next-art'),right,1.45);
+  $('prev-vehicle').setAttribute('aria-label','Previous vehicle · '+vehicles[left].name);
+  $('next-vehicle').setAttribute('aria-label','Next vehicle · '+vehicles[right].name);
+  $('vehicle-name').textContent=vehicles[current].name;
+  const selected=vehicleColour(current), mount=$('swatches'),previous=document.activeElement?.dataset?.paint;
+  mount.replaceChildren();
+  for(const [name,colour] of paintChoices) {
+    const b=button('',()=>{options.colors[current]=vehicles[current].palette.indexOf(colour);renderSetup();});
+    b.dataset.paint=colour;b.title=name;
+    b.style.setProperty('--swatch',colour);
+    b.setAttribute('aria-label',name);b.setAttribute('aria-pressed',colour===selected);
+    mount.append(b);
+    if(colour===previous) b.focus({preventScroll:true});
+  }
+  $('paint-name').textContent=paintChoices.find(([,colour])=>colour===selected)?.[0]||'';
+}
+function changeVehicle(by) {
+  options.type=mod(options.type+by,vehicles.length);renderSetup();
+}
+function attachCarousel(id,step) {
+  const node=$(id);
+  let gesture=null, blockNextClick=false;
+  const reset=()=>{
+    node.classList?.remove('swiping');
+    node.style.setProperty('--swipe-shift','0px');
+    gesture=null;
+  };
+  node.addEventListener('pointerdown',e=>{
+    if(e.button!==0||gesture) return;
+    blockNextClick=false;
+    gesture={id:e.pointerId,x:e.clientX,y:e.clientY,dragging:false};
+  });
+  node.addEventListener('pointermove',e=>{
+    if(gesture?.id!==e.pointerId) return;
+    const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
+    if(!gesture.dragging) {
+      if(Math.abs(dy)>9&&Math.abs(dy)>Math.abs(dx)) {reset();return;}
+      if(Math.abs(dx)<10||Math.abs(dx)<Math.abs(dy)*1.18) return;
+      gesture.dragging=true;node.classList?.add('swiping');
+      try {node.setPointerCapture(e.pointerId);} catch {}
+    }
+    node.style.setProperty('--swipe-shift',clamp(dx*.38,-64,64)+'px');
+  });
+  node.addEventListener('pointerup',e=>{
+    if(gesture?.id!==e.pointerId) return;
+    const distance=e.clientX-gesture.x, dragging=gesture.dragging;
+    reset();
+    if(!dragging) return;
+    blockNextClick=true;
+    if(Math.abs(distance)>=38) step(distance<0?1:-1);
+  });
+  node.addEventListener('pointercancel',reset);
+  node.addEventListener('lostpointercapture',reset);
+  node.addEventListener('pointerleave',()=>{if(gesture&&!gesture.dragging) reset();});
+  node.addEventListener('click',e=>{
+    if(!blockNextClick||e.detail===0) return;
+    blockNextClick=false;e.preventDefault();e.stopImmediatePropagation();
+  },true);
+  node.addEventListener('keydown',e=>{
+    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight') return;
+    e.preventDefault();step(e.key==='ArrowLeft'?-1:1);
+  });
+}
+function renderRuleCopy(config,course) {
+  const event=eventNames[config.mode], steering=config.drag==='trace'?'Draw path':'Free drag';
+  const distance=course.arena?course.arena+' seconds':course.training?'':config.laps+(config.laps===1?' lap':' laps');
+  $('rules-summary').textContent=[event,distance,steering,damageNames[config.damage]].filter(Boolean).join(' · ');
+  $('rule-course').textContent=course.name+' · '+vehicles[config.type].name;
+  const oneHit=config.mode==='one-hit';
+  $('event-explanation').hidden=!oneHit;
+  $('event-explanation').textContent='The first wall or object hit ends the run.';
+  $('rules-open').setAttribute('aria-expanded',String(modalType==='rules'));
+  if(modalType==='rules') $('rules-start').textContent=$('start').textContent;
+}
+function openRaceRules() {
+  openModal('rules','Race rules',body=>{
+    body.append($('rule-fields'));
+    const start=button($('start').textContent,startSelectedRun,'primary');start.id='rules-start';
+    setModalActions(button('Done',closeModal),start);
+  });
+  $('rules-open').setAttribute('aria-expanded','true');
+}
+function startSelectedRun() {
+  const config=configNow(), ghost=records.matching(config,$('ghost-select').value);
+  newRace(config,config.mode==='race'||config.mode==='one-hit'?ghost:null);
+}
+function updateDriveAudio(game,dt,distance) {
+  if(dt>0) {
+    const target=game.replay?game.car.speed:Math.min(900,Math.max(0,distance)/dt);
+    const current=game.engineSpeed??0;
+    game.engineSpeed=mix(current,target,1-Math.exp(-dt*(target>current?15:6)));
+  }
+  const speed=game.engineSpeed??0;
+  return {speed,engaged:game.pointer!=null||!!game.flick||!!game.route.length||speed>=12};
 }
 class RecordStore {
   constructor() {
@@ -3117,6 +3506,7 @@ function recordKey(c,kind) {
   const parts=[c.courseId||courses[c.course]?.id,c.layout||0,c.type,c.laps,c.drag,
     c.drag==='free'?(c.release||'stop'):'',damageMode(c),c.tuneKey||tuningId(tuning),kind];
   if(kind==='damage'&&c.scoring) parts.push(c.scoring);
+  if(c.mode==='one-hit'&&(kind==='fast'||kind==='clean')) parts.push('one-hit');
   return parts.join('/');
 }
 function saveRun(game,completed,highlightsOnly=false) {
@@ -3125,10 +3515,10 @@ function saveRun(game,completed,highlightsOnly=false) {
   const base={config:{...cfg},courseFile:game.course.custom?courses[cfg.course]?.courseFile:undefined,duration:game.elapsed,splits:[...game.splits],hits:game.hits,tune:game.tune,
     frames:game.frames,impacts:game.impacts,score,points:cfg.mode==='damage'?points:undefined,date:Date.now()};
   const oldFast=records.matching(cfg,'fast'), oldClean=records.matching(cfg,'clean'), oldDamage=records.matching(cfg,'damage');
-  if(cfg.mode==='race' && completed && (!oldFast || game.elapsed<oldFast.duration)) {
+  if((cfg.mode==='race'||cfg.mode==='one-hit') && completed && (!oldFast || game.elapsed<oldFast.duration)) {
     changes.push({...base,id:recordKey(cfg,'fast'),kind:'fast'});
   }
-  if(cfg.mode==='race' && completed && !game.hits && (!oldClean || game.elapsed<oldClean.duration)) {
+  if((cfg.mode==='race'||cfg.mode==='one-hit') && completed && !game.hits && (!oldClean || game.elapsed<oldClean.duration)) {
     changes.push({...base,id:recordKey(cfg,'clean'),kind:'clean'});
   }
   if(!highlightsOnly && cfg.mode==='damage' && (!oldDamage || score>oldDamage.score || (score===oldDamage.score && game.elapsed<oldDamage.duration))) {
@@ -3170,7 +3560,7 @@ let training=!!courses[options.course].training;
 let raceCourse=courseOptions(false).includes(options.course)?options.course:0;
 let trainingCourse=training?options.course:courseOptions(true)[0];
 let damageCourse=courses[options.course].damageEvent?options.course:courseOptions('damage')[0];
-let modalType='', modalSource=null, hudAt=-100, displayed='', opening=false;
+let modalType='',modalSource=null,modalBack=null, hudAt=-100, displayed='', opening=false;
 function saveOptions() {
   try {localStorage.setItem('track-and-trace-setup-v1',JSON.stringify({options,courseId:courses[options.course].id,audio:audio.mode}));} catch {}
 }
@@ -3178,7 +3568,7 @@ function configNow() {
   const course=courses[options.course];
   const mode=training?'training':course.damageEvent?'damage':options.mode;
   return {course:options.course,courseId:course.id,layout:course.revision,type:options.type,
-    color:options.colors[options.type],laps:course.arena?0:options.laps,
+    color:options.colors[options.type],laps:course.arena?0:options.laps,arena:course.arena||undefined,
     mode,scoring:mode==='damage'?'objects-v1':undefined,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
 }
 function clock(s) {
@@ -3206,35 +3596,13 @@ function setCourse(i) {
   renderSetup();
 }
 function changeCourse(by) {
-  const list=courseOptions(courses[options.course].damageEvent?'damage':training);
+  const list=setupCourseList();
   setCourse(list[mod(list.indexOf(options.course)+by,list.length)]);
 }
 function renderSetup() {
-  const course=prepare(options.course), spec=vehicles[options.type];
-  $('course-name').textContent=course.name;$('course-kind').textContent=course.kind;
-  const ctxPreview=$('preview').getContext('2d');ctxPreview.save();ctxPreview.scale(.8,.8);
-  drawCoursePreview(ctxPreview,course);ctxPreview.restore();
-  $('races-tab').setAttribute('aria-pressed',!training&&!course.damageEvent);
-  $('training-tab').setAttribute('aria-pressed',training);
-  $('damage-tab').setAttribute('aria-pressed',!!course.damageEvent);
-  const list=$('courses');list.replaceChildren();
-  for(const [rank,i] of courseOptions(course.damageEvent?'damage':training).entries()) {
-    const item=button('',()=>setCourse(i));
-    item.setAttribute('aria-pressed',i===options.course);
-    if(!training&&!course.damageEvent) {
-      const n=document.createElement('small');n.textContent=(courses[i].custom?'✦':String(rank+1).padStart(2,'0'));item.append(n);
-    }
-    item.append(courses[i].name);list.append(item);
-  }
-  const ctx=$('vehicle').getContext('2d');
-  ctx.clearRect(0,0,360,130);drawVehicle(ctx,180,65,-.13,options.type,spec.palette[options.colors[options.type]],zeroDamage(),{scale:3.03});
-  $('vehicle-name').textContent=spec.name;
-  const swatches=$('swatches');swatches.replaceChildren();
-  spec.palette.forEach((color,i)=>{
-    const b=button('',()=>{options.colors[options.type]=i;renderSetup();});
-    b.style.setProperty('--swatch',color);b.setAttribute('aria-label',['First colour','Second colour','Third colour','Fourth colour'][i]);
-    b.setAttribute('aria-pressed',i===options.colors[options.type]);swatches.append(b);
-  });
+  const course=prepare(options.course);
+  renderCoursePicker(course);
+  renderVehiclePicker();
   $('sound').textContent={both:'♫ + SFX',effects:'SFX',music:'♫',off:'Audio off'}[audio.mode];
   $('sound').setAttribute('title',audioStates[audio.mode]);
   $('sound').setAttribute('aria-label',audioStates[audio.mode]+' · change audio mode');
@@ -3246,16 +3614,18 @@ function renderSetup() {
   $('records').hidden=training;
   $('less-laps').disabled=options.laps<=1;$('more-laps').disabled=options.laps>=10;
   $('laps-value').textContent=options.laps;
-  $('start').textContent=training?'Enter training':course.damageEvent||options.mode==='damage'?'Start challenge':'Start race';
+  $('start').textContent=training?'Enter training':course.damageEvent||options.mode==='damage'?'Start challenge':
+    options.mode==='one-hit'?'Start One Hit Loss':'Start race';
   const ghost=$('ghost-select');ghost.replaceChildren(new Option('Off','none'));
   const config=configNow();
+  renderRuleCopy(config,course);
   for(const [key,label] of [['fast','Fastest'],['clean','Fastest clean']]) {
     const match=records.matching(config,key);
     if(match) ghost.add(new Option(label+' · '+clock(match.duration),key));
   }
   ghost.value=[...ghost.options].some(o=>o.value===options.ghost)?options.ghost:'none';
   const hint=options.drag==='trace'?'Draw ahead. A new touch replaces the path.':'Drag to steer. Release while moving to flick the vehicle.';
-  $('hint').textContent=course.arena?'60 seconds. Move objects as far as you can and aim for chains.':
+  $('hint').textContent=course.arena?course.arena+' seconds. Move objects as far as you can and aim for chains.':
     course.damageEvent?'Score by moving objects and knocking them into each other.':
     training?(options.damage==='total'?'Three crumpled sections end the run. ':'Exit whenever you like. ')+hint:hint;
   saveOptions();
@@ -3397,17 +3767,47 @@ function updateHud(force=false) {
     $('seek').value=Math.round(1000*(game.elapsed-game.replayLow)/Math.max(.001,game.replayHigh-game.replayLow));
   }
 }
-function openModal(kind,title,fill) {
-  const modal=$('modal');
+function storeRuleFields() {
+  if(modalType==='rules') $('rule-storage').append($('rule-fields'));
+  $('rules-open').setAttribute('aria-expanded','false');
+}
+function setModalActions(...actions) {
+  const footer=$('modal-actions');
+  footer.replaceChildren(...actions);footer.hidden=!actions.length;
+}
+function openModal(kind,title,fill,back=null) {
+  const modal=$('modal'),body=$('modal-body');
   if(modal.hidden) modalSource=document.activeElement;
-  modalType=kind;modal.dataset.view=kind;$('modal-title').textContent=title;$('modal-body').replaceChildren();
-  fill($('modal-body'));modal.hidden=false;
-  $('setup').inert=true;$('play').inert=true;$('close-modal').focus({preventScroll:true});
+  storeRuleFields();
+  modalType=kind;modalBack=back;modal.dataset.view=kind;
+  $('modal-title').textContent=title;body.replaceChildren();setModalActions();
+  fill(body);
+  body.scrollTop=0;modal.hidden=false;
+  $('setup').inert=true;$('play').inert=true;$('creator').inert=true;
+  $('close-modal').setAttribute('aria-label',back?'Back':'Close');
+  $('close-modal').focus({preventScroll:true});
 }
 function closeModal() {
-  $('modal').hidden=true;modalType='';$('setup').inert=false;$('play').inert=false;
+  storeRuleFields();
+  $('modal').hidden=true;modalType='';modalBack=null;
+  $('setup').inert=false;$('play').inert=false;$('creator').inert=false;
+  setModalActions();
   if(modalSource?.offsetParent) modalSource.focus({preventScroll:true});
   modalSource=null;
+}
+function dismissModal() {
+  if(modalBack) modalBack();
+  else if(modalType==='result') exitGame();
+  else closeModal();
+}
+function trapModalFocus(e) {
+  const focusable=[...$('modal').querySelectorAll('button,input,textarea,select,[tabindex]')]
+    .filter(el=>!el.disabled&&el.getClientRects().length&&el.tabIndex>=0);
+  if(!focusable.length) return;
+  const index=focusable.indexOf(document.activeElement);
+  if(index<0||e.shiftKey&&index===0||!e.shiftKey&&index===focusable.length-1) {
+    e.preventDefault();focusable[e.shiftKey?focusable.length-1:0].focus();
+  }
 }
 function paragraph(text) {const e=document.createElement('p');e.textContent=text;return e;}
 function stat(label,value) {
@@ -3415,15 +3815,18 @@ function stat(label,value) {
   name.textContent=label;content.textContent=value;item.append(name,content);return item;
 }
 function configLabel(c) {
-  const length=c.laps?c.laps+(c.laps===1?' lap':' laps'):'60 s arena';
+  const length=c.laps?c.laps+(c.laps===1?' lap':' laps'):(c.arena||courses[c.course]?.arena||60)+' s arena';
   return vehicles[c.type].name+' · '+length+' · '+(c.drag==='trace'?'Draw path':'Free drag')+
     (c.drag==='free'&&c.release==='flick'?' · Flick':'')+
-    ({off:' · Damage off',open:' · Damage only',total:''}[damageMode(c)])+(c.mode==='damage'?' · Challenge':'');
+    ({off:' · Damage off',open:' · Damage only',total:''}[damageMode(c)])+(c.mode==='damage'?' · Challenge':c.mode==='one-hit'?' · One Hit Loss':'');
 }
 function showRecords(courseIndex) {
   const entries=records.forCourse(courseIndex);
   openModal('records',courses[courseIndex].name+' records',body=>{
-    if(!entries.length) {body.append(paragraph('Finish a run or make a hard impact to save a replay here.'));return;}
+    if(!entries.length) {
+      body.append(paragraph('Finish a run or make a hard impact to save a replay here.'));
+      setModalActions(button(run?.finished?'Back to results':'Done',dismissModal,'primary'));return;
+    }
     const groups=[['Race times',['fast','clean']],['Damage challenge',['damage']],['Crash highlights',['crash']]];
     for(const [name,kinds] of groups) {
       const items=entries.filter(r=>kinds.includes(r.kind));
@@ -3440,18 +3843,18 @@ function showRecords(courseIndex) {
         row.append(label,button('Watch',()=>launchReplay(rec)),remove);body.append(row);
       }
     }
-  });
+    setModalActions(button(run?.finished?'Back to results':'Done',dismissModal,'primary'));
+  },run?.finished?run.showResult:null);
 }
 function confirmDelete(record,course) {
   openModal('delete','Delete this result?',body=>{
     body.append(paragraph(configLabel(record.config)));
-    const row=document.createElement('div');row.className='buttons';
-    row.append(button('Keep',()=>showRecords(course)),button('Delete result',async()=>{
+    setModalActions(button('Keep result',()=>showRecords(course)),button('Delete result',async()=>{
       const saved=await records.change([],[record.id]);
       if(saved) showRecords(course);
       else body.append(paragraph('This browser could not update the saved result.'));
-    },'primary'));body.append(row);
-  });
+    },'danger'));
+  },()=>showRecords(course));
 }
 function finish(game,reason) {
   if(game.finished) return;
@@ -3479,10 +3882,11 @@ function finish(game,reason) {
       }
     }
     body.append(stats);
-    const row=document.createElement('div');row.className='buttons';
-    row.append(button('Run again',()=>newRace(game.config,game.ghost),'primary'),button('Back to menu',exitGame));
-    if(!game.course.training) row.append(button('View records',()=>showRecords(game.config.course)));
-    body.append(row);
+    if(game.lossHit) body.append(paragraph(game.lossHit.prop?'The run ended on an object hit.':'The run ended on a wall hit.'));
+    const actions=[button('Back to menu',exitGame)];
+    if(!game.course.training) actions.push(button('View records',()=>showRecords(game.config.course)));
+    actions.push(button('Run again',()=>newRace(game.config,game.ghost),'primary'));
+    setModalActions(...actions);
     if(saved?.changes.some(r=>r.kind!=='crash')) {
       const labels={fast:'Fastest time',clean:'Fastest clean time',damage:'Damage high score'};
       body.append(paragraph(saved.changes.filter(r=>labels[r.kind]).map(r=>labels[r.kind]).join(' · ')));
@@ -3580,21 +3984,21 @@ for(const name of ['pointerup','pointercancel','lostpointercapture']) {
     if(name!=='pointerup') {run.fingers=[];run.releasePending=null;}
   });
 }
-$('start').addEventListener('click',()=>{
-  const config=configNow(), ghost=records.matching(config,$('ghost-select').value);
-  newRace(config,config.mode==='race'?ghost:null);
-});
+$('start').addEventListener('click',startSelectedRun);
+$('rules-open').addEventListener('click',openRaceRules);
+attachCarousel('course-carousel',changeCourse);
+attachCarousel('vehicle-carousel',changeVehicle);
 $('records').addEventListener('click',()=>showRecords(options.course));
 $('ghost-select').addEventListener('change',e=>{options.ghost=e.target.value;saveOptions();});
 $('races-tab').addEventListener('click',()=>setCourse(raceCourse));
 $('training-tab').addEventListener('click',()=>setCourse(trainingCourse));
 $('damage-tab').addEventListener('click',()=>setCourse(damageCourse));
 $('prev-course').addEventListener('click',()=>changeCourse(-1));$('next-course').addEventListener('click',()=>changeCourse(1));
-$('prev-vehicle').addEventListener('click',()=>{options.type=mod(options.type-1,4);renderSetup();});
-$('next-vehicle').addEventListener('click',()=>{options.type=mod(options.type+1,4);renderSetup();});
+$('prev-vehicle').addEventListener('click',()=>changeVehicle(-1));
+$('next-vehicle').addEventListener('click',()=>changeVehicle(1));
 onSegment('event-select',value=>{options.mode=value;});
 onSegment('drag-select',value=>{options.drag=value;});
-onSegment('damage-select',value=>{options.damage=value;if(value==='off') options.mode='race';});
+onSegment('damage-select',value=>{options.damage=value;if(value==='off'&&options.mode==='damage') options.mode='race';});
 $('tuning-open').addEventListener('click',openTuning);
 $('less-laps').addEventListener('click',()=>applyLap(-1));
 $('more-laps').addEventListener('click',()=>applyLap(1));
@@ -3623,11 +4027,16 @@ $('replay-toggle').addEventListener('click',()=>{
 $('seek').addEventListener('input',e=>{
   if(run?.replay) {run.replayPlaying=false;seekReplay(run,Number(e.target.value)/1000);}
 });
-$('close-modal').addEventListener('click',()=>{if(run?.finished) exitGame();else closeModal();});
+$('close-modal').addEventListener('click',dismissModal);
+$('modal').addEventListener('click',e=>{
+  if(e.target===$('modal')&&['rules','settings','tuning','records'].includes(modalType)) dismissModal();
+});
 window.addEventListener('keydown',e=>{
+  if(!$('modal').hidden&&e.key==='Tab') {trapModalFocus(e);return;}
   if(e.key==='Escape') {
-    if(!$('modal').hidden) {if(run?.finished) exitGame();else closeModal();}
+    if(!$('modal').hidden) dismissModal();
     else if(run) {if(run.finished) run.showResult?.();else if(run.paused) resumeGame();else pauseGame();}
+    else if(!$('creator').hidden) closeCreator();
   }
 });
 const windowChanged=()=>{if(run&&!run.finished) placeStage(run);};
@@ -3641,7 +4050,7 @@ let lastTick=performance.now();
 function animate(now) {
   const duration=clamp((now-lastTick)/1000,0,.23);lastTick=now;
   if(run) {
-    const steps=Math.max(1,Math.ceil(duration/.0125)), dt=duration/steps;
+    const steps=Math.max(1,Math.ceil(duration/.0125)),dt=duration/steps,priorDistance=run.totalDistance;
     if(dt>0&&!run.paused&&!run.finished&&$('rotation').hidden) {
       for(let i=0;i<steps;i++) {
         if(run.replay) tickReplay(run,dt);else tickRace(run,dt);
@@ -3650,8 +4059,8 @@ function animate(now) {
     if(!$('stage').hidden) drawScene(run);
     updateHud();
     const playing=run.started&&!run.paused&&!run.finished&&$('rotation').hidden&&(!run.replay||run.replayPlaying);
-    audio.tick(playing,timedIntensity(run),run.car.speed,run.config.type,
-      run.pointer!=null||run.car.speed>17);
+    const engine=updateDriveAudio(run,duration,run.totalDistance-priorDistance);
+    audio.tick(playing,timedIntensity(run),engine.speed,run.config.type,engine.engaged);
   } else audio.tick(false,false,0,0,false);
   requestAnimationFrame(animate);
 }
