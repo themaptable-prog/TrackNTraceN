@@ -53,6 +53,9 @@
 .prop-tray{display:flex;gap:5px;overflow:auto;padding:4px;background:#142a2a;border-radius:7px}.prop-tray button{min-width:max-content;touch-action:none}@media(prefers-reduced-motion:no-preference){.prop-tray{animation:tray-in .16s ease-out}@keyframes tray-in{from{transform:translateY(-8px);opacity:.4}to{transform:translateY(0);opacity:1}}}.prop-tray button[aria-pressed=true]{background:#d7ec9b;color:#19302b}
 #courses{max-height:min(31vh,270px);overflow:auto;padding:1px}
 @media(max-width:670px){.editor-layout{grid-template-columns:1fr}.editor-tools{margin-bottom:8px}.wordmark{font-size:clamp(22px,6vw,40px)}.mast-actions{gap:4px}.mast-actions .icon{min-width:34px}.mast-actions .tool-button{font-size:10px;padding:4px}}
+.tabs{flex-wrap:wrap;gap:2px clamp(8px,2vw,16px)}
+.hud-run-info{display:flex;gap:4px;flex-wrap:wrap}
+#score-hud{color:var(--green)}#chain-hud{color:var(--orange-hot)}
 </style>
 </head>
 <body>
@@ -67,7 +70,7 @@
     <div class="course-hero"><canvas id="preview" width="960" height="528" aria-hidden="true"></canvas>
      <div class="course-heading"><div><p id="course-kind"></p><h2 id="course-name"></h2></div><div class="pager"><button id="prev-course" aria-label="Previous course">‹</button><button id="next-course" aria-label="Next course">›</button></div></div>
     </div>
-    <div class="tabbar"><div class="tabs"><button id="races-tab" aria-pressed="true">Race courses</button><button id="training-tab" aria-pressed="false">Training grounds</button></div></div>
+    <div class="tabbar"><div class="tabs"><button id="races-tab" aria-pressed="true">Race courses</button><button id="damage-tab" aria-pressed="false">Damage events</button><button id="training-tab" aria-pressed="false">Training grounds</button></div></div>
     <div id="courses" class="course-list"></div>
    </section>
    <section class="garage" aria-label="Vehicle and race setup">
@@ -141,7 +144,7 @@
  <div id="stage">
   <canvas id="track" width="1800" height="990" aria-label="Race course"></canvas>
   <div class="hud">
-   <div class="left-hud"><div class="hud-pill" id="lap-hud"></div><div id="splits" class="live-splits"></div></div>
+   <div class="left-hud"><div class="hud-run-info"><div class="hud-pill" id="lap-hud"></div><div class="hud-pill" id="score-hud" hidden></div><div class="hud-pill" id="chain-hud" hidden></div></div><div id="splits" class="live-splits"></div></div>
    <div class="buttons"><div class="timers"><div class="hud-pill" id="time-hud"></div></div><button class="icon" id="pause" aria-label="Pause">Ⅱ</button></div>
   </div>
  </div>
@@ -354,7 +357,8 @@ function prepare(courseIndex) {
 }
 function prepareDefinition(definition,index=0,scale=1.35) {
   const course={...definition,index,colors:landscapes[definition.theme]};
-  if(!course.training||course.park) {
+  course.openYard=!!(course.training||course.arena);
+  if(!course.openYard||course.park) {
     if(course.park) {
       course.practice=true;course.points=parkLoop;course.width=31;course.runoff=[];course.bridges=true;
       course.props=[{type:'tyres',x:330,y:375,a:0},{type:'barrier',x:494,y:270,a:-.45}];
@@ -368,6 +372,14 @@ function prepareDefinition(definition,index=0,scale=1.35) {
       const p=course.samples[Math.round(course.samples.length*t)];
       return {x:p.x+6*p.nx,y:p.y+6*p.ny,rx:r,ry:r*.63,a:Math.atan2(p.ty,p.tx)+.78,type:'water'};
     });
+  }
+  if(course.damageEvent) {
+    const clear=[];
+    for(const prop of course.props) {
+      if(clear.some(other=>Math.hypot(prop.x-other.x,prop.y-other.y)<propTypes[prop.type].r+propTypes[other.type].r+2)) continue;
+      clear.push(prop);
+    }
+    course.props=clear;
   }
   const river=riverSpec(course);
   if(river) course.riverData={width:river.width,points:curveRiver(river.points)};
@@ -410,6 +422,7 @@ function onPatch(x,y,patch) {
   return ((dx*Math.cos(a)+dy*Math.sin(a))/patch.rx)**2+((-dx*Math.sin(a)+dy*Math.cos(a))/patch.ry)**2<1;
 }
 function surfaceAt(course,x,y,index) {
+  if(course.arena) return course.patches?.findLast(p=>onPatch(x,y,p))?.type||'asphalt';
   if (course.training) {
     if (course.park) {
       const b=practiceCurb;
@@ -509,14 +522,15 @@ function renderMap(ctx,course) {
     polygon(ctx,[[0,y],[W,y-133],[W,y-114],[0,y+19]],i%3?c.grass:c.turf);
   }
   if(course.riverData) paintStream(ctx,course,false);
-  if(course.training) {
+  if(course.openYard) {
     rounded(ctx,yard.left-11,yard.top-8,yard.right-yard.left+22,yard.bottom-yard.top+22,23,c.shade);
     rounded(ctx,yard.left-7,yard.top-7,yard.right-yard.left+14,yard.bottom-yard.top+14,18,c.rail);
-    ctx.fillStyle='#646e66';ctx.fillRect(yard.left,yard.top,yard.right-yard.left,yard.bottom-yard.top);
+    ctx.fillStyle=course.floor||'#646e66';ctx.fillRect(yard.left,yard.top,yard.right-yard.left,yard.bottom-yard.top);
     for(let i=0;i<42;i++) {
       const x=yard.left+25+rand()*(yard.right-yard.left-50), y=yard.top+18+rand()*(yard.bottom-yard.top-36);
       oval(ctx,x,y,5+rand()*13,1+rand()*2,'#9fa59553');
     }
+    if(course.arena) paintArenaFloor(ctx,course);
     if(course.park) {
       for(const patch of parkPatches) {
         if(patch.type==='water') paintPuddle(ctx,patch);
@@ -651,7 +665,6 @@ for(const [i,[id,name,theme,width,points,bridges]] of additions.entries()) {
     props:i%2===0?[{type:'tyres',at:.13,side:1},{type:'barrier',at:.76,side:1}]:
       [{type:'barrier',at:.46,side:-1},{type:'tyres',at:.125,side:1}]});
 }
-const builtInCount=courses.length;
 const parkLoop=[[644,178],[758,172],[831,253],[883,312],[956,393],[1022,422],[1061,365],[1050,256],[1011,207],[955,229],[883,312],[799,392],[716,419],[647,369],[617,269]];
 const editorThemes={
   speedway:{name:'Speedway',surface:'asphalt'},copper:{name:'Copper canyon',surface:'dirt'},
@@ -659,11 +672,19 @@ const editorThemes={
   foundry:{name:'Industrial',surface:'asphalt'}
 };
 const propTypes={
-  tyres:{name:'Tyre stack',r:13,mass:.82,cap:151,bounces:2},
-  barrier:{name:'Wooden barrier',r:18,mass:1,cap:118,bounces:1}
+  tyres:{name:'Tyre stack',r:13,mass:.82,cap:195,bounces:2,drag:1.6},
+  barrier:{name:'Wooden barrier',r:18,mass:1.15,cap:169,bounces:1,drag:1.9},
+  cone:{name:'Traffic cone',r:9,mass:.34,cap:330,bounces:2,drag:1.7},
+  drum:{name:'Traffic drum',r:15,mass:1.34,cap:183,bounces:1,drag:1.6},
+  crate:{name:'Pit crate',r:15,mass:1.47,cap:162,bounces:1,drag:1.92},
+  wheel:{name:'Spare race wheel',r:12,mass:.68,cap:310,bounces:2,drag:1.21},
+  foam:{name:'Foam marker',r:13,mass:.49,cap:278,bounces:2,drag:1.51}
 };
-function courseOptions(training) {
-  return courses.map((course,index)=>({course,index})).filter(e=>!!e.course.training===training).map(e=>e.index);
+function courseOptions(category=false) {
+  return courses.flatMap((course,index)=>{
+    const matches=category==='damage'?course.damageEvent:category?course.training:!course.training&&!course.damageEvent;
+    return matches?[index]:[];
+  });
 }
 function riverSpec(course) {
   if(!course.river) return null;
@@ -714,6 +735,13 @@ function setRouteData(course) {
   course.props=(course.props||[]).map(o=>{
     if(o.at==null) return {...o};
     const side=o.side===1?1:0,start=Math.floor(o.at*n);
+    if(o.lane!=null) {
+      const p=course.samples[start],radius=propTypes[o.type].r;
+      const clearance=Math.max(0,course.widthAt[start]-radius-4);
+      const lateral=clearance*o.lane;
+      return {...o,x:p.x+p.nx*lateral,y:p.y+p.ny*lateral,a:Math.atan2(p.ty,p.tx)+(o.a||0),
+        routeIndex:start,level:routeLevelAt(course,start)};
+    }
     let i=start;
     for(let t=0;t<n*.125;t++) {
       const j=mod(start+t,n);
@@ -1257,6 +1285,91 @@ for(const [i,layout] of raceLayouts.entries()) {
 }
 courses[9]={...courses[9],physicalElevation:true,
   elevation:parkLoop.map((_,i)=>i===12?'down':i===14?'up':'auto')};
+const pitProps=['cone','wheel','foam','drum','crate','tyres','barrier'];
+
+function circuitObjects(stations,types,phase=0) {
+  const props=[];
+  for(let i=0;i<stations;i++) {
+    const at=.055+i*.90/stations, side=i%2===0?-1:1;
+    props.push({type:types[(i+phase)%types.length],at,lane:side*.78,a:side*.35});
+    props.push({type:types[(i+2+phase)%types.length],at:at+.011,lane:side*.35,a:-side*.42});
+    if(i%3!==1) props.push({type:types[(i+4+phase)%types.length],at:at+.024,lane:i%2===0?.20:-.17,a:.28});
+  }
+  return props;
+}
+function objectRow(x,y,dx,dy,types) {
+  return types.map((type,i)=>({type,x:x+dx*i,y:y+dy*i,a:(i%3-1)*.21,level:0}));
+}
+function repeatedProps(count,phase) {
+  return Array.from({length:count},(_,i)=>pitProps[(phase+i)%pitProps.length]);
+}
+
+courses.push(
+  {
+    id:'pit-lane-pileup',name:'Pit Lane Pile-Up',kind:'Obstacle circuit',theme:'foundry',
+    width:58,physicalElevation:true,damageEvent:true,
+    points:[[211,246],[257,144],[433,118],[665,119],[910,123],[1023,166],[1071,268],[1042,413],
+      [957,518],[806,548],[700,493],[607,449],[515,482],[429,540],[316,550],[202,479],[158,363]],
+    runoff:[[.105,.21,1,'grass'],[.49,.61,-1,'dirt'],[.74,.84,1,'grass']],
+    props:circuitObjects(15,pitProps)
+  },
+  {
+    id:'runoff-rumble',name:'Runoff Rumble',kind:'Obstacle circuit',theme:'coast',
+    width:52,physicalElevation:true,damageEvent:true,dirt:true,
+    points:[[220,345],[147,249],[171,156],[339,117],[547,121],[681,173],[663,274],[746,332],
+      [884,285],[946,176],[1044,178],[1094,292],[1072,424],[954,497],[791,471],[681,505],
+      [609,555],[453,555],[331,523],[281,419]],
+    runoff:[[.06,.155,-1,'grass'],[.30,.40,1,'dirt'],[.63,.73,-1,'grass'],[.82,.91,1,'grass']],
+    props:circuitObjects(17,['foam','drum','wheel','crate','cone','tyres','barrier'],3)
+  },
+  {
+    id:'paddock-pinball',name:'Paddock Pinball',kind:'Open damage arena',theme:'foundry',damageEvent:true,arena:60,
+    floor:'#5b6966',parking:[150,255,365,475],
+    props:[
+      ...objectRow(325,165,58,0,repeatedProps(11,0)),
+      ...objectRow(375,251,55,0,repeatedProps(12,3)),
+      ...objectRow(336,330,56,0,['wheel','cone','foam','cone','tyres','cone','drum','foam','cone','crate','wheel','barrier']),
+      ...objectRow(370,413,62,0,repeatedProps(11,1)),
+      ...objectRow(320,502,70,0,repeatedProps(10,5))
+    ]
+  },
+  {
+    id:'scrapyard-shuffle',name:'Scrapyard Shuffle',kind:'Open damage arena',theme:'copper',damageEvent:true,arena:60,
+    floor:'#a38263',
+    patches:[
+      {x:817,y:173,rx:206,ry:78,type:'dirt',fill:'#c2a078'},
+      {x:938,y:468,rx:120,ry:77,type:'grass',fill:'#90936b'},
+      {x:440,y:452,rx:177,ry:90,type:'dirt',fill:'#c39d75'}
+    ],
+    props:[
+      ...objectRow(343,126,64,24,repeatedProps(10,3)),
+      ...objectRow(574,130,45,44,repeatedProps(9,4)),
+      ...objectRow(1013,209,-61,10,repeatedProps(8,2)),
+      ...objectRow(322,323,63,16,['wheel','cone','cone','foam','cone','crate','wheel','foam','drum','tyres']),
+      ...objectRow(378,507,61,-15,repeatedProps(10,5)),
+      ...objectRow(427,248,43,45,repeatedProps(5,0)),
+      ...objectRow(982,508,0,-56,repeatedProps(5,5))
+    ]
+  }
+);
+const builtInCount=courses.length;
+function paintArenaFloor(ctx,course) {
+  for(const p of course.patches||[]) {
+    oval(ctx,p.x,p.y,p.rx,p.ry,p.fill);
+    oval(ctx,p.x,p.y,p.rx*.89,p.ry*.81,hex(p.fill,.07));
+  }
+  ctx.save();
+  ctx.strokeStyle='#ddd6a364';ctx.lineWidth=2;
+  ctx.setLineDash([13,14]);
+  for(const y of course.parking||[]) {
+    ctx.beginPath();ctx.moveTo(276,y);ctx.lineTo(1051,y);ctx.stroke();
+  }
+  ctx.setLineDash([]);
+  if(course.parking) for(let x=305;x<1030;x+=58) {
+    ctx.fillStyle='#e0ddb053';ctx.fillRect(x,113,2,26);ctx.fillRect(x,527,2,26);
+  }
+  ctx.restore();
+}
 const zeroDamage = () => Array(13).fill(0);
 const sectionStage = damage => damage>=100 ? 4 : damage>=67 ? 3 : damage>=36 ? 2 : damage>0 ? 1 : 0;
 function packDamage(damage) {
@@ -1493,8 +1606,8 @@ class GameAudio {
 const audio = new GameAudio();
 const originalDamageSteps=[0,8,16,25,40,55,75,100];
 const damageControls={
-  contact:['Base contact',2],normal:['Speed into surface',4],overlap:['Overlap',1],
-  adjacent:['Adjacent sections',5],core:['Centre section',5],curb:['Curb wear',4],props:['Movable props',2]
+  contact:['Base contact',150],normal:['Speed into surface',200],overlap:['Overlap',8],
+  adjacent:['Adjacent sections',55],core:['Centre section',55],curb:['Curb wear',40],props:['Movable props',16]
 };
 const timeControls={
   rearm:['Contact re-arm',100,40,500,10],pinned:['Wall assist delay',300,100,800,25],
@@ -1516,7 +1629,7 @@ const timingSteps=Object.fromEntries(Object.entries(timeControls).map(([key,[,,m
   key,doubleSteps(Array.from({length:(max-min)/step+1},(_,i)=>min+i*step),0)
 ]));
 const defaultTuning=Object.fromEntries([
-  ...Object.entries(damageControls).map(([key,[,index]])=>[key,originalDamageSteps[index]]),
+  ...Object.entries(damageControls).map(([key,[,value]])=>[key,value]),
   ...Object.entries(timeControls).map(([key,[,value]])=>[key,value])
 ]);
 let tuning={...defaultTuning};
@@ -1594,7 +1707,7 @@ function applyTuningText(text) {
   const s=data.setup;
   if(s) {
     const course=courses.findIndex(c=>c.id===s.course);
-    if(course>=0) {options.course=course;training=!!courses[course].training;if(training) trainingCourse=course;else raceCourse=course;}
+    if(course>=0) selectCourseState(course);
     if(Number.isInteger(s.vehicle)&&vehicles[s.vehicle]) options.type=s.vehicle;
     if(Array.isArray(s.colors)&&s.colors.length===vehicles.length) {
       options.colors=s.colors.map((v,i)=>vehicles[i].palette[v]?Number(v):0);
@@ -1629,18 +1742,44 @@ function exchangeSettings() {
   });
 }
 function propSetup(course) {
-  return (course.props||[]).map((o,i)=>({...o,id:'prop-'+i,vx:0,vy:0,spin:0,bounces:0,initialX:o.x,initialY:o.y}));
+  return (course.props||[]).map((o,i)=>({...o,id:'prop-'+i,vx:0,vy:0,spin:0,bounces:0,shot:null}));
 }
 function drawProp(ctx,prop) {
   const {x,y,a,type}=prop;
   ctx.save();ctx.translate(x,y);ctx.rotate(a||0);
-  if(type==='tyres') {
+  if(type==='tyres'||type==='wheel') {
     oval(ctx,3,4,14,11,'#35433c6b');
     oval(ctx,0,2,13,10,'#42534f');
     oval(ctx,0,0,12.2,10,'#5a6a62');
     oval(ctx,0,-2,10.7,8.9,'#394f4b');
-    oval(ctx,0,-2,5.5,4.7,'#819788');
+    oval(ctx,0,-2,5.5,4.7,type==='wheel'?'#c2cbb6':'#819788');
+    if(type==='wheel') {
+      for(let i=0;i<5;i++) oval(ctx,Math.cos(i*TAU/5)*3,-2+Math.sin(i*TAU/5)*2.8,.95,.78,'#61726c');
+      oval(ctx,0,-2,1.1,1.1,'#eddb9c');
+    }
     oval(ctx,-2,-7,5,1.25,'#7d9384');
+  } else if(type==='cone') {
+    rounded(ctx,-8,-7,17,15,3,'#3b514c7a');
+    rounded(ctx,-9,-8,17,15,3,'#ba704a');
+    oval(ctx,0,0,6.2,5.7,'#ed8354');oval(ctx,-.6,-1,4.3,3.9,'#fae0af');
+    oval(ctx,-1,-2,2.8,2.6,'#ed8354');
+  } else if(type==='drum') {
+    oval(ctx,3,4,15,13,'#3b514c78');
+    oval(ctx,0,2,13.5,12,'#b87242');
+    oval(ctx,0,-1,13,11,'#edab54');
+    oval(ctx,0,-1,10,8.1,'#f1d4a0');
+    oval(ctx,0,-1,7.6,5.8,'#e69b46');oval(ctx,3,-2,2,1.5,'#a77049');
+  } else if(type==='crate') {
+    rounded(ctx,-12,-10,29,25,3,'#38464378');
+    rounded(ctx,-14,-13,28,25,3,'#a58058');
+    rounded(ctx,-11,-10,22,19,2,'#d4b382');
+    polygon(ctx,[[-11,-10],[-8,-10],[11,5],[11,9]],'#9f7e57');
+    for(const x of [-12,9]) for(const y of [-10,7]) rounded(ctx,x,y,3,3,1,'#e8c698');
+  } else if(type==='foam') {
+    rounded(ctx,-10,-10,24,22,6,'#3d625c6a');
+    rounded(ctx,-12,-12,24,21,6,'#7aa9a2');
+    rounded(ctx,-11,-12,22,16,5,'#b0d0b6');
+    rounded(ctx,-7,-7,14,3,1,'#d8e3bb');rounded(ctx,-7,-2,11,3,1,'#87a395');
   } else {
     rounded(ctx,-17,-4,36,11,3,'#3e514b5c');
     rounded(ctx,-15,-8,5,16,1.6,'#b7875c');
@@ -1649,6 +1788,31 @@ function drawProp(ctx,prop) {
     for(let i=-15;i<16;i+=11) polygon(ctx,[[i,-4],[i+5,-4],[i+1,3],[i-4,3]],'#ca7350');
   }
   ctx.restore();
+}
+const chainBonuses=[150,105,70,42,22,10,4];
+
+function givePropShot(prop,shot) {
+  shot.visited.add(prop.id);
+  prop.shot=shot;
+  prop.shotX=prop.x;prop.shotY=prop.y;prop.farthest=0;
+}
+function scorePropTravel(game,prop) {
+  if(game.config.mode!=='damage'||!prop.shot) return;
+  const distance=Math.hypot(prop.x-prop.shotX,prop.y-prop.shotY);
+  if(distance<=prop.farthest) return;
+  game.objectScore+=(distance-prop.farthest)*6;
+  prop.farthest=distance;
+}
+function awardChain(game,source,target,closing) {
+  const shot=source.shot;
+  if(!shot||closing<18||shot.visited.has(target.id)||Math.hypot(target.vx,target.vy)<12) return;
+  givePropShot(target,shot);
+  const bonus=chainBonuses[shot.links]||0;
+  shot.links++;
+  if(game.config.mode!=='damage') return;
+  game.chainScore+=bonus;
+  game.chainCount=Math.max(game.chainCount,shot.links);
+  game.lastChain={links:shot.links,bonus,until:game.elapsed+1.75};
 }
 function touchProp(game,x,y,angle,velocity,dx,dy) {
   for(const prop of game.props) {
@@ -1661,8 +1825,12 @@ function touchProp(game,x,y,angle,velocity,dx,dy) {
     const inward=dx*nx+dy*ny;
     const fresh=contactStart(game,{id:prop.id,nx,ny,over:depth});
     if(inward>.08&&fresh) {
-      const force=clamp(velocity*inward,0,470), kick=Math.min(type.cap,force*.57/type.mass);
-      prop.vx=nx*kick;prop.vy=ny*kick;prop.spin=(dx*ny-dy*nx)*kick*.023;prop.bounces=0;
+      const force=clamp(velocity*inward,0,470);
+      const kick=Math.min(type.cap,force*.77/type.mass);
+      if(kick>=6) {
+        prop.vx=nx*kick;prop.vy=ny*kick;prop.spin=(dx*ny-dy*nx)*kick*.023;prop.bounces=0;
+        givePropShot(prop,{links:0,visited:new Set()});
+      }
       const amount=damageMode(game.config)==='off'?0:(1.4+force*.016)*damageFactor(game,'props')*game.spec.resistance;
       const section=hitSection(angle,nx,ny);
       const actual=applySectionDamage(game.car,section,amount);
@@ -1681,7 +1849,7 @@ function touchProp(game,x,y,angle,velocity,dx,dy) {
 }
 function propBoundary(game,prop,x,y) {
   const course=game.course,r=propTypes[prop.type].r;
-  if(course.training) {
+  if(course.openYard) {
     if(x<yard.left+r||x>yard.right-r||y<yard.top+r||y>yard.bottom-r) return true;
     return course.park&&obstacles.some(o=>{
       const c=Math.cos(o.a),s=Math.sin(o.a),dx=x-o.x,dy=y-o.y;
@@ -1694,23 +1862,73 @@ function propBoundary(game,prop,x,y) {
   prop.routeIndex=p.index;
   return false;
 }
+function overlappingProp(game,prop,x,y) {
+  const r=propTypes[prop.type].r;
+  return game.props.find(o=>o!==prop&&(o.level||0)===(prop.level||0)&&
+    (o.x-x)**2+(o.y-y)**2<(r+propTypes[o.type].r)**2);
+}
 function nudgeProp(game,prop,dx,dy) {
-  const x=prop.x+dx,y=prop.y+dy, r=propTypes[prop.type].r;
-  if(propBoundary(game,prop,x,y) ||
-     game.props.some(o=>o!==prop&&Math.hypot(o.x-x,o.y-y)<(r+propTypes[o.type].r)*.82)) return false;
+  const x=prop.x+dx,y=prop.y+dy;
+  if(overlappingProp(game,prop,x,y)||propBoundary(game,prop,x,y)) return false;
   prop.x=x;prop.y=y;
+  scorePropTravel(game,prop);
   return true;
+}
+function capPropVelocity(prop) {
+  const speed=Math.hypot(prop.vx,prop.vy),cap=propTypes[prop.type].cap;
+  if(speed>cap) {prop.vx*=cap/speed;prop.vy*=cap/speed;}
+}
+function collideProps(game,source,target,dx,dy) {
+  const gap=Math.hypot(target.x-source.x,target.y-source.y);
+  const moved=Math.hypot(dx,dy);
+  const nx=gap>.001?(target.x-source.x)/gap:dx/moved;
+  const ny=gap>.001?(target.y-source.y)/gap:dy/moved;
+  const closing=(source.vx-target.vx)*nx+(source.vy-target.vy)*ny;
+  if(closing<.1) return;
+  const a=propTypes[source.type],b=propTypes[target.type];
+  const contactGap=Math.max(0,gap-a.r-b.r);
+  const aligned=(dx*nx+dy*ny)/moved;
+  if(contactGap>0&&aligned>.1) {
+    const reach=Math.min(.98,contactGap/(moved*aligned));
+    nudgeProp(game,source,dx*reach,dy*reach);
+  }
+  const impulse=1.47*closing/(1/a.mass+1/b.mass);
+  const fromSource=source.vx*nx+source.vy*ny;
+  const fromTarget=-(target.vx*nx+target.vy*ny);
+  source.vx-=nx*impulse/a.mass;source.vy-=ny*impulse/a.mass;
+  target.vx+=nx*impulse/b.mass;target.vy+=ny*impulse/b.mass;
+  source.spin+=.28;target.spin-=(source.vx*ny-source.vy*nx)*.012;
+  capPropVelocity(source);capPropVelocity(target);
+  if(fromSource>=fromTarget) {
+    if(closing>=18) target.bounces=0;
+    awardChain(game,source,target,closing);
+  } else {
+    if(closing>=18) source.bounces=0;
+    awardChain(game,target,source,closing);
+  }
+  if(closing>52&&game.elapsed-(game.propSoundAt??-1)>.065) {
+    const strength=clamp(closing/280,.25,.68);
+    const hit={t:Math.round(game.elapsed*1000),x:target.x-nx*b.r,y:target.y-ny*b.r,
+      amount:0,strength,index:target.routeIndex??game.car.index,nx,ny,prop:true};
+    game.impacts.push(hit);
+    audio.effect('prop',strength);
+    spark(game,hit.x,hit.y,'impact',strength,Math.atan2(ny,nx));
+    game.propSoundAt=game.elapsed;
+  }
 }
 function tickProps(game,dt) {
   for(const prop of game.props) {
     if(Math.hypot(prop.vx,prop.vy)<4) {prop.vx=prop.vy=prop.spin=0;continue;}
-    const type=propTypes[prop.type];
-    if(!nudgeProp(game,prop,prop.vx*dt,prop.vy*dt)) {
+    const type=propTypes[prop.type], dx=prop.vx*dt,dy=prop.vy*dt;
+    const other=overlappingProp(game,prop,prop.x+dx,prop.y+dy);
+    if(other) collideProps(game,prop,other,dx,dy);
+    else if(!nudgeProp(game,prop,dx,dy)) {
       prop.bounces++;
       if(prop.bounces>type.bounces) {prop.vx=prop.vy=prop.spin=0;continue;}
       prop.vx*=-.32;prop.vy*=-.32;prop.spin*=-.32;
     }
-    prop.a+=prop.spin*dt;prop.vx*=Math.exp(-2.55*dt);prop.vy*=Math.exp(-2.55*dt);prop.spin*=Math.exp(-3.2*dt);
+    const drag=type.drag*(game.course.damageEvent?.85:1);
+    prop.a+=prop.spin*dt;prop.vx*=Math.exp(-drag*dt);prop.vy*=Math.exp(-drag*dt);prop.spin*=Math.exp(-3.2*dt);
   }
 }
 function contactStart(game,wall) {
@@ -1754,7 +1972,7 @@ const mainCtx = $('track').getContext('2d', {alpha:false});
 
 function makeRun(config,ghost=null,recordedCourse=null) {
   const course=recordedCourse||prepare(config.course), spec=vehicles[config.type], color=spec.palette[config.color];
-  const origin=course.training ? {x:203,y:330,tx:1,ty:0} : course.samples[0];
+  const origin=course.openYard ? {x:203,y:330,tx:1,ty:0} : course.samples[0];
   const car={x:origin.x,y:origin.y,a:Math.atan2(origin.ty,origin.tx),speed:0,index:course.practice?practiceRoute(course,origin.x,origin.y,0):0,surface:'asphalt',damage:zeroDamage()};
   car.surface=surfaceAt(course,car.x,car.y,0);
   return {
@@ -1763,12 +1981,13 @@ function makeRun(config,ghost=null,recordedCourse=null) {
     started:false, elapsed:0, paused:false, finished:false, orientation:null, inspect:false,
     route:[], fingers:[], pointer:null, tip:null, totalDistance:0, trail:[], moving:false,
     wallTime:-5, bumpTime:-5, materialTime:-5, emissionTime:-5, boost:1,
-    hits:0, impacts:[], particles:[], frames:[], lastFrame:-10,
+    hits:0, objectScore:0, chainScore:0, chainCount:0, lastChain:null, impacts:[], particles:[], frames:[], lastFrame:-10,
     nextGate:1, splits:[], progress:0, touchWall:false, curbTime:-5, workTime:performance.now()
   };
 }
 function timedIntensity(game,car=game.car) {
   if(game.course.training) return false;
+  if(game.course.arena&&game.elapsed>=game.course.arena*.82) return true;
   if(game.config.mode==='damage') return car.damage.filter(value=>sectionStage(value)>=2).length>=7;
   if(game.config.laps===1) return game.progress>=game.course.length*.5;
   return game.splits.length>=game.config.laps-1;
@@ -1854,6 +2073,13 @@ function engineWear(game) {
 function damageScore(car) {
   return Math.round(car.damage.reduce((score,value) => score+(value>0 ? 18+sectionStage(value)*7+value*.11 : 0),0));
 }
+function damagePoints(game) {
+  const [movement,chain,body]=game.car.score||[
+    Math.round(game.objectScore),game.chainScore,
+    Math.round(damageScore(game.car)*(game.course.damageEvent?.35:1))
+  ];
+  return {movement,chain,body,total:movement+chain+body};
+}
 function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
   const car=game.car,nx=wall.nx,ny=wall.ny;
   const inward=clamp((naturalX*nx+naturalY*ny)||0,0,1);
@@ -1925,7 +2151,7 @@ function curbWear(game) {
   if(damageMode(game.config)==='off' || game.elapsed-game.curbTime<.40 || game.car.speed<game.spec.max*.78) return;
   game.curbTime=game.elapsed;
   const car=game.car;
-  const p=game.course.training ? {d:car.y-practiceCurb.y,nx:0,ny:1} : project(game.course,car.x,car.y,car.index);
+  const p=game.course.openYard ? {d:car.y-practiceCurb.y,nx:0,ny:1} : project(game.course,car.x,car.y,car.index);
   const side=p.d>0?1:-1, affected=hitSection(car.a,p.nx*side,p.ny*side);
   const amount=clamp(car.speed/game.spec.max-.68,0,.78)*7.5*game.spec.resistance*damageFactor(game,'curb');
   car.damage[affected]=Math.min(100,car.damage[affected]+amount);
@@ -1941,6 +2167,10 @@ function saveFrame(game,force=false) {
   if(!force&&game.elapsed-game.lastFrame<.088) return;
   const car=game.car,t=Math.round(game.elapsed*1000);
   const frame=[t,Math.round(car.x*2),Math.round(car.y*2),Math.round(mod(car.a,TAU)*1000),car.index,packDamage(car.damage),game.props.map(o=>[Math.round(o.x*2),Math.round(o.y*2),Math.round(o.a*1000)])];
+  if(game.config.mode==='damage') {
+    const {movement,chain,body}=damagePoints(game);
+    frame.push([movement,chain,body]);
+  }
   if(game.frames.at(-1)?.[0]===t) game.frames[game.frames.length-1]=frame;
   else game.frames.push(frame);
   game.lastFrame=game.elapsed;
@@ -1950,13 +2180,13 @@ function addTrail(game,force=false) {
   if(!force && last && game.totalDistance-last.distance<4.7) return;
   const mark={x:car.x,y:car.y,a:car.a,surface:car.surface,distance:game.totalDistance,index:car.index};
   if(!last || dist(mark,last)>.5) game.trail.push(mark);
-  const length=game.course.training?1650:game.course.length*.92;
+  const length=game.course.openYard?1650:game.course.length*.92;
   let trim=0;
   while(game.trail[trim] && game.totalDistance-game.trail[trim].distance>length+9) trim++;
   if(trim) game.trail.splice(0,trim);
 }
 function checkLaps(game,s) {
-  if(game.course.training || game.finished) return;
+  if(game.course.openYard||game.finished) return;
   game.progress=s;
   const course=game.course, gateCount=12;
   while(s+1e-6>=game.nextGate*course.length/gateCount) {
@@ -1981,7 +2211,7 @@ function sweep(game,x,y,angle,velocity) {
     if(recovery&&game.elapsed<recovery.until) {
       const into=dx*recovery.nx+dy*recovery.ny;
       if(into>.05) {
-        const nearby=game.course.training?solveYard(game,car.x,car.y,angle):solveRoad(game,car.x,car.y,angle,false);
+        const nearby=game.course.openYard?solveYard(game,car.x,car.y,angle):solveRoad(game,car.x,car.y,angle,false);
         if(nearby.wall?.id===recovery.id) {
           steeredX=dx-recovery.nx*into*.88+recovery.tx*.23;
           steeredY=dy-recovery.ny*into*.88+recovery.ty*.23;
@@ -1991,7 +2221,7 @@ function sweep(game,x,y,angle,velocity) {
     const qx=car.x+steeredX*step,qy=car.y+steeredY*step;
     const prop=touchProp(game,qx,qy,angle,velocity,steeredX,steeredY);
     if(game.finished) break;
-    const q=game.course.training ? solveYard(game,prop.x,prop.y,angle) : solveRoad(game,prop.x,prop.y,angle);
+    const q=game.course.openYard ? solveYard(game,prop.x,prop.y,angle) : solveRoad(game,prop.x,prop.y,angle);
     const moved=Math.hypot(q.x-car.x,q.y-car.y);
     car.x=q.x;car.y=q.y;car.index=game.course.practice?practiceRoute(game.course,q.x,q.y,car.index):q.index;car.a=angle;
     total+=moved;game.totalDistance+=moved;
@@ -2153,7 +2383,7 @@ function avoidPinnedWall(game,wall) {
     const limit=Math.min(route.length-2,26);
     let skip=0;
     for(let i=0;i<limit;i++) {
-      const p=route[i], candidate=game.course.training?solveYard(game,p.x,p.y,car.a):solveRoad(game,p.x,p.y,car.a,false);
+      const p=route[i], candidate=game.course.openYard?solveYard(game,p.x,p.y,car.a):solveRoad(game,p.x,p.y,car.a,false);
       if(candidate.wall?.id!==wall.id||candidate.wall.over<0) break;
       skip++;
     }
@@ -2168,6 +2398,8 @@ function avoidPinnedWall(game,wall) {
 }
 function tickRace(game,dt) {
   if(!game.started||game.finished||game.paused) return;
+  if(game.course.arena) dt=Math.min(dt,game.course.arena-game.elapsed);
+  if(dt<=0) {if(game.course.arena) finish(game,'Finished');return;}
   game.elapsed+=dt;
   const car=game.car, before=car.surface;
   game.wallThisStep=null;
@@ -2179,7 +2411,7 @@ function tickRace(game,dt) {
     moved=sweep(game,car.x+dx*car.speed*dt,car.y+dy*car.speed*dt,Math.atan2(dy,dx),car.speed);
   } else moved=game.config.drag==='trace'?traceMove(game,dt):freeMove(game,dt);
   if(game.finished) return;
-  const proximity=game.course.training?solveYard(game,car.x,car.y,car.a):solveRoad(game,car.x,car.y,car.a,false);
+  const proximity=game.course.openYard?solveYard(game,car.x,car.y,car.a):solveRoad(game,car.x,car.y,car.a,false);
   if(proximity.wall&&game.elapsed-(game.contacts.get(proximity.wall.id)??-10)<game.rules.rearm/1000) contactStart(game,proximity.wall);
   const speed=moved/Math.max(dt,.001);
   const previous=game.soundSpeed||0;
@@ -2215,7 +2447,8 @@ function tickRace(game,dt) {
     game.materialTime=game.elapsed;
   }
   tickProps(game,dt);engineWear(game);updateEffects(game,dt);
-  if(!game.course.training) saveFrame(game);
+  if(game.course.arena&&game.elapsed>=game.course.arena) finish(game,'Finished');
+  else if(!game.course.training) saveFrame(game);
 }
 function poseAt(record,ms) {
   const frames=record.frames;
@@ -2227,14 +2460,14 @@ function poseAt(record,ms) {
   const a=frames[lo], b=frames[lo+1]||a, t=b[0]===a[0]?0:clamp((ms-a[0])/(b[0]-a[0]),0,1);
   return {x:mix(a[1],b[1],t)/2,y:mix(a[2],b[2],t)/2,a:a[3]/1000+deltaAngle(a[3]/1000,b[3]/1000)*t,
     speed:b===a?0:Math.hypot(a[1]-b[1],a[2]-b[2])*500/(b[0]-a[0]),
-    index:t<.5?a[4]:b[4],damage:unpackDamage(a[5]),props:a[6]?.map((p,i)=>{
+    index:t<.5?a[4]:b[4],damage:unpackDamage(a[5]),score:a[7],props:a[6]?.map((p,i)=>{
       const next=b[6]?.[i]||p;return {x:mix(p[0],next[0],t)/2,y:mix(p[1],next[1],t)/2,a:mix(p[2],next[2],t)/1000};
     })};
 }
 function rebuildReplayTrail(game,time) {
   game.trail=[];game.totalDistance=0;game.particles=[];
   const frames=game.replay.frames;
-  const goal=time*1000, length=game.course.length*.92;
+  const goal=time*1000, length=game.course.openYard?1650:game.course.length*.92;
   let i=frames.findIndex(p=>p[0]>=goal);
   if(i<0) i=frames.length-1;
   let lengthBack=0,start=i;
@@ -2262,7 +2495,7 @@ function tickReplay(game,dt) {
   game.car=poseAt(record,game.elapsed*1000);
   game.car.surface=surfaceAt(game.course,game.car.x,game.car.y,game.car.index);
   game.splits=record.splits.filter((_,i)=>record.splits.slice(0,i+1).reduce((a,b)=>a+b,0)<=game.elapsed+.001);
-  game.progress=game.car.index*game.course.step-game.splits.length*game.course.length;
+  if(!game.course.openYard) game.progress=game.car.index*game.course.step-game.splits.length*game.course.length;
   game.totalDistance+=dist(previous,game.car);
   addTrail(game);
   for(const hit of record.impacts) {
@@ -2280,7 +2513,7 @@ function tickReplay(game,dt) {
 }
 function paintTrail(ctx,game,accept=null) {
   const priorAlpha=ctx.globalAlpha;
-  const points=game.trail, length=game.course.training?1650:game.course.length*.92;
+  const points=game.trail, length=game.course.openYard?1650:game.course.length*.92;
   if(points.length<2) return;
   const width=game.config.type===3?2.1:2.65;
   const gap=game.config.type===3?0:game.spec.width*.34;
@@ -2353,8 +2586,8 @@ function drawScene(game) {
     for(const prop of game.props) {
       const level=prop.level||0;
       const p=position(prop),n=course.samples.length;
-      let best=-1, distance=Infinity;
-      for(let i=0;i<n;i++) {
+      let best=prop.routeIndex??-1,distance=Infinity;
+      if(game.replay||best<0) for(let i=0;i<n;i++) {
         if(routeLevelAt(course,i)!==level) continue;
         const gap=(p.x-course.samples[i].x)**2+(p.y-course.samples[i].y)**2;
         if(gap<distance) {distance=gap;best=i;}
@@ -2414,7 +2647,7 @@ function drawScene(game) {
   drawVehicle(ctx,car.x,car.y,car.a,game.config.type,game.color,car.damage,{lights:car.speed<26&&game.started});
 }
 const designer={file:null,mode:'track',point:0,riverPoint:null,prop:null,deck:null,selectedPasses:[],tool:'',pointer:null,drag:null,preview:null,frame:0};
-const creatorKey='track-and-trace-courses-v1';
+const creatorKey='track-and-trace-courses-v1',maxCourseProps=72;
 const newCourseId=()=>window.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2,10);
 const jsonCopy=value=>JSON.parse(JSON.stringify(value));
 const edges={wall:'Wall',grass:'Grass + curb',dirt:'Dirt + curb',grassPlain:'Grass runoff',dirtPlain:'Dirt runoff'};
@@ -2455,7 +2688,7 @@ function normalizeCourseFile(source) {
   const river=Array.isArray(source.river?.points)&&source.river.points.length>=2?
     {width:finite(source.river.width,10,110,35),points:source.river.points.slice(0,40).map(p=>[
       finite(p?.[0],-90,W+90,0),finite(p?.[1],-90,H+90,0)])}:null;
-  const props=Array.isArray(source.props)?source.props.filter(p=>p&&Object.hasOwn(propTypes,p.type)).slice(0,35).map(p=>({
+  const props=Array.isArray(source.props)?source.props.filter(p=>p&&Object.hasOwn(propTypes,p.type)).slice(0,maxCourseProps).map(p=>({
     type:p.type,x:finite(p.x,4,W-4,W/2),y:finite(p.y,4,H-4,H/2),a:finite(p.a,-TAU,TAU,0),level:Math.round(finite(p.level,-7,7,0))})): [];
   const crossings=Array.isArray(source.crossings)?source.crossings.filter(c=>c&&['bridge','tunnel','none'].includes(c.style)).slice(0,24).map(c=>({
     over:finite(c.over,0,.999999,0),under:finite(c.under,0,.999999,0),style:c.style,
@@ -2482,7 +2715,7 @@ function loadCustomCourses() {
 function copyTemplate(index) {
   const c=prepare(index);
   if(c.custom) return jsonCopy(c.courseFile);
-  if(c.training) return copyTemplate(0);
+  if(c.openYard) return copyTemplate(0);
   const points=c.points.map(([x,y],i)=>{
     const sample=c.samples.findIndex(p=>p.u>=i+.38);
     const edge=side=>{
@@ -2677,7 +2910,7 @@ function selectNearby(values,p,radius=21) {
   return index;
 }
 function addEditorProp(type,p) {
-  if(designer.file.props.length>=35) {editorStatus('A course can use up to 35 movable objects.');return;}
+  if(designer.file.props.length>=maxCourseProps) {editorStatus('A course can use up to '+maxCourseProps+' movable objects.');return;}
   designer.file.props.push({type,x:clamp(p.x,0,W),y:clamp(p.y,0,H),a:0,level:0});
   designer.prop=designer.file.props.length-1;designer.tool='';
 }
@@ -2876,18 +3109,21 @@ class RecordStore {
   forCourse(course) {
     return [...this.items.values()].filter(r=>(r.config.courseId||courses[r.config.course]?.id)===courses[course]?.id)
       .sort((a,b)=>({fast:0,clean:1,damage:2,crash:3}[a.kind]-{fast:0,clean:1,damage:2,crash:3}[b.kind])||
-        (a.kind==='crash'?b.impact-a.impact:a.duration-b.duration));
+        (a.kind==='crash'?b.impact-a.impact:a.kind==='damage'?b.score-a.score||a.duration-b.duration:a.duration-b.duration));
   }
 }
 const records = new RecordStore();
 function recordKey(c,kind) {
-  return [c.courseId||courses[c.course]?.id,c.layout||0,c.type,c.laps,c.drag,
-    c.drag==='free'?(c.release||'stop'):'',damageMode(c),c.tuneKey||tuningId(tuning),kind].join('/');
+  const parts=[c.courseId||courses[c.course]?.id,c.layout||0,c.type,c.laps,c.drag,
+    c.drag==='free'?(c.release||'stop'):'',damageMode(c),c.tuneKey||tuningId(tuning),kind];
+  if(kind==='damage'&&c.scoring) parts.push(c.scoring);
+  return parts.join('/');
 }
 function saveRun(game,completed,highlightsOnly=false) {
-  const cfg=game.config, changes=[], deletes=[], score=damageScore(game.car);
+  const cfg=game.config,changes=[],deletes=[],points=damagePoints(game);
+  const score=cfg.mode==='damage'?points.total:damageScore(game.car);
   const base={config:{...cfg},courseFile:game.course.custom?courses[cfg.course]?.courseFile:undefined,duration:game.elapsed,splits:[...game.splits],hits:game.hits,tune:game.tune,
-    frames:game.frames,impacts:game.impacts,score,date:Date.now()};
+    frames:game.frames,impacts:game.impacts,score,points:cfg.mode==='damage'?points:undefined,date:Date.now()};
   const oldFast=records.matching(cfg,'fast'), oldClean=records.matching(cfg,'clean'), oldDamage=records.matching(cfg,'damage');
   if(cfg.mode==='race' && completed && (!oldFast || game.elapsed<oldFast.duration)) {
     changes.push({...base,id:recordKey(cfg,'fast'),kind:'fast'});
@@ -2930,15 +3166,20 @@ try {
     audio.setMode(audioStates[saved.audio]?saved.audio:saved.muted?'off':'both');
   }
 } catch {}
-let training=!!courses[options.course]?.training, raceCourse=training?0:options.course, trainingCourse=training?options.course:8;
+let training=!!courses[options.course].training;
+let raceCourse=courseOptions(false).includes(options.course)?options.course:0;
+let trainingCourse=training?options.course:courseOptions(true)[0];
+let damageCourse=courses[options.course].damageEvent?options.course:courseOptions('damage')[0];
 let modalType='', modalSource=null, hudAt=-100, displayed='', opening=false;
 function saveOptions() {
   try {localStorage.setItem('track-and-trace-setup-v1',JSON.stringify({options,courseId:courses[options.course].id,audio:audio.mode}));} catch {}
 }
 function configNow() {
   const course=courses[options.course];
-  return {course:options.course,courseId:course.id,layout:course.revision,type:options.type,color:options.colors[options.type],laps:options.laps,
-    mode:training?'training':options.mode,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
+  const mode=training?'training':course.damageEvent?'damage':options.mode;
+  return {course:options.course,courseId:course.id,layout:course.revision,type:options.type,
+    color:options.colors[options.type],laps:course.arena?0:options.laps,
+    mode,scoring:mode==='damage'?'objects-v1':undefined,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
 }
 function clock(s) {
   const ms=Math.max(0,Math.round(s*1000));
@@ -2952,13 +3193,20 @@ function button(label,action,className='') {
 function segmentation(id,value) {
   for(const b of $(id).querySelectorAll('[data-value]')) b.setAttribute('aria-pressed',b.dataset.value===value);
 }
-function setCourse(i) {
+function selectCourseState(i) {
   options.course=i;
-  if(training) trainingCourse=i; else raceCourse=i;
+  const course=courses[i];
+  training=!!course.training;
+  if(training) trainingCourse=i;
+  else if(course.damageEvent) damageCourse=i;
+  else raceCourse=i;
+}
+function setCourse(i) {
+  selectCourseState(i);
   renderSetup();
 }
 function changeCourse(by) {
-  const list=courseOptions(training);
+  const list=courseOptions(courses[options.course].damageEvent?'damage':training);
   setCourse(list[mod(list.indexOf(options.course)+by,list.length)]);
 }
 function renderSetup() {
@@ -2966,13 +3214,14 @@ function renderSetup() {
   $('course-name').textContent=course.name;$('course-kind').textContent=course.kind;
   const ctxPreview=$('preview').getContext('2d');ctxPreview.save();ctxPreview.scale(.8,.8);
   drawCoursePreview(ctxPreview,course);ctxPreview.restore();
-  $('races-tab').setAttribute('aria-pressed',!training);
+  $('races-tab').setAttribute('aria-pressed',!training&&!course.damageEvent);
   $('training-tab').setAttribute('aria-pressed',training);
+  $('damage-tab').setAttribute('aria-pressed',!!course.damageEvent);
   const list=$('courses');list.replaceChildren();
-  for(const [rank,i] of courseOptions(training).entries()) {
+  for(const [rank,i] of courseOptions(course.damageEvent?'damage':training).entries()) {
     const item=button('',()=>setCourse(i));
     item.setAttribute('aria-pressed',i===options.course);
-    if(!training) {
+    if(!training&&!course.damageEvent) {
       const n=document.createElement('small');n.textContent=(courses[i].custom?'✦':String(rank+1).padStart(2,'0'));item.append(n);
     }
     item.append(courses[i].name);list.append(item);
@@ -2991,11 +3240,13 @@ function renderSetup() {
   $('sound').setAttribute('aria-label',audioStates[audio.mode]+' · change audio mode');
   segmentation('event-select',options.mode);segmentation('drag-select',options.drag);segmentation('damage-select',options.damage);
   $('event-select').querySelector('[data-value=damage]').disabled=options.damage==='off';
-  $('mode-row').hidden=training;$('lap-row').hidden=training;$('ghost-row').hidden=training||options.mode==='damage';
+  $('mode-row').hidden=training||!!course.damageEvent;
+  $('lap-row').hidden=training||!!course.arena;
+  $('ghost-row').hidden=training||!!course.damageEvent||options.mode==='damage';
   $('records').hidden=training;
   $('less-laps').disabled=options.laps<=1;$('more-laps').disabled=options.laps>=10;
   $('laps-value').textContent=options.laps;
-  $('start').textContent=training?'Enter training':options.mode==='damage'?'Start challenge':'Start race';
+  $('start').textContent=training?'Enter training':course.damageEvent||options.mode==='damage'?'Start challenge':'Start race';
   const ghost=$('ghost-select');ghost.replaceChildren(new Option('Off','none'));
   const config=configNow();
   for(const [key,label] of [['fast','Fastest'],['clean','Fastest clean']]) {
@@ -3004,7 +3255,9 @@ function renderSetup() {
   }
   ghost.value=[...ghost.options].some(o=>o.value===options.ghost)?options.ghost:'none';
   const hint=options.drag==='trace'?'Draw ahead. A new touch replaces the path.':'Drag to steer. Release while moving to flick the vehicle.';
-  $('hint').textContent=training ? (options.damage==='total'?'Three crumpled sections end the run. ':'Exit whenever you like. ')+hint : hint;
+  $('hint').textContent=course.arena?'60 seconds. Move objects as far as you can and aim for chains.':
+    course.damageEvent?'Score by moving objects and knocking them into each other.':
+    training?(options.damage==='total'?'Three crumpled sections end the run. ':'Exit whenever you like. ')+hint:hint;
   saveOptions();
 }
 function onSegment(id,change,refresh=true) {
@@ -3123,9 +3376,15 @@ function updateHud(force=false) {
   hudAt=performance.now();const game=run;
   const lap=Math.min(game.config.laps,game.splits.length+1);
   const remaining=Math.max(0,game.config.laps-game.splits.length);
-  $('lap-hud').hidden=game.course.training;
+  $('lap-hud').hidden=game.course.openYard;
   $('lap-hud').textContent='Lap '+lap+'/'+game.config.laps+' · '+remaining+' left';
-  $('time-hud').textContent=clock(game.elapsed);
+  $('time-hud').textContent=game.course.arena?clock(game.course.arena-game.elapsed)+' left':clock(game.elapsed);
+  const scoring=game.config.mode==='damage';
+  $('score-hud').hidden=!scoring;
+  if(scoring) $('score-hud').textContent=damagePoints(game).total.toLocaleString()+' pts';
+  const chain=game.lastChain;
+  $('chain-hud').hidden=!scoring||!chain||game.elapsed>=chain.until;
+  if(chain) $('chain-hud').textContent='Chain ×'+(chain.links+1)+(chain.bonus?' · +'+chain.bonus:'');
   const splitText=game.splits.map(x=>clock(x)).join('|');
   if(force||splitText!==displayed) {
     displayed=splitText;$('splits').replaceChildren();
@@ -3156,14 +3415,15 @@ function stat(label,value) {
   name.textContent=label;content.textContent=value;item.append(name,content);return item;
 }
 function configLabel(c) {
-  return vehicles[c.type].name+' · '+c.laps+(c.laps===1?' lap':' laps')+' · '+(c.drag==='trace'?'Draw path':'Free drag')+
+  const length=c.laps?c.laps+(c.laps===1?' lap':' laps'):'60 s arena';
+  return vehicles[c.type].name+' · '+length+' · '+(c.drag==='trace'?'Draw path':'Free drag')+
     (c.drag==='free'&&c.release==='flick'?' · Flick':'')+
     ({off:' · Damage off',open:' · Damage only',total:''}[damageMode(c)])+(c.mode==='damage'?' · Challenge':'');
 }
 function showRecords(courseIndex) {
   const entries=records.forCourse(courseIndex);
   openModal('records',courses[courseIndex].name+' records',body=>{
-    if(!entries.length) {body.append(paragraph('Complete a race or make a hard impact to save a replay here.'));return;}
+    if(!entries.length) {body.append(paragraph('Finish a run or make a hard impact to save a replay here.'));return;}
     const groups=[['Race times',['fast','clean']],['Damage challenge',['damage']],['Crash highlights',['crash']]];
     for(const [name,kinds] of groups) {
       const items=entries.filter(r=>kinds.includes(r.kind));
@@ -3198,8 +3458,8 @@ function finish(game,reason) {
   game.finished=true;stopPointer(game);saveFrame(game,true);
   const completed=reason==='Finished', clean=completed&&!game.hits;
   const saved=game.course.training?null:saveRun(game,completed);
-  const points=game.config.mode==='damage'?damageScore(game.car):
-    completed?Math.round(10000/(1+game.elapsed/30))+(clean?1500:0):0;
+  const challenge=game.config.mode==='damage', breakdown=damagePoints(game);
+  const points=challenge?breakdown.total:completed?Math.round(10000/(1+game.elapsed/30))+(clean?1500:0):0;
   if(completed) audio.effect('finish');
   updateHud(true);
   game.showResult=()=>{
@@ -3208,9 +3468,15 @@ function finish(game,reason) {
     const stats=document.createElement('div');stats.className='stats';
     stats.append(stat('Total time',clock(game.elapsed)));
     if(!game.course.training) {
-      stats.append(stat('Laps completed',game.splits.length+'/'+game.config.laps),
-        stat('Wall contacts',game.hits),stat(game.config.mode==='damage'?'Damage score':'Score',points));
-      if(clean&&game.config.mode==='race') stats.append(stat('Clean bonus','+1,500'));
+      if(!game.course.arena) stats.append(stat('Laps completed',game.splits.length+'/'+game.config.laps));
+      if(challenge) {
+        stats.append(stat('Total score',points.toLocaleString()),stat('Object distance',breakdown.movement.toLocaleString()+' pts'),
+          stat('Chain bonus',breakdown.chain.toLocaleString()+' pts'),stat('Car damage',breakdown.body.toLocaleString()+' pts'));
+        if(game.chainCount) stats.append(stat('Best chain',(game.chainCount+1)+' objects'));
+      } else {
+        stats.append(stat('Wall contacts',game.hits),stat('Score',points));
+        if(clean) stats.append(stat('Clean bonus','+1,500'));
+      }
     }
     body.append(stats);
     const row=document.createElement('div');row.className='buttons';
@@ -3316,12 +3582,13 @@ for(const name of ['pointerup','pointercancel','lostpointercapture']) {
 }
 $('start').addEventListener('click',()=>{
   const config=configNow(), ghost=records.matching(config,$('ghost-select').value);
-  newRace(config,options.mode==='race'?ghost:null);
+  newRace(config,config.mode==='race'?ghost:null);
 });
 $('records').addEventListener('click',()=>showRecords(options.course));
 $('ghost-select').addEventListener('change',e=>{options.ghost=e.target.value;saveOptions();});
-$('races-tab').addEventListener('click',()=>{training=false;setCourse(raceCourse);});
-$('training-tab').addEventListener('click',()=>{training=true;setCourse(trainingCourse);});
+$('races-tab').addEventListener('click',()=>setCourse(raceCourse));
+$('training-tab').addEventListener('click',()=>setCourse(trainingCourse));
+$('damage-tab').addEventListener('click',()=>setCourse(damageCourse));
 $('prev-course').addEventListener('click',()=>changeCourse(-1));$('next-course').addEventListener('click',()=>changeCourse(1));
 $('prev-vehicle').addEventListener('click',()=>{options.type=mod(options.type-1,4);renderSetup();});
 $('next-vehicle').addEventListener('click',()=>{options.type=mod(options.type+1,4);renderSetup();});
