@@ -1933,9 +1933,7 @@ function curbWear(game) {
 }
 function checkDamageEnd(game) {
   if(damageMode(game.config)!=='total') return;
-  if(game.course.training) {
-    if(game.car.damage.some(value=>value>0)) finish(game,'Training ended');
-  } else if(game.car.damage.filter(value=>value>=100).length>=3) {
+  if(game.car.damage.filter(value=>value>=100).length>=3) {
     finish(game,'Vehicle totalled');
   }
 }
@@ -3006,7 +3004,7 @@ function renderSetup() {
   }
   ghost.value=[...ghost.options].some(o=>o.value===options.ghost)?options.ghost:'none';
   const hint=options.drag==='trace'?'Draw ahead. A new touch replaces the path.':'Drag to steer. Release while moving to flick the vehicle.';
-  $('hint').textContent=training ? (options.damage==='total'?'Training ends with the first damage. ':'Exit whenever you like. ')+hint : hint;
+  $('hint').textContent=training ? (options.damage==='total'?'Three crumpled sections end the run. ':'Exit whenever you like. ')+hint : hint;
   saveOptions();
 }
 function onSegment(id,change,refresh=true) {
