@@ -43,6 +43,13 @@
 .editor-tools{display:grid;gap:5px;border:1px solid var(--edge);border-radius:11px;background:var(--panel);padding:9px;font-size:12px;color:var(--muted)}.editor-tools input:not([type=range]),.editor-tools select{height:31px;min-width:0;background:#263e3d;border:1px solid var(--edge);border-radius:6px;color:var(--cream);padding:3px 5px;font-size:12px}
 .editor-tools label{font-weight:750}.editor-tools label output{float:right}.editor-tools input[type=range]{display:block;width:100%;margin:4px 0}.editor-tools input:disabled,.editor-tools select:disabled{opacity:.45}
 .editor-group,.editor-crossings{display:grid;gap:5px}.editor-group button{font-size:11px;padding:5px 7px;min-height:30px;font-weight:750}.editor-pair{display:grid;grid-template-columns:1fr 1fr;gap:5px}.editor-pair select{display:block;width:100%;margin-top:3px}.editor-crossings{margin-top:5px;border-top:1px solid var(--edge);padding-top:6px}
+#creator-elevation-point,#creator-stack strong{color:var(--cream)}
+#creator-elevation{flex-wrap:wrap}#creator-elevation button{min-width:43px}
+.elevation-warning{margin:4px 0;color:#ffd0a2;font-size:11px;line-height:1.35}
+#creator-stack{display:grid;gap:6px;margin-top:6px}
+#creator-passes{display:grid;gap:4px}
+#creator-passes button{text-align:left}
+#creator-passes button[aria-pressed=true]{border-color:var(--orange);background:#475745;color:var(--cream)}
 .prop-tray{display:flex;gap:5px;overflow:auto;padding:4px;background:#142a2a;border-radius:7px}.prop-tray button{min-width:max-content;touch-action:none}@media(prefers-reduced-motion:no-preference){.prop-tray{animation:tray-in .16s ease-out}@keyframes tray-in{from{transform:translateY(-8px);opacity:.4}to{transform:translateY(0);opacity:1}}}.prop-tray button[aria-pressed=true]{background:#d7ec9b;color:#19302b}
 #courses{max-height:min(31vh,270px);overflow:auto;padding:1px}
 @media(max-width:670px){.editor-layout{grid-template-columns:1fr}.editor-tools{margin-bottom:8px}.wordmark{font-size:clamp(22px,6vw,40px)}.mast-actions{gap:4px}.mast-actions .icon{min-width:34px}.mast-actions .tool-button{font-size:10px;padding:4px}}
@@ -70,7 +77,6 @@
     <div class="config">
      <div class="config-row" id="mode-row"><span class="label">Event</span><div class="segmented" id="event-select"><button data-value="race">Race</button><button data-value="damage">Damage challenge</button></div></div>
      <div class="config-row"><span class="label">Drag</span><div class="segmented" id="drag-select"><button data-value="trace">Draw path</button><button data-value="free">Free drag</button></div></div>
-     <div class="config-row" id="release-row" hidden><span class="label">Release</span><div class="segmented" id="release-select"><button data-value="stop">Stop</button><button data-value="flick">Flick</button></div></div>
      <div class="config-row"><span class="label">Damage</span><div class="segmented" id="damage-select"><button data-value="off">Off</button><button data-value="open">Damage only</button><button data-value="total">Can total</button></div></div>
      <div class="config-row" id="lap-row"><span class="label">Laps</span><div class="segmented"><button id="less-laps" aria-label="Fewer laps">−</button><button id="laps-value" aria-label="Lap count, press to increase">3</button><button id="more-laps" aria-label="More laps">+</button></div></div>
      <div class="config-row" id="ghost-row"><label for="ghost-select">Ghost</label><select id="ghost-select" aria-label="Ghost"></select></div>
@@ -105,9 +111,15 @@
      </div>
      <label>Curve smoothing <output id="creator-curve-value"></output><input id="creator-curve" type="range" min="0" max="100"></label>
      <div class="editor-crossings">
-      <label for="creator-crossing">Crossing or tunnel</label><select id="creator-crossing"></select>
-      <div class="segmented"><button id="creator-tunnel">Add tunnel</button><button id="creator-swap">Swap levels</button></div>
-      <label for="creator-deck">Cover style</label><select id="creator-deck"><option value="bridge">Bridge</option><option value="tunnel">Tunnel</option><option value="none">Remove cover</option></select>
+      <strong id="creator-elevation-point">Point 1 · Ground</strong>
+      <div class="segmented" id="creator-elevation"><button data-value="auto">Auto</button><button data-value="up">Up</button><button data-value="same">Same</button><button data-value="down">Down</button></div>
+      <p id="creator-portal" class="hint" hidden></p>
+      <p id="creator-elevation-warning" class="elevation-warning" role="status" hidden></p>
+      <div id="creator-stack" hidden>
+       <strong>Crossing order</strong>
+       <div id="creator-passes"></div>
+       <button id="creator-swap">Swap selected passes</button>
+      </div>
      </div>
     </div>
     <div id="creator-river-tools" class="editor-group" hidden>
@@ -118,7 +130,7 @@
      <button id="prop-tray-toggle">Object tray</button>
      <div class="prop-tray" id="prop-tray" hidden></div>
      <label>Rotation <output id="prop-angle-value"></output><input id="prop-angle" type="range" min="0" max="359"></label>
-     <label for="prop-level">Route level</label><select id="prop-level"><option value="0">Ground</option><option value="1">First deck</option><option value="2">Second deck</option></select>
+     <label for="prop-level">Route level</label><select id="prop-level"><option value="-2">−2 Tunnel</option><option value="-1">−1 Tunnel</option><option value="0">Ground</option><option value="1">+1 Deck</option><option value="2">+2 Deck</option><option value="3">+3 Deck</option></select>
      <button id="prop-remove">Remove object</button>
     </div>
    </aside>
@@ -348,7 +360,7 @@ function prepareDefinition(definition,index=0,scale=1.35) {
       course.props=[{type:'tyres',x:330,y:375,a:0},{type:'barrier',x:494,y:270,a:-.45}];
     }
     setRouteData(course);
-    if(course.park) {
+    if(course.park&&!course.physicalElevation) {
       const i=project(course,701,177,null).index;
       course.decks.push({index:i,half:10,under:[i],style:'tunnel',flatRoof:true});
     }
@@ -359,9 +371,12 @@ function prepareDefinition(definition,index=0,scale=1.35) {
   }
   const river=riverSpec(course);
   if(river) course.riverData={width:river.width,points:curveRiver(river.points)};
-  bakeDecks(course);
-  course.aboveBase=i=>(course.decks||[]).some(d=>!d.hidden&&!d.flatRoof&&
-    circularIndexDistance(d.index,i,course.samples.length)<d.half);
+  if(course.elevationData) bakeElevation(course);
+  else bakeDecks(course);
+  course.aboveBase=course.elevationData
+    ? i=>heightAt(course,i)!==0
+    : i=>(course.decks||[]).some(d=>!d.hidden&&!d.flatRoof&&
+      circularIndexDistance(d.index,i,course.samples.length)<d.half);
   course.map=trackCanvas(ctx=>renderMap(ctx,course),scale);
   return course;
 }
@@ -405,8 +420,10 @@ function surfaceAt(course,x,y,index) {
     return 'asphalt';
   }
   const p = project(course,x,y,index,8);
-  if (course.riverData && riverDistance(course,x,y)<course.riverData.width*.5) return 'water';
-  if (course.waterPatches.some(patch => onPatch(x,y,patch))) return 'water';
+  if(heightAt(course,p.index)===0) {
+    if(course.riverData&&riverDistance(course,x,y)<course.riverData.width*.5) return 'water';
+    if(course.waterPatches.some(patch=>onPatch(x,y,patch))) return 'water';
+  }
   const j=mod(p.index,course.samples.length), width=course.widthAt[j];
   const info=course.widths[j][p.d>=0?1:0];
   if(info.type&&Math.abs(p.d)>=width-6) {
@@ -517,6 +534,7 @@ function renderMap(ctx,course) {
       trackStrip(ctx,loop,()=>-35,()=>35,'#b3bfa0',course.aboveBase);
       trackStrip(ctx,loop,()=>-31,()=>31,'#596d67',course.aboveBase);
       centerDashes(ctx,loop,1.05,'#c5c6a17d',course.aboveBase);
+      if(course.elevationData) paintTunnelPlan(ctx,course);
       obstacles.forEach(o => paintBarrier(ctx,o.x,o.y,o.w,o.h,o.a));
     }
     rounded(ctx,160,306,84,48,5,'#d0d4a06c');
@@ -578,7 +596,8 @@ function renderMap(ctx,course) {
     }
   }
   for(let i=0;i<128;i++) {
-    const p=pts[Math.floor(rand()*n)], t=(rand()-.5)*(course.width*1.25);
+    const i=Math.floor(rand()*n),p=pts[i],t=(rand()-.5)*(course.width*1.25);
+    if(course.aboveBase(i)) continue;
     const k=offset(p,t);
     oval(ctx,k[0],k[1],1+rand()*5,1+rand(),course.dirt?'#dfb38a70':'#a6a88a35');
   }
@@ -586,13 +605,17 @@ function renderMap(ctx,course) {
     ctx.save();
     const ribbon = new Path2D();
     for(let i=0;i<n;i++) {
+      if(course.aboveBase(i)) continue;
       const a=pts[i],b=pts[(i+1)%n];
       const coords=[offset(a,-w(i)),offset(b,-w(i+1)),offset(b,w(i+1)),offset(a,w(i))];
       ribbon.moveTo(...coords[0]); for(const p of coords.slice(1)) ribbon.lineTo(...p); ribbon.closePath();
     }
     ctx.clip(ribbon); paintStream(ctx,course,true); ctx.restore();
   }
-  course.waterPatches.forEach(p=>paintPuddle(ctx,p));
+  course.waterPatches.forEach(p=>{
+    if(!course.elevationData||heightAt(course,project(course,p.x,p.y,null).index)===0) paintPuddle(ctx,p);
+  });
+  if(course.elevationData) paintTunnelPlan(ctx,course);
   const start=pts[0];
   checkers(ctx,start,start.x,start.y,w(0)-7);
   for(let k=1;k<=3;k++) {
@@ -686,6 +709,22 @@ function setRouteData(course) {
   course.widths=course.samples.map((_,i)=>[runoffInfo(course,i,-1),runoffInfo(course,i,1)]);
   course.roadAt=course.samples.map(p=>course.roadSections?.find(z=>segmentIn(p.u,z.from,z.to))?.surface ||
     (course.dirt?'dirt':'asphalt'));
+  if(course.physicalElevation) solveElevation(course);
+  else setLegacyDecks(course);
+  course.props=(course.props||[]).map(o=>{
+    if(o.at==null) return {...o};
+    const side=o.side===1?1:0,start=Math.floor(o.at*n);
+    let i=start;
+    for(let t=0;t<n*.125;t++) {
+      const j=mod(start+t,n);
+      if(course.widths[j][side].width-course.widthAt[j]>=20) {i=j;break;}
+    }
+    const p=course.samples[i], r=course.widths[i][side].width-propTypes[o.type].r*.69;
+    return {...o,x:p.x+p.nx*r*o.side,y:p.y+p.ny*r*o.side,a:Math.atan2(p.ty,p.tx),routeIndex:i,level:0};
+  });
+}
+function setLegacyDecks(course) {
+  const n=course.samples.length;
   course.decks=course.bridges?getDecks(course):[];
   const used=new Set();
   for(const crossing of course.crossings||[]) {
@@ -713,17 +752,6 @@ function setRouteData(course) {
     ordered.push(next||course.decks.find(d=>!ordered.includes(d)));
   }
   course.decks=ordered;
-  course.props=(course.props||[]).map(o=>{
-    if(o.at==null) return {...o};
-    const side=o.side===1?1:0,start=Math.floor(o.at*n);
-    let i=start;
-    for(let t=0;t<n*.125;t++) {
-      const j=mod(start+t,n);
-      if(course.widths[j][side].width-course.widthAt[j]>=20) {i=j;break;}
-    }
-    const p=course.samples[i], r=course.widths[i][side].width-propTypes[o.type].r*.69;
-    return {...o,x:p.x+p.nx*r*o.side,y:p.y+p.ny*r*o.side,a:Math.atan2(p.ty,p.tx),routeIndex:i,level:0};
-  });
 }
 function practiceRoute(course,x,y,index) {
   if(!course.practice) return 0;
@@ -739,6 +767,7 @@ function deckVisibility(course,deck,x,y,index) {
   return 1-clamp(edge/20,0,1)*.88;
 }
 function drawDecks(ctx,course,car=null,afterDeck=null) {
+  if(course.elevationData) return drawElevation(ctx,course,car,afterDeck);
   if(!course.decks?.length) return;
   for(const d of course.decks) {
     if(d.hidden) continue;
@@ -750,6 +779,10 @@ function drawDecks(ctx,course,car=null,afterDeck=null) {
   }
 }
 function routeLevelAt(course,index) {
+  if(course.elevationData) {
+    const h=heightAt(course,index);
+    return h<0?Math.min(-1,Math.round(h)):h>0?Math.max(1,Math.round(h)):0;
+  }
   const n=course.samples?.length;
   if(!n) return 0;
   const deck=course.decks.find(d=>!d.hidden&&!d.flatRoof&&circularIndexDistance(d.index,index,n)<=d.half);
@@ -792,6 +825,438 @@ function bakeDecks(course) {
     d.art=art;
   }
 }
+const elevationChoices=['auto','up','same','down'];
+const heightText=level=>level===0?'Ground':level>0?'+'+level:String(level);
+
+function crossingGroups(course) {
+  const points=course.samples,n=points.length, groups=[];
+  const gap=Math.ceil(145/course.step);
+  for(let a=0;a<n;a++) for(let b=a+gap;b<Math.min(n,n+a-gap);b++) {
+    const pa=points[a],pb=points[b];
+    if(Math.abs(pa.x-pb.x)>course.step*2||Math.abs(pa.y-pb.y)>course.step*2) continue;
+    const intersection=segmentCross(pa,points[(a+1)%n],pb,points[(b+1)%n]);
+    if(!intersection) continue;
+    const angle=Math.max(.32,Math.abs(pa.tx*pb.ty-pa.ty*pb.tx));
+    let group=groups.find(g=>dist(g,intersection)<23);
+    if(!group) {group={...intersection,passes:[]};groups.push(group);}
+    for(const [index,other] of [[a,b],[b,a]]) {
+      const edges=course.widths[other];
+      const half=Math.ceil(clamp((Math.max(edges[0].width,edges[1].width)+9)/angle,42,146)/course.step);
+      const prior=group.passes.find(p=>circularIndexDistance(p.index,index,n)<13);
+      if(prior) prior.half=Math.max(prior.half,half);
+      else group.passes.push({index,half,group});
+    }
+  }
+  groups.forEach((g,i)=>{g.id=i;g.passes.sort((a,b)=>a.index-b.index);});
+  return groups;
+}
+function visitReference(course,pass) {
+  const u=course.samples[pass.index].u, i=Math.floor(u), ids=course.pointIds;
+  return {at:pass.index/course.samples.length,from:ids?.[i],to:ids?.[(i+1)%ids.length],t:u-i};
+}
+function matchVisit(course,ref,remaining) {
+  let best=null, cost=Infinity;
+  for(const pass of remaining) {
+    const key=visitReference(course,pass);
+    const byAnchor=ref.from&&key.from===ref.from&&key.to===ref.to;
+    const shift=circularIndexDistance(ref.at,key.at,1);
+    const score=byAnchor?Math.abs(ref.t-key.t)*.012:shift+.028;
+    if(score<cost&&(byAnchor||shift<.085)) {best=pass;cost=score;}
+  }
+  return best;
+}
+function applyCrossingOrders(course,groups,intent) {
+  const n=course.samples.length;
+  for(const group of groups) {
+    group.order=group.passes.slice().sort((a,b)=>intent[a.index]-intent[b.index]||a.index-b.index);
+    let nearby=Infinity;
+    for(const saved of course.elevationOrders||[]) {
+      const gap=Math.hypot(saved.x-group.x,saved.y-group.y);
+      if(gap>=nearby||gap>115||group.passes.length!==saved.order.length) continue;
+      const free=group.passes.slice(), order=[];
+      for(const ref of saved.order) {
+        const pass=matchVisit(course,ref,free);
+        if(!pass) break;
+        order.push(pass);free.splice(free.indexOf(pass),1);
+      }
+      if(!free.length) {group.order=order;group.saved=saved;nearby=gap;}
+    }
+  }
+  // Preserve swaps from earlier course files that stored just a pair of route distances.
+  for(const old of course.crossings||[]) {
+    if(old.style!=='bridge') continue;
+    for(const group of groups) {
+      if(group.saved) continue;
+      const over=group.passes.find(p=>circularIndexDistance(p.index/n,old.over,1)<.026);
+      const under=group.passes.find(p=>p!==over&&circularIndexDistance(p.index/n,old.under,1)<.026);
+      if(!over||!under) continue;
+      const a=group.order.indexOf(over),b=group.order.indexOf(under);
+      if(a<b) [group.order[a],group.order[b]]=[group.order[b],group.order[a]];
+    }
+  }
+}
+function pointSampleIndices(course) {
+  let k=0;
+  return course.points.map((_,i)=>{
+    while(k+1<course.samples.length&&Math.abs(course.samples[k+1].u-i)<Math.abs(course.samples[k].u-i)) k++;
+    return k;
+  });
+}
+function authoredHeight(course,anchors,automatic) {
+  const n=course.samples.length, levels=[0], commands=course.elevation||[], portals=[];
+  for(let p=1;p<anchors.length;p++) {
+    const command=commands[p]||'auto', previous=levels[p-1];
+    const prior=previous===0&&(!commands[p-1]||commands[p-1]==='auto')?automatic?.[anchors[p-1]]||0:previous;
+    let next;
+    if(command==='auto') next=previous<0?previous:0;
+    else if(command==='same') next=prior;
+    else next=prior+(command==='up'?1:-1);
+    levels.push(clamp(next,-7,7));
+    if((previous<0)!==(next<0)) portals.push({index:anchors[p],point:p,entry:next<0});
+  }
+  const unfinished=levels.at(-1)<0;
+  if(unfinished) portals.push({index:0,point:0,entry:false,unfinished:true});
+  const samples=new Float32Array(n);
+  for(let p=0;p<anchors.length;p++) {
+    const from=anchors[p],to=anchors[p+1]??n, a=levels[p], b=levels[p+1]??0;
+    for(let i=from;i<to;i++) {
+      if(a<0) samples[i]=b<0?mix(a,b,(i-from)/Math.max(1,to-from)):a;
+      else if(b>=0) samples[i]=mix(a,b,(i-from)/Math.max(1,to-from));
+      else samples[i]=a;
+    }
+  }
+  // A previous editor represented an isolated tunnel as a cover with coincident route references.
+  for(const old of course.crossings||[]) {
+    if(old.style!=='tunnel') continue;
+    const center=Math.round(old.under*n), radius=Math.ceil(53/course.step);
+    for(let d=-radius;d<radius;d++) {
+      const i=mod(center+d,n);
+      if(i!==0&&samples[i]===0) samples[i]=-1;
+    }
+  }
+  return {samples,levels,portals,unfinished};
+}
+function solveCrossingHeights(course,groups,base,anchors,merge) {
+  const n=course.samples.length, passes=groups.flatMap(g=>g.passes), warnings=[];
+  passes.forEach((p,i)=>{p.component=i;});
+  if(merge) {
+    const byRoute=passes.slice().sort((a,b)=>a.index-b.index);
+    for(let i=0;i<byRoute.length;i++) {
+      const a=byRoute[i],b=byRoute[(i+1)%byRoute.length];
+      if(a.group===b.group||mod(b.index-a.index,n)>a.half+b.half+Math.ceil(38/course.step)) continue;
+      if((base[a.index]<0)!==(base[b.index]<0)) continue;
+      const sameGroup=passes.some(p=>p.component===a.component&&passes.some(q=>q.component===b.component&&q.group===p.group));
+      if(sameGroup) continue;
+      const old=b.component;
+      for(const pass of passes) if(pass.component===old) pass.component=a.component;
+    }
+  }
+  const nodes=new Map();
+  for(const p of passes) {
+    let node=nodes.get(p.component);
+    if(!node) {node={lo:base[p.index]<0?-64:0,hi:base[p.index]<0?-1:64,ideal:0,children:new Set(),parents:new Set(),passes:[]};nodes.set(p.component,node);}
+    node.passes.push(p);p.node=node;
+    const target=Math.round(base[p.index]);
+    node.ideal=node.hi<0?Math.min(node.ideal,target):Math.max(node.ideal,target);
+    for(const [i,at] of anchors.entries()) {
+      const command=course.elevation?.[i]||'auto';
+      if(circularIndexDistance(at,p.index,n)<=Math.ceil(24/course.step)&&command!=='auto') {
+        const fixed=Math.round(base[at]);
+        node.lo=Math.max(node.lo,fixed);node.hi=Math.min(node.hi,fixed);
+      }
+    }
+  }
+  for(const g of groups) for(let i=1;i<g.order.length;i++) {
+    const above=g.order[i].node,below=g.order[i-1].node;
+    below.children.add(above);above.parents.add(below);
+  }
+  const ready=[...nodes.values()].filter(node=>!node.parents.size), sorted=[];
+  const incoming=new Map([...nodes.values()].map(node=>[node,node.parents.size]));
+  for(let i=0;i<ready.length;i++) {
+    const node=ready[i];
+    sorted.push(node);
+    for(const child of node.children) {
+      incoming.set(child,incoming.get(child)-1);
+      if(incoming.get(child)===0) ready.push(child);
+    }
+  }
+  if(sorted.length!==nodes.size) return null;
+  for(const node of sorted.slice().reverse()) {
+    for(const child of node.children) node.hi=Math.min(node.hi,child.hi-1);
+  }
+  for(const node of sorted) {
+    const floor=Math.max(node.lo,...[...node.parents].map(p=>p.level+1));
+    if(floor>node.hi) {
+      node.passes.forEach(p=>{p.group.conflict=true;});
+      warnings.push('The crossing order conflicts with a point’s elevation. Adjust the point or swap the passes.');
+    }
+    node.level=clamp(node.ideal,floor,Math.max(floor,node.hi));
+  }
+  return warnings;
+}
+function solveElevation(course) {
+  const n=course.samples.length,anchors=pointSampleIndices(course),groups=crossingGroups(course);
+  const ground=new Float32Array(n);
+  applyCrossingOrders(course,groups,ground);
+  solveCrossingHeights({...course,elevation:null},groups,ground,anchors,false);
+  const automatic=ground.slice();
+  for(const g of groups) for(const p of g.passes) {
+    for(let d=-p.half;d<=p.half;d++) {
+      const i=mod(p.index+d,n);automatic[i]=Math.max(automatic[i],p.node?.level||0);
+    }
+  }
+  const authored=authoredHeight(course,anchors,automatic);
+  applyCrossingOrders(course,groups,authored.samples);
+  let warnings=solveCrossingHeights(course,groups,authored.samples,anchors,true);
+  if(!warnings) {
+    warnings=['Two close crossings demand opposite heights on a shared section. Adjust the crossing order or give the ramps more space.'];
+    groups.forEach(g=>{g.conflict=true;});
+    warnings.push(...(solveCrossingHeights(course,groups,authored.samples,anchors,false)||[]));
+  }
+  if(authored.unfinished) warnings.push('Add a tunnel exit before returning to the start.');
+  for(let i=1;i<anchors.length;i++) {
+    const rise=Math.abs(authored.levels[i]-authored.levels[i-1]);
+    if(rise&&(anchors[i]-anchors[i-1])*course.step<28*rise) {
+      warnings.push('Points '+i+' and '+(i+1)+' are too close for their elevation change.');
+    }
+  }
+  const heights=authored.samples.slice(), elevationSections=[];
+  for(const group of groups) for(const pass of group.passes) {
+    pass.level=pass.node.level;
+    const ramp=Math.ceil((38+20*Math.min(4,Math.abs(pass.level)))/course.step);
+    const extent=pass.half+ramp;
+    const underground=authored.samples[pass.index]<0;
+    if(pass.level===0) continue;
+    if(pass.level>0&&circularIndexDistance(0,pass.index,n)<=pass.half) {
+      group.conflict=true;
+      warnings.push('Move the start to a section that can stay at ground level.');
+    }
+    for(let d=-extent;d<=extent;d++) {
+      const i=mod(pass.index+d,n);
+      if(i===0||(authored.samples[i]<0)!==underground) continue;
+      const weight=clamp((extent-Math.abs(d))/ramp,0,1);
+      const target=mix(authored.samples[i],pass.level,weight);
+      heights[i]=underground?Math.min(heights[i],target):Math.max(heights[i],target);
+    }
+  }
+  for(let i=0;i<n;i++) {
+    if(heights[i]<0) {
+      const portals=authored.portals;
+      if(heights[mod(i-1,n)]>=0&&!portals.some(p=>p.index===i)) portals.push({index:i,entry:true});
+      if(heights[(i+1)%n]>=0&&!portals.some(p=>p.index===(i+1)%n)) portals.push({index:(i+1)%n,entry:false});
+    }
+  }
+  const sectionByIndex=new Array(n);
+  const band=h=>h<0?Math.min(-1,Math.round(h)):h>0?Math.max(1,Math.round(h)):0;
+  let start=0;
+  while(start<n&&heights[start]!==0) start++;
+  let current=null;
+  for(let k=0;k<n;k++) {
+    const index=mod(start+k,n),level=band(heights[index]);
+    if(!level) {current=null;continue;}
+    if(!current||current.level!==level) {
+      current={first:index,count:0,index,negative:level<0,level,passes:[]};
+      elevationSections.push(current);
+    }
+    current.count++;
+    sectionByIndex[index]=current;
+  }
+  for(const group of groups) for(const pass of group.order) {
+    const section=sectionByIndex[pass.index];
+    if(section) section.passes.push(pass);
+  }
+  course.elevationData={heights,anchors,groups,sections:elevationSections,sectionByIndex,portals:authored.portals,
+    warnings:[...new Set(warnings)]};
+  course.decks=elevationSections;
+}
+function heightAt(course,index) {
+  const heights=course.elevationData?.heights;
+  return heights?heights[mod(Math.round(index),heights.length)]:0;
+}
+function elevationSectionAt(course,index) {
+  const data=course.elevationData;
+  return data?.sectionByIndex[mod(index,data.heights.length)];
+}
+function elevatedAlpha(course,section,index) {
+  const n=course.samples.length, current=heightAt(course,index);
+  if(current<0||mod(index-section.first,n)<section.count) return 1;
+  let alpha=1;
+  for(const pass of section.passes) {
+    for(const lower of pass.group.order) {
+      if(lower.level>=pass.level||lower.level<0||current>=pass.level-.05) continue;
+      const distance=circularIndexDistance(lower.index,index,n)*course.step;
+      const fade=clamp((distance-(lower.half*course.step+54))/70,0,1);
+      alpha=Math.min(alpha,fade);
+    }
+  }
+  return alpha;
+}
+function tunnelWindows(course,car) {
+  const data=course.elevationData,n=course.samples.length, i=mod(car.index,n);
+  const p=course.samples[i], forward=Math.cos(car.a)*p.tx+Math.sin(car.a)*p.ty>=0?1:-1;
+  const ahead=Math.ceil(115/course.step), behind=Math.ceil(48/course.step);
+  const reach=[],active=data.sectionByIndex[i];
+  if(data.heights[i]<0) {
+    // Scan along the driven route. A change in depth along the same run stays connected.
+    for(const direction of [-1,1]) {
+      const range=direction===forward?ahead:behind;
+      for(let distance=direction===1?0:1;distance<range;distance++) {
+        const k=mod(i+direction*distance,n), h=data.heights[k];
+        if(h>=0||(direction!==forward&&data.sectionByIndex[k]!==active)) break;
+        reach.push({index:k,height:h,opacity:clamp((range-distance)/6,0,1)});
+      }
+    }
+  } else {
+    for(let distance=1;distance<ahead;distance++) {
+      const k=mod(i+forward*distance,n);
+      if(data.heights[k]>=0) continue;
+      if(distance*course.step>76) break;
+      const strength=clamp((82-distance*course.step)/46,0,1);
+      for(let d=0;d<ahead-distance;d++) {
+        const j=mod(k+forward*d,n), h=data.heights[j];
+        if(h>=0) break;
+        reach.push({index:j,height:h,opacity:strength*clamp((ahead-distance-d)/6,0,1)});
+      }
+      break;
+    }
+  }
+  return reach.sort((a,b)=>a.height-b.height);
+}
+function paintElevationPiece(ctx,course,index,below=false) {
+  const a=course.samples[index], j=mod(index+1,course.samples.length), b=course.samples[j];
+  const points=[a,{...b,x:b.x+b.tx*.42,y:b.y+b.ty*.42}], c=course.colors;
+  const width=(k,side)=>course.widths[k?j:index][side].width;
+  const nominal=k=>course.widthAt[k?j:index];
+  const surface={asphalt:'#77877e',dirt:c.dust,grass:c.turf}[course.roadAt[index]]||c.road;
+  strip(ctx,points,(_,k)=>-width(k,0)-5,(_,k)=>width(k,1)+5,below?'#4b5d56':c.rail);
+  strip(ctx,points,(_,k)=>-width(k,0),(_,k)=>width(k,1),below?hex(surface,-.23):surface);
+  for(const side of [-1,1]) {
+    const edge=course.widths[index][side===1?1:0];
+    if(edge.type) {
+      strip(ctx,points,(_,k)=>side*nominal(k),(_,k)=>side*width(k,side===1?1:0),edge.type==='dirt'?c.dust:c.grass);
+      if(edge.curb) strip(ctx,points,(_,k)=>side*(nominal(k)-3),(_,k)=>side*(nominal(k)+4),Math.floor(index/2)%2?'#f6e2b8':'#dc7162');
+    } else strip(ctx,points,(_,k)=>side*(nominal(k)-4),(_,k)=>side*(nominal(k)-2),below?'#929d82':'#e4dab0');
+  }
+  if(index%10<3) strip(ctx,points,()=>-1.1,()=>1.1,below?'#bfc4a2':'#dad6aeaa');
+}
+function bakeElevation(course) {
+  const n=course.samples.length;
+  for(const section of course.elevationData.sections) {
+    if(section.negative) continue;
+    const indices=Array.from({length:section.count},(_,i)=>mod(section.first+i,n));
+    const pts=indices.map(i=>course.samples[i]), pad=105;
+    section.left=Math.floor(Math.min(...pts.map(p=>p.x))-pad);section.top=Math.floor(Math.min(...pts.map(p=>p.y))-pad);
+    section.w=Math.ceil(Math.max(...pts.map(p=>p.x))+pad-section.left);
+    section.h=Math.ceil(Math.max(...pts.map(p=>p.y))+pad-section.top);
+    const canvas=document.createElement('canvas');canvas.width=section.w*1.25;canvas.height=section.h*1.25;
+    const ctx=canvas.getContext('2d');ctx.scale(1.25,1.25);ctx.translate(-section.left,-section.top);
+    ctx.save();ctx.translate(5,8);
+    for(const i of indices) {
+      const p=course.samples[i],q=course.samples[(i+1)%n],w=course.widthAt[i]+9;
+      strip(ctx,[p,q],()=>-w,()=>w,'#263e3d75');
+    }
+    ctx.restore();
+    for(const i of indices) paintElevationPiece(ctx,course,i);
+    section.art=canvas;
+  }
+}
+function paintTunnelPlan(ctx,course) {
+  const data=course.elevationData,n=course.samples.length;
+  ctx.strokeStyle='#e2e1bba6';ctx.lineWidth=1.9;
+  for(const below of data.sections.filter(s=>s.negative)) {
+    for(const side of [-1,1]) {
+      ctx.beginPath();
+      for(let k=0;k<below.count;k++) {
+        const i=mod(below.first+k,n),p=offset(course.samples[i],side*(course.widthAt[i]-3));
+        if(k%3===0) ctx.moveTo(...p);else ctx.lineTo(...p);
+      }
+      ctx.stroke();
+    }
+  }
+  for(const {index} of data.portals) {
+    const p=course.samples[index], w=course.widthAt[index];
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(Math.atan2(p.ty,p.tx));
+    rounded(ctx,-4,-w-4,8,13,2,'#e5d2a4');rounded(ctx,-4,w-9,8,13,2,'#e5d2a4');
+    ctx.fillStyle='#bbb885';ctx.fillRect(-2,-w+8,4,w*2-16);ctx.restore();
+  }
+}
+function drawElevation(ctx,course,car,afterDeck) {
+  const data=course.elevationData;
+  if(car&&course.practice) {
+    const p=project(course,car.x,car.y,car.index,8);
+    if(Math.hypot(p.x-car.x,p.y-car.y)>course.width+9) car=null;
+  }
+  const layers=data.sections.filter(s=>!s.negative).sort((a,b)=>a.level-b.level);
+  for(const section of layers) {
+    ctx.save();
+    if(car) ctx.globalAlpha=elevatedAlpha(course,section,car.index);
+    if(ctx.globalAlpha>0) {
+      ctx.drawImage(section.art,section.left,section.top,section.w,section.h);
+      afterDeck?.(section);
+    }
+    ctx.restore();
+  }
+  if(!car) return;
+  const reveal=tunnelWindows(course,car), drawn=new Set();
+  for(const piece of reveal) {
+    ctx.globalAlpha=piece.opacity;paintElevationPiece(ctx,course,piece.index,true);
+    drawn.add(piece.index);
+  }
+  ctx.globalAlpha=1;
+  return drawn;
+}
+// Replays from the previous release still use the layout they were recorded on.
+const legacyCourses=courses.slice();
+const raceLayouts=[
+  null,
+  {name:'Pines Triangle',kind:'Rounded triangle',width:41,
+    points:[[347,153],[576,125],[829,139],[1005,188],[1007,275],[864,381],[712,481],[608,534],[494,523],[374,449],[243,350],[157,245],[186,180]]},
+  {name:'Copper D Circuit',kind:'Sweeping D',width:43,
+    points:[[247,245],[254,138],[487,109],[726,122],[935,197],[1059,318],[1010,448],[820,517],[584,539],[348,531],[251,470],[246,340]]},
+  {name:'Dust Bowl Hook',kind:'Single hairpin',width:38,dirt:true,
+    points:[[395,110],[712,107],[957,123],[1049,215],[1030,333],[925,406],[825,410],[778,349],[700,325],[514,323],[368,367],[320,476],[227,505],[129,443],[120,321],[174,197]]},
+  {name:'Marsh S Circuit',kind:'Sweeping S',width:38,
+    points:[[321,121],[553,110],[816,113],[1015,173],[1056,266],[953,331],[819,342],[750,412],[667,521],[499,543],[297,533],[141,452],[143,336],[262,290],[404,284],[416,230],[366,188]]},
+  {name:'River Ladder',kind:'Four linked switchbacks',width:29,
+    points:[[342,96],[642,94],[910,95],[1037,102],[1090,154],[1040,202],[908,211],[648,210],[373,209],[265,233],[252,285],[330,322],[554,325],[806,325],[986,329],[1058,371],[1030,423],[913,444],[654,442],[391,444],[281,466],[223,531],[139,524],[104,439],[108,304],[110,189],[147,117],[233,95]],
+    river:{points:[[702,-25],[681,141],[735,231],[661,386],[714,535],[681,680]],width:27},smoothing:63},
+  {name:'Viaduct Eight',kind:'Asymmetric flyover',width:34,
+    points:[[227,101],[391,89],[530,115],[570,208],[671,276],[790,340],[930,443],[1035,505],[1089,447],[1043,344],[1075,248],[1046,157],[946,103],[825,136],[746,221],[660,285],[537,368],[477,434],[374,467],[301,545],[194,538],[123,464],[157,372],[253,344],[316,293],[273,238],[167,212],[135,167]]},
+  {name:'Highline Triple Stack',kind:'Three decks and a tight return',width:34,
+    points:[[236,330],[421,330],[600,330],[785,330],[1015,330],[1085,282],[1066,182],[974,112],[861,111],[739,214],[600,330],[475,438],[380,507],[376,551],[433,579],[552,579],[660,579],[769,576],[824,544],[811,506],[739,445],[600,330],[462,215],[334,110],[228,108],[143,158],[116,251],[148,314]]},
+  {name:'Seabreeze Harbour',kind:'Harbour spine and island loop',width:32,
+    points:[[184,136],[383,120],[599,104],[871,93],[1049,119],[1072,197],[982,251],[810,209],[655,226],[533,291],[378,390],[279,500],[367,562],[511,538],[604,404],[695,329],[840,335],[948,395],[1053,442],[1057,530],[946,567],[769,543],[681,486],[578,423],[442,345],[313,311],[191,335],[119,282],[139,215]]},
+  {name:'Signal Switchyard',kind:'Industrial zigzag',width:28,
+    points:[[212,127],[509,113],[784,102],[1024,117],[1072,172],[1010,229],[869,219],[747,190],[611,225],[507,333],[366,387],[237,348],[163,375],[158,461],[265,527],[430,555],[573,511],[722,469],[804,511],[927,548],[1066,514],[1094,439],[1029,383],[876,391],[773,342],[740,279],[646,290],[563,419],[435,476],[312,454],[219,438],[132,340],[130,223],[168,169]]},
+  {name:'Saltpan Narrows',kind:'Inward and outward spiral',width:27,
+    points:[[299,80],[610,76],[889,80],[1055,110],[1110,222],[1108,418],[1020,533],[818,574],[527,575],[268,560],[138,517],[102,447],[102,304],[140,218],[248,176],[533,164],[807,175],[961,214],[991,320],[953,416],[843,472],[711,489],[484,486],[313,455],[247,378],[287,300],[447,267],[625,266],[762,281],[836,327],[785,381],[655,400],[551,399],[481,364],[437,322],[381,282],[340,215],[308,144]],smoothing:64},
+  {name:'Slagbank Works',kind:'Back-to-back hooks',width:29,dirt:true,
+    points:[[207,107],[414,99],[655,95],[917,98],[1031,123],[1059,200],[987,251],[833,206],[684,181],[546,182],[455,224],[450,293],[538,334],[687,310],[852,302],[1008,328],[1077,399],[1027,474],[872,481],[711,457],[589,470],[498,526],[376,559],[262,542],[177,471],[143,357],[211,281],[305,262],[340,201],[290,161],[204,189],[131,170],[135,123]]},
+  {name:'Tidal Cut',kind:'Wet chicanes and a tunnel',width:29,
+    points:[[204,114],[429,99],[629,103],[852,114],[1043,144],[1094,231],[991,285],[843,253],[740,240],[623,281],[549,382],[405,475],[276,501],[148,458],[111,385],[156,314],[266,325],[413,379],[527,496],[653,555],[823,553],[975,510],[1063,448],[1015,367],[914,355],[790,377],[676,396],[578,340],[511,249],[371,184],[243,231],[146,221],[134,157]],
+    elevation:{14:'down',20:'up'},
+    river:{points:[[682,-15],[721,116],[689,247],[732,385],[652,531],[669,681]],width:31}},
+  {name:'Gantry Pass',kind:'Linked flyovers and long industrial straight',width:30,
+    points:[[174,106],[386,99],[633,100],[852,105],[1035,124],[1083,202],[1041,296],[906,357],[778,400],[653,459],[527,519],[373,542],[237,501],[136,422],[154,341],[280,287],[404,261],[520,209],[615,183],[708,227],[775,306],[865,432],[967,522],[1053,504],[1077,422],[961,346],[839,284],[713,291],[580,351],[427,413],[298,389],[217,313],[169,251],[119,188]]},
+  {name:'Headland Overpass',kind:'Uneven loops with a tunnel crossing',width:30,
+    points:[[214,100],[449,93],[652,96],[843,108],[1022,115],[1090,170],[1041,268],[898,332],[757,316],[630,247],[500,204],[369,244],[264,378],[149,444],[119,518],[250,550],[426,529],[553,458],[678,382],[795,387],[905,471],[1004,544],[1092,496],[1071,406],[952,408],[810,466],[654,484],[505,412],[398,339],[281,338],[158,304],[120,229],[151,160]],
+    elevation:{18:'down',26:'up'}},
+  {name:'Terminal Three',kind:'Long stacked terminal and underground returns',width:29,
+    points:[[210,329],[393,330],[598,330],[784,330],[995,326],[1082,283],[1040,229],[924,242],[817,260],[719,288],[600,330],[472,401],[353,459],[247,522],[344,572],[492,551],[544,488],[671,475],[807,498],[948,555],[1069,520],[1095,441],[991,420],[848,410],[714,368],[598,330],[499,283],[416,219],[303,171],[202,198],[115,165],[148,104],[294,98],[474,111],[649,143],[821,113],[980,106],[963,162],[853,177],[728,195],[604,231],[496,232],[357,272],[227,277],[129,282]],
+    elevation:{14:'down',23:'up'},smoothing:61}
+];
+const playableIndices=courseOptions(false);
+for(const [i,layout] of raceLayouts.entries()) {
+  const index=playableIndices[i], old=courses[index];
+  if(!layout) {courses[index]={...old,physicalElevation:true};continue;}
+  const {kind,elevation,...attributes}=layout;
+  courses[index]={...old,...attributes,kind:String(i+1).padStart(2,'0')+' / '+kind,
+    physicalElevation:true,revision:2,bridges:true,props:old.props,
+    elevation:layout.points.map((_,j)=>elevation?.[j]||'auto'),
+    widthsByPoint:layout.points.map((_,j)=>layout.width+([0,2,1,-1,1][(j+i)%5]))};
+}
+courses[9]={...courses[9],physicalElevation:true,
+  elevation:parkLoop.map((_,i)=>i===12?'down':i===14?'up':'auto')};
 const zeroDamage = () => Array(13).fill(0);
 const sectionStage = damage => damage>=100 ? 4 : damage>=67 ? 3 : damage>=36 ? 2 : damage>0 ? 1 : 0;
 function packDamage(damage) {
@@ -1045,17 +1510,17 @@ function doubleSteps(values,precision) {
     round((values[i]+value)/2),value
   ])];
 }
-const DAMAGE_STEPS=doubleSteps(originalDamageSteps,1);
-const originalDamageIndices=originalDamageSteps.map(value=>DAMAGE_STEPS.indexOf(value));
+const previousDamageSteps=doubleSteps(originalDamageSteps,1);
+const DAMAGE_STEPS=[...originalDamageSteps,125,150,175,200,225,250,275,300];
 const timingSteps=Object.fromEntries(Object.entries(timeControls).map(([key,[,,min,max,step]])=>[
   key,doubleSteps(Array.from({length:(max-min)/step+1},(_,i)=>min+i*step),0)
 ]));
 const defaultTuning=Object.fromEntries([
-  ...Object.entries(damageControls).map(([key,[,index]])=>[key,originalDamageIndices[index]]),
+  ...Object.entries(damageControls).map(([key,[,index]])=>[key,originalDamageSteps[index]]),
   ...Object.entries(timeControls).map(([key,[,value]])=>[key,value])
 ]);
 let tuning={...defaultTuning};
-const damageFactor=(game,key)=>DAMAGE_STEPS[game.rules[key]]/100;
+const damageFactor=(game,key)=>game.rules[key]/100;
 function damageMode(config) {
   return config.damage===false||config.damage==='off'?'off':config.damage==='open'?'open':'total';
 }
@@ -1063,9 +1528,14 @@ function tuningId(rules) {
   return Object.keys(defaultTuning).map(key=>{
     const value=rules[key];
     if(!Object.hasOwn(damageControls,key)) return value.toString(36);
-    const originalIndex=originalDamageIndices.indexOf(value);
-    return originalIndex>=0?originalIndex.toString(36):'+'+value.toString(36);
+    const originalIndex=originalDamageSteps.indexOf(value);
+    if(originalIndex>=0) return originalIndex.toString(36);
+    const previousIndex=previousDamageSteps.indexOf(value);
+    return previousIndex>=0?'+'+previousIndex.toString(36):'%'+value;
   }).join('.');
+}
+function closestStep(steps,value) {
+  return steps.reduce((closest,point)=>Math.abs(point-value)<Math.abs(closest-value)?point:closest,steps[0]);
 }
 function addTuningRows(controls,title,definitions,isDamage) {
   const heading=document.createElement('h3');
@@ -1077,13 +1547,13 @@ function addTuningRows(controls,title,definitions,isDamage) {
     caption.textContent=name;
     label.append(caption,input,output);
     input.type='range';input.min='0';input.max=steps.length-1;input.step='1';
-    input.value=isDamage?tuning[key]:steps.indexOf(tuning[key]);input.setAttribute('aria-label',name);
+    input.value=steps.indexOf(closestStep(steps,tuning[key]));input.setAttribute('aria-label',name);
     const update=()=>{
-      const value=steps[Number(input.value)] + (isDamage?'%':' ms');
+      const value=tuning[key]+(isDamage?'%':' ms');
       output.textContent=value;input.setAttribute('aria-valuetext',value);
     };
     input.addEventListener('input',()=>{
-      tuning[key]=isDamage?Number(input.value):steps[Number(input.value)];update();
+      tuning[key]=steps[Number(input.value)];update();
     });
     input.addEventListener('change',renderSetup);
     update();controls.append(label);
@@ -1100,23 +1570,24 @@ function openTuning() {
   });
 }
 function tuningText() {
-  return JSON.stringify({format:'Track’n’Trace’n settings',version:2,tuning,
+  return JSON.stringify({format:'Track’n’Trace’n settings',version:3,tuning,
     setup:{course:courses[options.course].id,vehicle:options.type,colors:options.colors,laps:options.laps,
-      event:options.mode,drag:options.drag,release:options.release,damage:options.damage,ghost:options.ghost,audio:audio.mode}},null,2);
+      event:options.mode,drag:options.drag,damage:options.damage,ghost:options.ghost,audio:audio.mode}},null,2);
 }
 function applyTuningText(text) {
   const data=JSON.parse(text);
-  if(data?.format!=='Track’n’Trace’n settings'||![1,2].includes(data.version)||!data.tuning) throw Error('Choose a Track’n’Trace’n settings export.');
+  if(data?.format!=='Track’n’Trace’n settings'||![1,2,3].includes(data.version)||!data.tuning) throw Error('Choose a Track’n’Trace’n settings export.');
   const next={...tuning};
   for(const [key,value] of Object.entries(data.tuning)) {
-    if(Object.hasOwn(damageControls,key)&&Number.isInteger(value)) {
-      const index=data.version===1?originalDamageIndices[value]:value;
-      if(index>=0&&index<DAMAGE_STEPS.length) next[key]=index;
+    if(Object.hasOwn(damageControls,key)&&Number.isFinite(value)) {
+      const points=data.version===1?originalDamageSteps:data.version===2?previousDamageSteps:null;
+      const percentage=points?points[value]:value;
+      if(Number.isFinite(percentage)&&percentage>=0&&percentage<=300) next[key]=percentage;
     }
     if(Object.hasOwn(timeControls,key)&&Number.isFinite(value)) {
       const [, , min,max,step]=timeControls[key];
       next[key]=data.version===1?clamp(min+Math.round((value-min)/step)*step,min,max):
-        timingSteps[key].reduce((closest,point)=>Math.abs(point-value)<Math.abs(closest-value)?point:closest,min);
+        closestStep(timingSteps[key],value);
     }
   }
   tuning=next;
@@ -1131,7 +1602,6 @@ function applyTuningText(text) {
     if(Number.isInteger(s.laps)) options.laps=clamp(s.laps,1,10);
     if(['race','damage'].includes(s.event)) options.mode=s.event;
     if(['trace','free'].includes(s.drag)) options.drag=s.drag;
-    if(['stop','flick'].includes(s.release)) options.release=s.release;
     if(['off','open','total'].includes(s.damage)) options.damage=s.damage;
     if(['none','fast','clean'].includes(s.ghost)) options.ghost=s.ghost;
     if(audioStates[s.audio]) audio.setMode(s.audio);
@@ -1264,11 +1734,11 @@ function logHit(game,hit) {
   spark(game,hit.x,hit.y,'impact',hit.strength,Math.atan2(-hit.ny,-hit.nx),hit.burst||1);
   if(damageMode(game.config)==='total') checkDamageEnd(game);
 }
-function drawScars(ctx,game,level=0) {
+function drawScars(ctx,game,level=0,accept=null) {
   for(const mark of game.scars) {
-    if(mark.t>game.elapsed*1000||routeLevelAt(game.course,mark.index)!==level) continue;
+    if(mark.t>game.elapsed*1000||(accept?!accept(mark.index):routeLevelAt(game.course,mark.index)!==level)) continue;
     ctx.save();ctx.translate(mark.x,mark.y);ctx.rotate(mark.a);
-    ctx.globalAlpha=clamp(.17+mark.strength*.32,.21,.59);
+    ctx.globalAlpha*=clamp(.17+mark.strength*.32,.21,.59);
     oval(ctx,0,0,5+11*mark.strength,1.3+mark.strength,game.color);
     ctx.lineWidth=.9;ctx.strokeStyle='#4b5147';ctx.beginPath();
     ctx.moveTo(-5,0);ctx.lineTo(-1,-2);ctx.lineTo(2,2);ctx.lineTo(5,.1);
@@ -1405,7 +1875,10 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
   const force=clamp(velocity*inward,0,720);
   const base=4.1*damageFactor(game,'contact')+force*.074*damageFactor(game,'normal')+
     Math.min(wall.over,4)*.32*damageFactor(game,'overlap');
-  const amount=base*game.spec.resistance*(shallow?.32:1);
+  const resistance=game.spec.resistance*(shallow?.32:1);
+  const amount=base*resistance;
+  const spreadLimit=3*(4.1+force*.074+Math.min(wall.over,4)*.32)*resistance;
+  const spread=(factor,share)=>Math.min(amount*damageFactor(game,factor),spreadLimit)*share;
   const index=hitSection(car.a,nx,ny);
   let added=0,crumpled=0;
   if(damageMode(game.config)!=='off') {
@@ -1417,9 +1890,9 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
     add(index,amount);
     if(force>205) {
       const neighbors=[[1,6],[0,2],[1,3],[2,4],[3,5],[4,9],[0,7],[6,8],[7,11],[5,10],[9,11],[10,8]];
-      for(const neighbor of neighbors[index]) add(neighbor,amount*.32*damageFactor(game,'adjacent'));
+      for(const neighbor of neighbors[index]) add(neighbor,spread('adjacent',.32));
     }
-    if(force>315) add(12,amount*.41*damageFactor(game,'core'));
+    if(force>315) add(12,spread('core',.41));
   }
   const strength=clamp(.19+force/540,.19,1.32);
   const burst=crumpled>=3?5:clamp(1+force/315+added/135,1,4.65);
@@ -1807,7 +2280,8 @@ function tickReplay(game,dt) {
   engineWear(game);updateEffects(game,dt);
   if(game.elapsed>=game.replayHigh) {game.replayPlaying=false;renderControls();}
 }
-function paintTrail(ctx,game) {
+function paintTrail(ctx,game,accept=null) {
+  const priorAlpha=ctx.globalAlpha;
   const points=game.trail, length=game.course.training?1650:game.course.length*.92;
   if(points.length<2) return;
   const width=game.config.type===3?2.1:2.65;
@@ -1819,7 +2293,7 @@ function paintTrail(ctx,game) {
       ctx.beginPath();
       for(let i=1;i<points.length;i++) {
         const a=points[i-1],b=points[i],age=(game.totalDistance-b.distance)/length;
-        if(age<lo||age>=hi||dist(a,b)>25||b.surface==='water'||b.surface==='curb'
+        if(age<lo||age>=hi||(accept&&!accept(b.index))||dist(a,b)>25||b.surface==='water'||b.surface==='curb'
           ||(b.surface!=='asphalt')!==rough) continue;
         for(const amount of gap?[-gap,gap]:[0]) {
           ctx.moveTo(a.x-Math.sin(a.a)*amount,a.y+Math.cos(a.a)*amount);
@@ -1827,11 +2301,11 @@ function paintTrail(ctx,game) {
         }
       }
       ctx.strokeStyle=rough ? '#ae8b67' : '#354541';
-      ctx.globalAlpha=(rough?.28:.68)*(1-lo)**1.15;
+      ctx.globalAlpha=priorAlpha*(rough?.28:.68)*(1-lo)**1.15;
       ctx.stroke();
     }
   }
-  ctx.globalAlpha=1;
+  ctx.globalAlpha=priorAlpha;
 }
 function setPathFlow(path) {
   let start=1, span=0, heading=null;
@@ -1875,16 +2349,48 @@ function drawScene(game) {
   const ctx=mainCtx;
   ctx.setTransform($('track').width/W,0,0,$('track').height/H,0,0);
   ctx.drawImage(game.course.map,0,0,W,H);
-  paintTrail(ctx,game);
-  const objects=level=>game.props.forEach((prop,i)=>{
-    if((prop.level||0)===level) drawProp(ctx,game.car.props?.[i]?{...prop,...game.car.props[i]}:prop);
-  });
-  drawScars(ctx,game);objects(0);
-  const levels=new Set();
-  drawDecks(ctx,game.course,game.car,d=>{
-    if(d.level&&!levels.has(d.level)) {levels.add(d.level);drawScars(ctx,game,d.level);objects(d.level);}
-  });
-  for(const level of [1,2]) if(!levels.has(level)) objects(level);
+  if(game.course.elevationData) {
+    const course=game.course, sectionByLayer=new Map();
+    const position=prop=>game.car.props?.[game.props.indexOf(prop)]||prop;
+    for(const prop of game.props) {
+      const level=prop.level||0;
+      const p=position(prop),n=course.samples.length;
+      let best=-1, distance=Infinity;
+      for(let i=0;i<n;i++) {
+        if(routeLevelAt(course,i)!==level) continue;
+        const gap=(p.x-course.samples[i].x)**2+(p.y-course.samples[i].y)**2;
+        if(gap<distance) {distance=gap;best=i;}
+      }
+      const layer=best<0?null:elevationSectionAt(course,best)??null;
+      if(!sectionByLayer.has(layer)) sectionByLayer.set(layer,[]);
+      sectionByLayer.get(layer).push({prop:{...prop,...p},index:best});
+    }
+    const drawObjects=(layer,filter=()=>true)=>{
+      for(const {prop,index} of sectionByLayer.get(layer)||[]) if(filter(index)) drawProp(ctx,prop);
+    };
+    paintTrail(ctx,game,index=>heightAt(course,index)===0);drawScars(ctx,game);drawObjects(null);
+    const revealed=drawDecks(ctx,course,game.car,section=>{
+      const owns=index=>elevationSectionAt(course,index)===section;
+      paintTrail(ctx,game,owns);
+      drawScars(ctx,game,undefined,owns);drawObjects(section);
+    });
+    if(revealed?.size) {
+      const visible=index=>revealed.has(mod(index,course.samples.length));
+      paintTrail(ctx,game,visible);drawScars(ctx,game,undefined,visible);
+      for(const section of course.elevationData.sections) if(section.negative) drawObjects(section,visible);
+    }
+  } else {
+    paintTrail(ctx,game);drawScars(ctx,game);
+    const objects=level=>game.props.forEach((prop,i)=>{
+      if((prop.level||0)===level) drawProp(ctx,game.car.props?.[i]?{...prop,...game.car.props[i]}:prop);
+    });
+    objects(0);
+    const levels=new Set();
+    drawDecks(ctx,game.course,game.car,d=>{
+      if(d.level&&!levels.has(d.level)) {levels.add(d.level);drawScars(ctx,game,d.level);objects(d.level);}
+    });
+    for(const level of [1,2]) if(!levels.has(level)) objects(level);
+  }
   paintPath(ctx,game);
   if(game.ghost&&game.elapsed<=game.ghost.duration+.28) {
     const p=poseAt(game.ghost,game.elapsed*1000),cfg=game.ghost.config;
@@ -1909,7 +2415,7 @@ function drawScene(game) {
   }
   drawVehicle(ctx,car.x,car.y,car.a,game.config.type,game.color,car.damage,{lights:car.speed<26&&game.started});
 }
-const designer={file:null,mode:'track',point:0,riverPoint:null,prop:null,deck:null,tool:'',pointer:null,drag:null,preview:null,frame:0};
+const designer={file:null,mode:'track',point:0,riverPoint:null,prop:null,deck:null,selectedPasses:[],tool:'',pointer:null,drag:null,preview:null,frame:0};
 const creatorKey='track-and-trace-courses-v1';
 const newCourseId=()=>window.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2,10);
 const jsonCopy=value=>JSON.parse(JSON.stringify(value));
@@ -1917,7 +2423,7 @@ const edges={wall:'Wall',grass:'Grass + curb',dirt:'Dirt + curb',grassPlain:'Gra
 function finite(value,min,max,fallback) {
   return Number.isFinite(value)?clamp(value,min,max):fallback;
 }
-function courseFromFile(file) {
+function courseFromFile(file,asReplay=false) {
   const points=file.points.map(p=>[p.x,p.y]);
   const edgeSections=[],roadSections=[];
   file.points.forEach((p,i)=>{
@@ -1931,14 +2437,19 @@ function courseFromFile(file) {
   return {id:file.id,name:file.name,kind:'Custom course',theme:file.theme,points,width:40,
     widthsByPoint:file.points.map(p=>p.width*.5),smoothing:file.curve,edgeSections,roadSections,
     dirt:editorThemes[file.theme].surface==='dirt',bridges:true,crossings:file.crossings,river:file.river,
-    props:file.props,custom:true,revision:file.revision,courseFile:file};
+    props:file.props,physicalElevation:!asReplay||file.version>=2,pointIds:file.points.map((p,i)=>p.id||'p'+i),
+    elevation:file.points.map(p=>p.elevation||'auto'),elevationOrders:file.elevationOrders,custom:true,revision:file.revision,courseFile:file};
 }
 function normalizeCourseFile(source) {
-  if(source?.format!=='Track’n’Trace’n course'||source.version!==1) throw Error('Choose a Track’n’Trace’n course file.');
+  if(source?.format!=='Track’n’Trace’n course'||![1,2].includes(source.version)) throw Error('Choose a Track’n’Trace’n course file.');
   if(!Array.isArray(source.points)||source.points.length<4||source.points.length>62) throw Error('A course needs 4–62 track points.');
-  const points=source.points.map(p=>{
+  const pointIds=new Set();
+  const points=source.points.map((p,i)=>{
     if(!Number.isFinite(p?.x)||!Number.isFinite(p?.y)) throw Error('A track point has an invalid position.');
-    return {x:clamp(p.x,55,W-55),y:clamp(p.y,53,H-53),width:finite(p.width,49,152,80),
+    let id=typeof p.id==='string'&&/^[\w-]{1,80}$/.test(p.id)?p.id:'p'+i;
+    if(pointIds.has(id)) id=newCourseId();
+    pointIds.add(id);
+    return {id,elevation:elevationChoices.includes(p.elevation)?p.elevation:'auto',x:clamp(p.x,55,W-55),y:clamp(p.y,53,H-53),width:finite(p.width,49,152,80),
       road:['asphalt','grass','dirt'].includes(p.road)?p.road:'',
       left:Object.hasOwn(edges,p.left)?p.left:'wall',right:Object.hasOwn(edges,p.right)?p.right:'wall'};
   });
@@ -1947,13 +2458,19 @@ function normalizeCourseFile(source) {
     {width:finite(source.river.width,10,110,35),points:source.river.points.slice(0,40).map(p=>[
       finite(p?.[0],-90,W+90,0),finite(p?.[1],-90,H+90,0)])}:null;
   const props=Array.isArray(source.props)?source.props.filter(p=>p&&Object.hasOwn(propTypes,p.type)).slice(0,35).map(p=>({
-    type:p.type,x:finite(p.x,4,W-4,W/2),y:finite(p.y,4,H-4,H/2),a:finite(p.a,-TAU,TAU,0),level:Math.round(finite(p.level,0,2,0))})): [];
+    type:p.type,x:finite(p.x,4,W-4,W/2),y:finite(p.y,4,H-4,H/2),a:finite(p.a,-TAU,TAU,0),level:Math.round(finite(p.level,-7,7,0))})): [];
   const crossings=Array.isArray(source.crossings)?source.crossings.filter(c=>c&&['bridge','tunnel','none'].includes(c.style)).slice(0,24).map(c=>({
     over:finite(c.over,0,.999999,0),under:finite(c.under,0,.999999,0),style:c.style,
     source:typeof c.source==='string'?c.source.slice(0,80):undefined})): [];
-  return {format:'Track’n’Trace’n course',version:1,id:typeof source.id==='string'&&/^[\w-]{1,80}$/.test(source.id)?source.id:newCourseId(),
+  const elevationOrders=Array.isArray(source.elevationOrders)?source.elevationOrders.filter(g=>g&&
+    Number.isFinite(g.x)&&Number.isFinite(g.y)&&Array.isArray(g.order)&&g.order.length>=2&&g.order.length<=12)
+    .slice(0,64).map(g=>({x:g.x,y:g.y,order:g.order.map(ref=>({
+      at:finite(ref?.at,0,.999999,0),t:finite(ref?.t,0,1,0),
+      from:pointIds.has(ref?.from)?ref.from:undefined,to:pointIds.has(ref?.to)?ref.to:undefined
+    }))})):[];
+  return {format:'Track’n’Trace’n course',version:source.version,id:typeof source.id==='string'&&/^[\w-]{1,80}$/.test(source.id)?source.id:newCourseId(),
     name:(typeof source.name==='string'?source.name.trim().slice(0,55):'')||'Untitled course',
-    theme:Object.hasOwn(editorThemes,source.theme)?source.theme:'speedway',points,props,river,crossings,
+    theme:Object.hasOwn(editorThemes,source.theme)?source.theme:'speedway',points,props,river,crossings,elevationOrders,
     revision:Math.round(finite(source.revision,0,100000,0)),curve:finite(source.curve,0,100,50)};
 }
 function loadCustomCourses() {
@@ -1974,25 +2491,25 @@ function copyTemplate(index) {
       const item=c.widths[Math.max(0,sample)][side];
       return item.type?item.type+(item.curb?'':'Plain'):'wall';
     };
-    return {x,y,width:Math.round((c.widthsByPoint?.[i]??c.width)*2),road:c.dirt?'dirt':'asphalt',left:edge(1),right:edge(0)};
+    return {x,y,id:'p'+i,elevation:c.elevation?.[i]||'auto',width:Math.round((c.widthsByPoint?.[i]??c.width)*2),road:c.dirt?'dirt':'asphalt',left:edge(1),right:edge(0)};
   });
   const river=riverSpec(c), stride=river&&Math.max(1,Math.floor(river.points.length/7));
-  return {format:'Track’n’Trace’n course',version:1,id:newCourseId(),name:c.name+' copy',theme:c.theme,points,
-    crossings:[],props:c.props.map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:0})),curve:50,revision:0,
+  return {format:'Track’n’Trace’n course',version:2,id:newCourseId(),name:c.name+' copy',theme:c.theme,points,
+    crossings:[],elevationOrders:[],props:c.props.map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:0})),curve:50,revision:0,
     river:river?{width:river.width,points:river.points.filter((_,i)=>i%stride===0||i===river.points.length-1)}:null};
 }
 function editorStatus(message) {$('creator-status').textContent=message;}
 function newDraft(template=0,rename=false) {
   designer.file=copyTemplate(template);
   if(rename) {designer.file.name='Untitled course';designer.file.id=newCourseId();}
-  designer.point=0;designer.prop=null;designer.deck=null;designer.riverPoint=null;designer.tool='';
+  designer.point=0;designer.prop=null;designer.deck=null;designer.selectedPasses=[];designer.riverPoint=null;designer.tool='';
   editorRender(true);
 }
 function startCreator() {
   $('setup').hidden=true;$('creator').hidden=false;
   if(!designer.file) {
     newDraft(courses[options.course].custom?options.course:0,!courses[options.course].custom);
-    editorStatus('Drag points to shape the course. Select a point to change the section that follows it.');
+    editorStatus('Drag points to shape the course. Tap a crossing badge to swap its passes.');
   } else editorRender(true);
 }
 function closeCreator() {$('creator').hidden=true;$('setup').hidden=false;renderSetup();}
@@ -2001,12 +2518,14 @@ function editMode(mode) {
   editorRender(false);
 }
 function editorPickCourse() {
-  const selected=normalizeCourseFile({...designer.file,name:$('creator-name').value});
+  const selected=normalizeCourseFile({...designer.file,version:2,name:$('creator-name').value});
   return selected;
 }
 function storeDraft() {
   try {
     const file=editorPickCourse(), index=courses.findIndex(c=>c.custom&&c.id===file.id);
+    const preview=prepareDefinition(courseFromFile(file),0,.6);
+    if(preview.elevationData.warnings.length) throw Error(preview.elevationData.warnings[0]);
     const prior=index<0?0:courses[index].revision;
     file.revision=Math.max(prior,file.revision)+1;
     const files=courses.slice(builtInCount).filter(c=>c.id!==file.id).map(c=>c.courseFile);
@@ -2052,15 +2571,33 @@ function paintHandle(ctx,p,selected,index) {
     ctx.fillStyle='#fff3d1';ctx.fillText(String(index+1),p.x+12,p.y-8);
   }
 }
+function crossingHandle(group) {
+  return {x:group.x+21,y:group.y-20};
+}
 function paintEditor() {
   const file=designer.file,c=designer.preview, ctx=$('creator-map').getContext('2d');
   if(!c) return;
   drawCoursePreview(ctx,c,false);
   if(designer.mode==='track') {
-    for(const [i,p] of file.points.entries()) paintHandle(ctx,p,designer.point===i,i);
-    for(const [i,d] of c.decks.entries()) {
-      const p=c.samples[d.index];
-      rounded(ctx,p.x-7,p.y-7,14,14,3,designer.deck===i?'#fcb679':'#a6dcd6');
+    const data=c.elevationData;
+    for(const [i,p] of file.points.entries()) {
+      paintHandle(ctx,p,designer.point===i,i);
+      const level=routeLevelAt(c,data.anchors[i]??0);
+      if(level) {
+        ctx.font='bold 11px system-ui';ctx.fillStyle=level<0?'#d2e4f5':'#ffdc98';
+        ctx.fillText(heightText(level),p.x+11,p.y+13);
+      }
+    }
+    for(const group of data.groups) {
+      const p=crossingHandle(group), selected=designer.deck===group.id;
+      rounded(ctx,p.x-8,p.y-8,16,16,3,group.conflict?'#e19a73':selected?'#fcb679':'#a6dcd6');
+      ctx.font='bold 11px system-ui';ctx.fillStyle='#173c3a';ctx.fillText(String(group.passes.length),p.x-3,p.y+4);
+      if(selected) for(const pass of group.order) {
+        const a=c.samples[mod(pass.index-pass.half-3,c.samples.length)];
+        const b=c.samples[mod(pass.index+pass.half+3,c.samples.length)];
+        const color=designer.selectedPasses.includes(pass.index)?'#ffbb7c':'#d0ecae';
+        oval(ctx,a.x,a.y,5,5,color);oval(ctx,b.x,b.y,5,5,color);
+      }
     }
   }
   if(designer.mode==='river'&&file.river) {
@@ -2086,7 +2623,7 @@ function editorRender(rebuild) {
     $('creator-'+mode+'-tools').hidden=!active;
   }
   const point=file.points[designer.point], object=file.props[designer.prop];
-  for(const id of ['creator-width','creator-road','creator-left','creator-right','creator-startline','creator-tunnel']) $(id).disabled=!point;
+  for(const id of ['creator-width','creator-road','creator-left','creator-right','creator-startline']) $(id).disabled=!point;
   $('creator-remove').disabled=!point||file.points.length<=4;
   $('creator-add').disabled=file.points.length>=62;
   $('creator-add').textContent=designer.tool==='add'?'Tap to add':'Add point';
@@ -2095,14 +2632,31 @@ function editorRender(rebuild) {
     $('creator-road').value=point.road;$('creator-left').value=point.left;$('creator-right').value=point.right;
   }
   $('creator-curve').value=file.curve;$('creator-curve-value').textContent=file.curve;
-  const crossing=$('creator-crossing');
-  crossing.replaceChildren(new Option('Select crossing',''));
-  designer.preview?.decks.forEach((d,i)=>crossing.add(new Option((d.style==='tunnel'?'Tunnel ':'Bridge ')+(i+1),String(i))));
-  if(designer.deck!=null&&!designer.preview?.decks[designer.deck]) designer.deck=null;
-  crossing.value=designer.deck==null?'':String(designer.deck);
-  const deck=designer.preview?.decks[designer.deck];
-  $('creator-deck').disabled=!deck;$('creator-swap').disabled=!deck||deck.flatRoof;
-  $('creator-deck').value=deck?.style||'bridge';
+  const data=designer.preview.elevationData, anchor=data.anchors[designer.point]??0;
+  $('creator-elevation-point').textContent='Point '+(designer.point+1)+' · '+heightText(routeLevelAt(designer.preview,anchor));
+  segmentation('creator-elevation',point?.elevation||'auto');
+  for(const choice of $('creator-elevation').querySelectorAll('button')) choice.disabled=designer.point===0;
+  const portal=data.portals.find(p=>p.index===anchor);
+  $('creator-portal').hidden=!portal;
+  $('creator-portal').textContent=portal?.entry?'Tunnel entry':'Tunnel exit';
+  $('creator-elevation-warning').hidden=data.warnings.length===0;
+  $('creator-elevation-warning').textContent=data.warnings[0]||'';
+  if(designer.deck!=null&&!data.groups[designer.deck]) {designer.deck=null;designer.selectedPasses=[];}
+  const selected=data.groups[designer.deck], passes=$('creator-passes');
+  $('creator-stack').hidden=!selected;passes.replaceChildren();
+  if(selected) for(const [i,pass] of selected.order.entries()) {
+    const edge=Math.floor(designer.preview.samples[pass.index].u);
+    const text=(selected.order.length-1===i?'Top · ':i===0?'Bottom · ':'')+
+      'After point '+(edge+1)+' · '+heightText(pass.level);
+    const pick=button(text,()=>{
+      if(designer.selectedPasses.includes(pass.index)) designer.selectedPasses=designer.selectedPasses.filter(p=>p!==pass.index);
+      else designer.selectedPasses=[...designer.selectedPasses.slice(-1),pass.index];
+      editorRender(false);
+    });
+    pick.setAttribute('aria-pressed',designer.selectedPasses.includes(pass.index));
+    passes.append(pick);
+  }
+  $('creator-swap').disabled=designer.selectedPasses.length!==2;
   $('river-width').disabled=!file.river;$('river-clear').disabled=!file.river;
   $('river-remove').disabled=designer.riverPoint==null;
   if(file.river) {$('river-width').value=file.river.width;$('river-width-value').textContent=file.river.width;}
@@ -2139,14 +2693,18 @@ function editorDown(e) {
       const sample=project(designer.preview,position.x,position.y,null).index;
       const prior=Math.floor(designer.preview.samples[sample].u);
       const i=prior+1, base=file.points[prior];
-      file.points.splice(i,0,{...base,x:clamp(position.x,55,W-55),y:clamp(position.y,53,H-53)});
+      file.points.splice(i,0,{...base,id:newCourseId(),elevation:'auto',x:clamp(position.x,55,W-55),y:clamp(position.y,53,H-53)});
       designer.point=i;designer.tool='';designer.drag=file.points[i];editorRender(true);return;
     }
-    const i=selectNearby(file.points,position,radius);
-    if(i!=null) {designer.point=i;designer.drag=file.points[i];}
-    else {
-      const points=designer.preview.decks.map(d=>designer.preview.samples[d.index]);
-      designer.deck=selectNearby(points,position,radius);
+    const groups=designer.preview.elevationData.groups;
+    const crossing=selectNearby(groups.map(crossingHandle),position,Math.min(radius,18));
+    if(crossing!=null) {
+      designer.deck=crossing;designer.selectedPasses=[];
+    } else {
+      const i=selectNearby(file.points,position,radius);
+      if(i!=null) {designer.point=i;designer.drag=file.points[i];}
+      else designer.deck=selectNearby(groups,position,Math.min(radius,23));
+      designer.selectedPasses=[];
     }
   } else if(designer.mode==='river') {
     const river=file.river;
@@ -2177,15 +2735,18 @@ function editorMove(e) {
   if(designer.mode==='objects') paintEditor();
   else queueEditorPaint();
 }
-function editDeck(style,swap=false) {
-  const course=designer.preview, deck=course.decks[designer.deck];
-  if(!deck) return;
-  const n=course.samples.length, file=designer.file, over=deck.index/n,under=deck.under[0]/n;
-  const identity=deck.source||[Math.round(over*1000),Math.round(under*1000)].sort((a,b)=>a-b).join('/');
-  const i=file.crossings.findIndex(c=>c.source===identity ||
-    Math.abs(c.over-over)+Math.abs(c.under-under)<.04 || Math.abs(c.over-under)+Math.abs(c.under-over)<.04);
-  const entry={over:swap?under:over,under:swap?over:under,style,source:identity};
-  if(i<0) file.crossings.push(entry);else file.crossings[i]=entry;
+function swapCrossingPasses() {
+  const course=designer.preview,group=course.elevationData.groups[designer.deck];
+  if(!group||designer.selectedPasses.length!==2) return;
+  const order=group.order.slice();
+  const [a,b]=designer.selectedPasses.map(index=>order.findIndex(p=>p.index===index));
+  if(a<0||b<0||a===b) return;
+  [order[a],order[b]]=[order[b],order[a]];
+  const orders=designer.file.elevationOrders??=[];
+  const entry={x:group.x,y:group.y,order:order.map(pass=>visitReference(course,pass))};
+  const old=orders.indexOf(group.saved);
+  if(old<0) orders.push(entry);else orders[old]=entry;
+  designer.selectedPasses=[];
   editorRender(true);
 }
 function initializeEditor() {
@@ -2199,7 +2760,7 @@ function initializeEditor() {
   listen('creator-file','change',async(_,event)=>{
     try {
       designer.file=normalizeCourseFile(JSON.parse(await event.target.files[0].text()));
-      designer.point=0;designer.riverPoint=null;designer.prop=null;designer.deck=null;designer.tool='';
+      designer.point=0;designer.riverPoint=null;designer.prop=null;designer.deck=null;designer.selectedPasses=[];designer.tool='';
       editorRender(true);editorStatus('Course imported. Save it to add it to the race menu.');
     } catch(error) {if(event.target.files.length) editorStatus(error.message);}
     event.target.value='';
@@ -2216,24 +2777,22 @@ function initializeEditor() {
   action('creator-startline',()=>{
     const file=designer.file, i=designer.point;
     if(i===0) return;
-    const cut=designer.preview.samples.findIndex(p=>p.u>=i)/designer.preview.samples.length;
+    if(routeLevelAt(designer.preview,designer.preview.elevationData.anchors[i])!==0) {
+      editorStatus('Choose a ground point for the start.');
+      return;
+    }
+    const cut=designer.preview.elevationData.anchors[i]/designer.preview.samples.length;
     file.crossings.forEach(c=>{c.over=mod(c.over-cut,1);c.under=mod(c.under-cut,1);});
-    file.points.push(...file.points.splice(0,i));designer.point=0;editorRender(true);
+    (file.elevationOrders||[]).forEach(g=>g.order.forEach(ref=>{ref.at=mod(ref.at-cut,1);}));
+    file.points.push(...file.points.splice(0,i));designer.point=0;designer.deck=null;designer.selectedPasses=[];editorRender(true);
   });
   listen('creator-width','input',value=>update('width',Number(value)));
   listen('creator-road','change',value=>update('road',value));
   listen('creator-left','change',value=>update('left',value));
   listen('creator-right','change',value=>update('right',value));
   listen('creator-curve','input',value=>{designer.file.curve=Number(value);editorRender(true);});
-  listen('creator-crossing','change',value=>{designer.deck=value===''?null:Number(value);editorRender(false);});
-  listen('creator-deck','change',value=>editDeck(value));
-  action('creator-tunnel',()=>{
-    const c=designer.preview, i=c.samples.findIndex(p=>p.u>=designer.point);
-    const at=Math.max(0,i)/c.samples.length;
-    designer.file.crossings.push({over:at,under:at,style:'tunnel',source:String(Math.round(at*1000))});
-    editorRender(true);
-  });
-  action('creator-swap',()=>editDeck(designer.preview.decks[designer.deck].style||'bridge',true));
+  onSegment('creator-elevation',value=>update('elevation',value),false);
+  action('creator-swap',swapCrossingPasses);
   action('river-add',()=>{designer.tool=designer.tool==='river'?'':'river';editorRender(false);});
   action('river-clear',()=>{designer.file.river=null;designer.riverPoint=null;editorRender(true);});
   action('river-remove',()=>{
@@ -2362,14 +2921,14 @@ function saveRun(game,completed,highlightsOnly=false) {
 }
 
 loadCustomCourses();
-const options={course:0,type:0,colors:[0,0,0,0],laps:3,mode:'race',drag:'trace',release:'stop',damage:'total',ghost:'none'};
+const options={course:0,type:0,colors:[0,0,0,0],laps:3,mode:'race',drag:'trace',damage:'total',ghost:'none'};
 try {
   const saved=JSON.parse(localStorage.getItem('track-and-trace-setup-v1')||'null');
   if(saved) {
     Object.assign(options,saved.options);
     if(saved.courseId) {const index=courses.findIndex(c=>c.id===saved.courseId);if(index>=0) options.course=index;}
     if(!courses[options.course]) options.course=0;
-    options.damage=damageMode(options);
+    options.damage=damageMode(options);delete options.release;
     audio.setMode(audioStates[saved.audio]?saved.audio:saved.muted?'off':'both');
   }
 } catch {}
@@ -2381,7 +2940,7 @@ function saveOptions() {
 function configNow() {
   const course=courses[options.course];
   return {course:options.course,courseId:course.id,layout:course.revision,type:options.type,color:options.colors[options.type],laps:options.laps,
-    mode:training?'training':options.mode,drag:options.drag,release:options.release,damage:options.damage,tuneKey:tuningId(tuning)};
+    mode:training?'training':options.mode,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
 }
 function clock(s) {
   const ms=Math.max(0,Math.round(s*1000));
@@ -2433,7 +2992,6 @@ function renderSetup() {
   $('sound').setAttribute('title',audioStates[audio.mode]);
   $('sound').setAttribute('aria-label',audioStates[audio.mode]+' · change audio mode');
   segmentation('event-select',options.mode);segmentation('drag-select',options.drag);segmentation('damage-select',options.damage);
-  segmentation('release-select',options.release);$('release-row').hidden=options.drag!=='free';
   $('event-select').querySelector('[data-value=damage]').disabled=options.damage==='off';
   $('mode-row').hidden=training;$('lap-row').hidden=training;$('ghost-row').hidden=training||options.mode==='damage';
   $('records').hidden=training;
@@ -2447,7 +3005,7 @@ function renderSetup() {
     if(match) ghost.add(new Option(label+' · '+clock(match.duration),key));
   }
   ghost.value=[...ghost.options].some(o=>o.value===options.ghost)?options.ghost:'none';
-  const hint=options.drag==='trace'?'Draw ahead. A new touch replaces the path.':'Drag the vehicle directly around the course.';
+  const hint=options.drag==='trace'?'Draw ahead. A new touch replaces the path.':'Drag to steer. Release while moving to flick the vehicle.';
   $('hint').textContent=training ? (options.damage==='total'?'Training ends with the first damage. ':'Exit whenever you like. ')+hint : hint;
   saveOptions();
 }
@@ -2677,7 +3235,11 @@ async function launchReplay(record) {
   const index=courses.findIndex(c=>c.id===record.config.courseId);
   const config={...record.config,course:index>=0?index:record.config.course};
   const courseFile=record.courseFile;
-  const game=makeRun(config,null,courseFile?prepareDefinition(courseFromFile(courseFile),config.course):null);
+  const fallback=legacyCourses[config.course];
+  const oldLayout=fallback&&!record.config.layout&&courses[config.course]?.revision&&
+    !courses[config.course]?.custom;
+  const definition=courseFile?courseFromFile(courseFile,true):oldLayout?fallback:null;
+  const game=makeRun(config,null,definition?prepareDefinition(definition,config.course):null);
   game.scars=record.impacts.filter(h=>!h.prop).map(h=>({...h,a:Math.atan2(h.ny,h.nx)+Math.PI/2}));
   game.replay=record;game.tune=record.tune;
   game.replayLow=record.low??0;game.replayHigh=record.high??record.duration;
@@ -2744,7 +3306,7 @@ for(const name of ['pointerup','pointercancel','lostpointercapture']) {
     if(!run||run.pointer!==e.pointerId) return;
     if(name==='pointerup') {
       if(run.config.drag==='trace'&&run.tip&&!run.stalled) appendRoute(run,run.tip,true);
-      if(run.config.drag==='free'&&run.config.release==='flick'&&run.gesture.length>=2) {
+      if(run.config.drag==='free'&&run.gesture.length>=2) {
         const tail=run.gesture.at(-1), head=run.gesture[0], now=e.timeStamp??performance.now();
         const gap=dist(head,tail), seconds=Math.max(.018,(tail.t-head.t)/1000);
         if(now-tail.t<95&&gap>7) run.releasePending={a:Math.atan2(tail.y-head.y,tail.x-head.x),speed:Math.min(980,gap/seconds)};
@@ -2768,7 +3330,6 @@ $('next-vehicle').addEventListener('click',()=>{options.type=mod(options.type+1,
 onSegment('event-select',value=>{options.mode=value;});
 onSegment('drag-select',value=>{options.drag=value;});
 onSegment('damage-select',value=>{options.damage=value;if(value==='off') options.mode='race';});
-onSegment('release-select',value=>{options.release=value;});
 $('tuning-open').addEventListener('click',openTuning);
 $('less-laps').addEventListener('click',()=>applyLap(-1));
 $('more-laps').addEventListener('click',()=>applyLap(1));
