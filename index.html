@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.07</title>
+<title>Track’n’Trace’n v0.08</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -95,7 +95,10 @@
 .vehicle-preview .neighbor canvas{width:100%;height:clamp(27px,6vh,47px);opacity:.78;object-fit:contain}
 .vehicle-preview .neighbor span{font-size:19px;line-height:.7}
 .vehicle-preview #vehicle{height:clamp(62px,14vh,126px);object-fit:contain}
-.vehicle-name{margin:0;font-size:clamp(19px,3vw,34px)}
+select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4vw,24px);min-height:37px;border:1px solid var(--line);border-radius:8px;background:var(--field);color:var(--cream);text-align:left;cursor:pointer}
+.vehicle-name option,.vehicle-name optgroup{font-size:15px;background:var(--field);color:var(--cream)}
+.vehicle-detail{margin:0;color:var(--muted);font-size:11px;line-height:1.28}
+@media(orientation:landscape) and (max-height:460px){.vehicle-detail{font-size:10px}select.vehicle-name{min-height:31px}}
 .paint-heading{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px;font-weight:700}
 .paint-heading output{color:var(--cream)}
 .swatches{width:100%;display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:5px;margin:0}
@@ -174,7 +177,7 @@
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.07</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.08</span></div>
    <div class="mast-actions"><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div class="layout">
@@ -193,7 +196,8 @@
      <canvas class="slide-surface" id="vehicle" width="260" height="130" aria-hidden="true"></canvas>
      <button class="neighbor" id="next-vehicle" aria-label="Next vehicle"><canvas id="vehicle-next-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">›</span></button>
     </div>
-    <div class="vehicle-name" id="vehicle-name" aria-live="polite"></div>
+    <select class="vehicle-name" id="vehicle-name" aria-label="Choose vehicle" aria-describedby="vehicle-detail"></select>
+    <p id="vehicle-detail" class="vehicle-detail" hidden></p>
     <div class="paint-heading"><span>Paint colour</span><output id="paint-name"></output></div>
     <div class="swatches" id="swatches" aria-label="Vehicle colour"></div>
     <div class="launch">
@@ -211,6 +215,8 @@
     <div class="rule-field"><span class="label">Steering</span><div class="segmented" id="drag-select"><button data-value="trace">Draw path</button><button data-value="free">Free drag</button></div></div>
     <div class="rule-field"><span class="label">Damage</span><div class="segmented" id="damage-select"><button data-value="off">Off</button><button data-value="open">Damage only</button><button data-value="total">Can total</button></div></div>
     <div class="rule-field" id="lap-row"><span class="label">Laps</span><div class="segmented"><button id="less-laps" aria-label="Fewer laps">−</button><button id="laps-value" aria-label="Lap count, press to increase">3</button><button id="more-laps" aria-label="More laps">+</button></div></div>
+    <div class="rule-field" id="hazards-row" hidden><span class="label">Track hazards</span><div class="segmented" id="hazards-select"><button data-value="off">Off</button><button data-value="on">On</button></div><p id="hazards-copy" class="rule-explanation"></p></div>
+    <div class="rule-field"><label for="music-select">Soundtrack</label><select id="music-select"></select></div>
     <div class="rule-field" id="ghost-row"><label for="ghost-select">Ghost</label><select id="ghost-select" aria-label="Ghost"></select></div>
    </div>
   </div>
@@ -372,8 +378,78 @@ const vehicles = [
   {name:'F1 Car', length:51, width:27, max:470, accel:415, turn:6.75, resistance:1.0, palette:['#f66c50','#f9be56','#43c1d2','#eee9cc']},
   {name:'Supercar', length:48, width:28, max:419, accel:375, turn:6.1, resistance:.79, palette:['#ffac5e','#ed6d98','#76dcae','#899afa']},
   {name:'Monster Truck', length:50, width:33, max:342, accel:246, turn:4.75, resistance:.53, palette:['#b9d75e','#d685f5','#f88851','#58bcdf']},
-  {name:'Motorbike', length:47, width:24, max:495, accel:455, turn:8.8, resistance:1.30, palette:['#5bcee0','#fc7461','#ffe081','#b0dd79']}
+  {name:'Motorbike', length:47, width:24, max:495, accel:455, turn:8.8, resistance:1.30, palette:['#5bcee0','#fc7461','#ffe081','#b0dd79']},
+  {name:'Tank',style:'tank',
+    description:'Heavy armour and the slowest acceleration and top speed.',
+    length:53,width:31,max:134,accel:75,turn:3.8,resistance:.075,
+    engine:25,engineRange:.92,engineTone:'square',
+    palette:['#b0dd79','#505e66','#43c1d2','#eee9cc']},
+  {name:'Bulldozer',style:'dozer',
+    description:'Armoured front blade shoves objects. Sides and rear can take damage.',
+    length:54,width:37,max:170,accel:106,turn:3.5,resistance:.32,
+    engine:32,engineRange:1.06,engineTone:'triangle',blade:true,
+    palette:['#f9be56','#f88851','#eee9cc','#b9d75e']},
+  {name:'Off-Road Racing Truck',style:'rally',
+    description:'Recovers quickly after a hit and gets back to following the drawn path.',
+    length:50,width:32,max:382,accel:315,turn:5.65,resistance:.68,
+    engine:49,recovery:2.8,
+    palette:['#58bcdf','#f66c50','#ffe081','#b9d75e']},
+  {name:'Hot Rod',style:'hotrod',
+    length:47,width:27,max:423,accel:387,turn:5.7,resistance:.91,
+    engine:48,
+    palette:['#f66c50','#ffe081','#505e66','#d685f5']},
+  {name:'Van',style:'van',
+    length:49,width:28,max:286,accel:218,turn:4.75,resistance:.70,
+    engine:54,
+    palette:['#eee9cc','#58bcdf','#76dcae','#ffac5e']},
+  {name:'Copper Mini',style:'mini',
+    length:35,width:23,max:337,accel:344,turn:8.1,resistance:1.07,
+    engine:79,
+    palette:['#f88851','#f66c50','#43c1d2','#b0dd79']},
+  {name:'Electric Car',style:'electric',
+    description:'An electric motor hum rises with speed.',
+    length:47,width:27,max:406,accel:446,turn:6.35,resistance:.86,
+    engine:123,engineRange:2.25,engineTone:'sine',
+    palette:['#76dcae','#f7f5e8','#899afa','#505e66']},
+  {name:'Big Rig Cab',style:'tractor',
+    length:43,width:30,max:294,accel:216,turn:5.1,resistance:.51,
+    engine:38,
+    palette:['#58bcdf','#f66c50','#505e66','#f9be56']},
+  {name:'Big Rig · Long Trailer',style:'tractor',
+    length:43,width:30,max:251,accel:174,turn:4.55,resistance:.56,
+    engine:37,trailers:[61],
+    palette:['#899afa','#58bcdf','#f9be56','#505e66']},
+  {name:'Big Rig · Double Trailer',style:'tractor',
+    length:43,width:30,max:224,accel:138,turn:4.1,resistance:.60,
+    engine:35,trailers:[61,61],
+    palette:['#f66c50','#58bcdf','#505e66','#f9be56']},
+  {name:'Logging Truck',style:'logging',
+    description:'Hard hits can spill logs onto the track. The truck gets quicker with each one it drops.',
+    length:43,width:30,max:233,accel:148,turn:4.25,resistance:.58,
+    engine:39,trailers:[54],cargo:4,
+    palette:['#b0dd79','#f88851','#505e66','#43c1d2']},
+  {name:'Police Car',style:'police',
+    description:'Flashing red and blue lights.',
+    length:48,width:28,max:397,accel:349,turn:6.2,resistance:.78,
+    engine:62,
+    palette:['#f7f5e8','#505e66','#58bcdf','#899afa']},
+  {name:'Magic Carpet',style:'carpet',
+    description:'Floats over objects and oil, turns wide and leaves a glitter trail.',
+    length:43,width:30,max:259,accel:220,turn:3.45,resistance:.93,
+    hover:true,
+    palette:['#d685f5','#ed6d98','#43c1d2','#f66c50']}
 ];
+
+// The first four indices and palette entries belong to existing runs and settings.
+const fleetGroups=[
+  ['Race',0,1,2,3,6,7], ['Road',8,9,10,15], ['Heavy',4,5,11,12,13,14], ['Magic',16]
+];
+function normalizePaint(colors) {
+  return vehicles.map((spec,i)=>{
+    const value=Number(colors?.[i]);
+    return Number.isInteger(value)&&spec.palette[value]?value:0;
+  });
+}
 const landscapes = {
   speedway:{ground:'#69a373', grass:'#6daa78', turf:'#60986e', dust:'#bc9d70', road:'#616c67', edge:'#e6e5bc', rail:'#b9c4ae', shade:'#778c76', leaf:['#78af78','#508a66','#91bf80']},
   copper:{ground:'#c99c69', grass:'#d3a675', turf:'#be8d60', dust:'#dfb083', road:'#656963', edge:'#f7ddad', rail:'#ded5b4', shade:'#9a8b70', leaf:['#a8a575','#7f8a62','#e3b780']},
@@ -509,8 +585,9 @@ function prepareDefinition(definition,index=0,scale=1.35) {
   }
   if(course.damageEvent) {
     const clear=[];
-    for(const prop of course.props) {
-      if(clear.some(other=>Math.hypot(prop.x-other.x,prop.y-other.y)<propTypes[prop.type].r+propTypes[other.type].r+2)) continue;
+    for(const prop of course.props||[]) {
+      if(!propTypes[prop.type].stationary&&clear.some(other=>!propTypes[other.type].stationary&&
+        Math.hypot(prop.x-other.x,prop.y-other.y)<propTypes[prop.type].r+propTypes[other.type].r+2)) continue;
       clear.push(prop);
     }
     course.props=clear;
@@ -526,10 +603,11 @@ function prepareDefinition(definition,index=0,scale=1.35) {
   course.map=trackCanvas(ctx=>renderMap(ctx,course),scale);
   return course;
 }
-function drawCoursePreview(ctx,course,props=true) {
+function drawCoursePreview(ctx,course,props=true,hazards=false) {
   ctx.drawImage(course.map,0,0,W,H);
   drawDecks(ctx,course);
   if(props) for(const o of course.props||[]) drawProp(ctx,o);
+  if(hazards) for(const o of course.hazards||[]) drawProp(ctx,o);
 }
 
 function project(course, x, y, index, radius = 11) {
@@ -812,7 +890,9 @@ const propTypes={
   drum:{name:'Traffic drum',r:15,mass:1.34,cap:183,bounces:1,drag:1.6},
   crate:{name:'Pit crate',r:15,mass:1.47,cap:162,bounces:1,drag:1.92},
   wheel:{name:'Spare race wheel',r:12,mass:.68,cap:310,bounces:2,drag:1.21},
-  foam:{name:'Foam marker',r:13,mass:.49,cap:278,bounces:2,drag:1.51}
+  foam:{name:'Foam marker',r:13,mass:.49,cap:278,bounces:2,drag:1.51},
+  oil:{name:'Oil spill',r:15,ry:10,stationary:true},
+  log:{name:'Loose log',r:11,mass:.92,cap:234,bounces:2,drag:1.37}
 };
 function courseOptions(category=false) {
   return courses.flatMap((course,index)=>{
@@ -866,7 +946,12 @@ function setRouteData(course) {
     (course.dirt?'dirt':'asphalt'));
   if(course.physicalElevation) solveElevation(course);
   else setLegacyDecks(course);
-  course.props=(course.props||[]).map(o=>{
+  course.props=placeCourseProps(course,course.props||[]);
+  course.hazards=placeCourseProps(course,course.hazards||[]);
+}
+function placeCourseProps(course,props) {
+  const n=course.samples.length;
+  return props.map(o=>{
     if(o.at==null) return {...o};
     const side=o.side===1?1:0,start=Math.floor(o.at*n);
     if(o.lane!=null) {
@@ -1419,6 +1504,20 @@ for(const [i,layout] of raceLayouts.entries()) {
 }
 courses[9]={...courses[9],physicalElevation:true,
   elevation:parkLoop.map((_,i)=>i===12?'down':i===14?'up':'auto')};
+
+// These circuits have a sparse optional layout. Positions use the local lane and deck.
+const optionalHazards={
+  oval:[['cone',.16,-.82],['oil',.39,.52],['tyres',.74,.76]],
+  switchback:[['crate',.25,.82],['cone',.57,-.78],['oil',.77,.53]],
+  hairpin:[['drum',.24,-.74],['oil',.56,.54]],
+  quarry:[['tyres',.21,.78],['log',.46,-.72],['drum',.73,.85]],
+  marsh:[['barrier',.33,-.82],['oil',.53,.53],['cone',.86,.76]],
+  'over-under':[['cone',.17,-.82],['oil',.43,.54],['crate',.72,.82]]
+};
+for(const course of courses) {
+  const placements=optionalHazards[course.id];
+  if(placements) course.hazards=placements.map(([type,at,lane])=>({type,at,lane}));
+}
 const pitProps=['cone','wheel','foam','drum','crate','tyres','barrier'];
 
 function circuitObjects(stations,types,phase=0) {
@@ -1611,7 +1710,7 @@ function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
     if(sectionStage(damage[10])<3) {
       for(let i=0;i<3;i++) rounded(ctx,-17+i*2.4,-2.9,.8,5.8,.3,hi);
     }
-  } else {
+  } else if(type===3) {
     racingTyre(ctx,18.1,0,11.5,6.3,sectionStage(damage[1]));
     racingTyre(ctx,-18.2,0,12.1,7.2,sectionStage(damage[10]));
     rounded(ctx,-14,-2.4,28,4.8,2.1,side);
@@ -1624,17 +1723,36 @@ function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
       rounded(ctx,-10,-1.85,7.3,3.7,1.8,'#53655c');
     }
     rounded(ctx,10,-5.05,1.55,10.1,.7,'#728475');
+  } else {
+    const trailerAngles=options.trailerAngles?.map(heading=>deltaAngle(a,heading));
+    drawFleetBody(ctx,spec,color,damage,{...options,trailerAngles});
   }
-  if(options.lights) oval(ctx,-l*.44,0,2,1.3,'#ff9670');
+  if(options.lights&&!spec.hover) oval(ctx,-l*.44,0,2,1.3,'#ff9670');
   ctx.restore();
 }
 const audioStates={both:'Music and effects',effects:'Sound effects only',music:'Music only',off:'Sound off'};
 const tunes = [
-  {bpm:113, lead:[0,7,10,12,10,7,3,7,0,7,12,15,12,10,7,3],roots:[40,40,43,38],tone:'triangle'},
-  {bpm:124, lead:[0,3,7,10,7,3,2,7,0,5,10,12,14,12,10,5],roots:[43,41,46,38],tone:'triangle'},
-  {bpm:101, lead:[0,7,12,7,2,9,14,9,3,10,15,10,2,7,12,7],roots:[45,43,48,40],tone:'sine'},
-  {bpm:117, lead:[0,2,5,9,5,2,7,9,0,5,7,12,9,5,2,7],roots:[38,41,45,43],tone:'triangle'}
+  {name:'Sunset Sprint',bpm:113, lead:[0,7,10,12,10,7,3,7,0,7,12,15,12,10,7,3],roots:[40,40,43,38],tone:'triangle'},
+  {name:'Pit Lane',bpm:124, lead:[0,3,7,10,7,3,2,7,0,5,10,12,14,12,10,5],roots:[43,41,46,38],tone:'triangle'},
+  {name:'Marsh Drift',bpm:101, lead:[0,7,12,7,2,9,14,9,3,10,15,10,2,7,12,7],roots:[45,43,48,40],tone:'sine'},
+  {name:'Copper Run',bpm:117, lead:[0,2,5,9,5,2,7,9,0,5,7,12,9,5,2,7],roots:[38,41,45,43],tone:'triangle'},
+  {name:'Night Freight',bpm:88,lead:[0,null,12,10,7,null,3,5,10,7,5,null,3,null,-2,3],
+    roots:[36,39,34,41],tone:'sine',syncopated:true,accent:7},
+  {name:'Glass Circuit',bpm:136,lead:[0,7,11,14,16,null,14,11,9,7,11,14,19,16,null,11],
+    roots:[42,45,38,40],tone:'triangle',syncopated:true,accent:4},
+  {name:'After the Rain',bpm:96,lead:[7,null,9,12,14,null,12,9,5,null,7,9,12,7,5,null],
+    roots:[43,40,36,38],tone:'sine',syncopated:true,accent:9},
+  {name:'Switchback Shuffle',bpm:126,lead:[0,3,null,7,10,7,6,null,5,0,3,null,12,10,7,5],
+    roots:[41,44,46,39],tone:'triangle',syncopated:true,accent:3}
 ];
+let lastShuffledTune=-1;
+function chooseTune(choice) {
+  if(Number.isInteger(choice)&&tunes[choice]) return choice;
+  const excluded=lastShuffledTune>=0?1:0;
+  const pick=Math.floor(Math.random()*(tunes.length-excluded));
+  lastShuffledTune=excluded&&pick>=lastShuffledTune?pick+1:pick;
+  return lastShuffledTune;
+}
 const frequency = midi => 440*2**((midi-69)/12);
 class GameAudio {
   constructor() {
@@ -1658,6 +1776,10 @@ class GameAudio {
         this.noise=ac.createBuffer(1,Math.ceil(ac.sampleRate*.65),ac.sampleRate);
         const data=this.noise.getChannelData(0);
         for(let i=0;i<data.length;i++) data[i]=Math.random()*2-1;
+        this.air=ac.createBufferSource();this.air.buffer=this.noise;this.air.loop=true;
+        this.airFilter=ac.createBiquadFilter();this.airFilter.type='bandpass';this.airFilter.Q.value=.62;
+        this.airGain=ac.createGain();this.airGain.gain.value=0;
+        this.air.connect(this.airFilter);this.airFilter.connect(this.airGain);this.airGain.connect(this.effects);this.air.start();
         this.ready=true;
       } catch { return; }
     }
@@ -1668,7 +1790,7 @@ class GameAudio {
     if(this.ready) this.effects.gain.setTargetAtTime(['both','effects'].includes(value)?.55:0,this.audio.currentTime,.04);
   }
   begin(tune) {
-    this.tune=tune;this.step=0;
+    this.tune=tunes[tune]?tune:0;this.step=0;
     this.next=this.ready?this.audio.currentTime+.03:0;
   }
   tone(out,when,f,len,amp,type='sine',end=f) {
@@ -1686,10 +1808,16 @@ class GameAudio {
     gain.gain.exponentialRampToValueAtTime(.0001,when+length);
     source.connect(band);band.connect(gain);gain.connect(out);source.start(when,Math.random()*.15);source.stop(when+length+.01);
   }
+  engage(type) {
+    const spec=vehicles[type];
+    if(spec.hover||spec.style==='electric') return;
+    if(!this.ready||!['both','effects'].includes(this.mode)) return;
+    const pitch=spec.engine||53, heavy=spec.blade||spec.style==='tank';
+    this.tone(this.effects,this.audio.currentTime+.004,pitch,heavy?.36:.24,.105,'triangle',pitch*(heavy?1.48:2.38));
+  }
   effect(name,strength=1) {
     if(!this.ready || !['both','effects'].includes(this.mode)) return;
     const t=this.audio.currentTime+.004, out=this.effects;
-    if(name==='rev') this.tone(out,t,53,.24,.105,'triangle',126);
     if(name==='launch'||name==='brake') {
       const braking=name==='brake';
       this.noiseHit(out,t,braking?.32:.27,braking?2080:1290,.29*strength,'bandpass',braking?710:2340);
@@ -1711,10 +1839,17 @@ class GameAudio {
   }
   tick(active,intense,speed,type,engaged) {
     if(!this.ready) return;
-    const now=this.audio.currentTime, r=clamp(speed / vehicles[type].max,0,1.25);
-    this.engineGain.gain.setTargetAtTime(active&&engaged ? .037+.072*r : 0,now,.04);
-    this.engine.frequency.setTargetAtTime([75,60,42,89][type]*(1+r*1.77),now,.032);
-    this.filter.frequency.setTargetAtTime(140+460*r,now,.075);
+    const now=this.audio.currentTime,spec=vehicles[type],r=clamp(speed/spec.max,0,1.25);
+    const moving=active&&engaged, electric=spec.style==='electric';
+    const oscillator=spec.engineTone||'sawtooth';
+    if(this.engine.type!==oscillator) this.engine.type=oscillator;
+    this.engineGain.gain.setTargetAtTime(moving&&!spec.hover?(electric?.052+.073*r:.037+.072*r):0,now,.045);
+    const pitch=spec.engine??[75,60,42,89][type]??55;
+    this.engine.frequency.setTargetAtTime(pitch*(1+r*(spec.engineRange||1.77)),now,.05);
+    const low=spec.style==='tank'||spec.blade;
+    this.filter.frequency.setTargetAtTime(electric?650+r*650:low?88+174*r:140+460*r,now,.075);
+    this.airGain.gain.setTargetAtTime(moving&&spec.hover?.48*clamp(r,0,1):0,now,.10);
+    this.airFilter.frequency.setTargetAtTime(360+870*r,now,.09);
     const playMusic=active&&['both','music'].includes(this.mode);
     this.music.gain.setTargetAtTime(playMusic?.38:0,now,.06);
     if(!playMusic) {this.next=now+.035;return;}
@@ -1724,8 +1859,12 @@ class GameAudio {
       const beat=this.step%16, chord=Math.floor(this.step/16)%4;
       const root=tune.roots[chord], tick=60/(tune.bpm*(intense?1.15:1))/4;
       const t=this.next, out=this.music;
-      if(beat%2===0 || intense) {
-        this.tone(out,t,frequency(root+24+tune.lead[beat]),tick*(intense?1.18:1.6),beat%4===0?.15:.075,tune.tone);
+      const note=tune.lead[beat];
+      if(note!=null&&(beat%2===0||intense||tune.syncopated)) {
+        this.tone(out,t,frequency(root+24+note),tick*(intense?1.18:1.6),beat%4===0?.15:.075,tune.tone);
+      }
+      if(tune.accent&&(beat===2||beat===10)) {
+        this.tone(out,t,frequency(root+12+tune.accent),tick*3.4,.055,'sine');
       }
       if(beat%4===0||beat===10) {
         this.tone(out,t,frequency(root-(beat===10?5:0)),tick*2.8,.23,'triangle');
@@ -1733,11 +1872,166 @@ class GameAudio {
       }
       if(beat===4||beat===12) this.noiseHit(out,t,.12,1600,intense?.19:.14,'bandpass',860);
       if(beat%2===0||intense) this.noiseHit(out,t,.045,5100,beat%4===0?.057:.095,'highpass',4200);
-      this.next+=tick;this.step++;
+      this.next+=tick*(tune.syncopated?(beat%2===0?1.13:.87):1);this.step++;
     }
   }
 }
 const audio = new GameAudio();
+// Place each trailer behind its hitch. Its axle follows the direction of travel.
+function trailerPoses(spec,car) {
+  let parent=car, rear=spec.length*.46;
+  return (spec.trailers||[]).map((length,i)=>{
+    const a=car.trailerAngles?.[i]??parent.a;
+    const hx=parent.x-Math.cos(parent.a)*rear, hy=parent.y-Math.sin(parent.a)*rear;
+    const reach=length/2+3;
+    const pose={x:hx-Math.cos(a)*reach,y:hy-Math.sin(a)*reach,a,length,width:24,hx,hy};
+    parent=pose;rear=length/2;
+    return pose;
+  });
+}
+function steerTrailers(spec,car,previous) {
+  const hitch=spec.length*.46;
+  let hx=car.x-Math.cos(car.a)*hitch,hy=car.y-Math.sin(car.a)*hitch, heading=car.a;
+  car.trailerAngles=previous.map(p=>{
+    const axleX=p.x-Math.cos(p.a)*p.length*.31, axleY=p.y-Math.sin(p.a)*p.length*.31;
+    const turn=deltaAngle(heading,Math.atan2(hy-axleY,hx-axleX));
+    const a=heading+clamp(turn,-1.34,1.34);
+    hx-=Math.cos(a)*(p.length+3);hy-=Math.sin(a)*(p.length+3);heading=a;
+    return a;
+  });
+}
+function rigVisualLength(spec) {
+  return spec.length+(spec.trailers||[]).reduce((total,length)=>total+length+3,0);
+}
+function drawTimber(ctx,length,width) {
+  rounded(ctx,-length/2,-width/2,length,width,2,'#613f31');
+  rounded(ctx,-length/2+2,-width*.35,length-3,width*.66,1,'#a96f46');
+  rounded(ctx,-length/2+3,-width*.25,length-8,1.15,.55,'#d59860');
+  rounded(ctx,-length/2,-width*.37,3.7,width*.74,1.5,'#dbab73');
+  rounded(ctx,length/2-3,-width*.37,3,width*.74,1.3,'#d2a470');
+}
+function drawTrailers(ctx,spec,color,damage,options) {
+  const poses=trailerPoses(spec,{x:0,y:0,a:0,trailerAngles:options.trailerAngles});
+  for(const [i,p] of poses.entries()) {
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+    const l=p.length,w=p.width;
+    rounded(ctx,l/2-2,-1.6,6,3.2,1,'#878a78');
+    if(!options.ghost) oval(ctx,1,2,l*.52,w*.59,'#263b3659');
+    for(const side of [-1,1]) for(const axle of [-.37,-.22]) racingTyre(ctx,l*axle,side*w*.47,7,4.6,0,true);
+    panel(ctx,0,0,l,w,10,damage,spec.style==='logging'?'#70584a':hex(color,-.22),2.3);
+    if(spec.style==='logging') {
+      const count=options.cargo??spec.cargo;
+      for(let j=0;j<count;j++) drawTimberAt(ctx,-7.8+j*5.2,l*.91-j*.9);
+      for(const x of [-.32,.30]) {
+        rounded(ctx,x*l-1,-w*.52,2,w*1.04,.5,'#b7a082');
+        for(const y of [-1,1]) rounded(ctx,x*l-2,y*w*.47-2,4,4,1,'#3d4844');
+      }
+    } else {
+      rounded(ctx,-l*.47,-w*.41,l*.94,w*.82,2,hex(color,.19+i*.08));
+      for(let x=-l*.41;x<l*.43;x+=5) rounded(ctx,x,-w*.38,1.1,w*.76,.45,hex(color,.35));
+      rounded(ctx,-l*.43,-1,l*.84,2,1,'#e3d6ae');
+      rounded(ctx,-l*.48,-w*.35,2,4,.6,'#d86456');
+      rounded(ctx,-l*.48,w*.35-4,2,4,.6,'#d86456');
+    }
+    ctx.restore();
+  }
+}
+function drawTimberAt(ctx,y,length) {
+  ctx.save();ctx.translate(0,y);drawTimber(ctx,length,5.1);ctx.restore();
+}
+function drawFleetBody(ctx,spec,color,damage,options) {
+  const {style,length:l,width:w}=spec;
+  const hi=hex(color,.21), shade=hex(color,-.24), glass='#426663', shine='#89afa1';
+  if(spec.trailers) drawTrailers(ctx,spec,color,damage,options);
+  if(style==='carpet') {
+    const sway=Math.sin((options.time||0)*9)*1.5;
+    polygon(ctx,[[-l*.48,-w*.46],[l*.41,-w*.42+sway],[l*.49,w*.40+sway],[-l*.44,w*.47]],'#dcad6f');
+    polygon(ctx,[[-l*.41,-w*.35],[l*.35,-w*.31+sway],[l*.41,w*.29+sway],[-l*.38,w*.35]],color);
+    polygon(ctx,[[-12,0],[0,-7],[12,sway],[0,7]],hi);
+    polygon(ctx,[[-7,0],[0,-4],[7,0],[0,4]],'#ffe79b');
+    for(const x of [-1,1]) for(let i=-3;i<=3;i++) rounded(ctx,x*l*.46-2,i*w*.119+(x===1?sway:0),4.6,1.1,.45,'#f8d69a');
+    oval(ctx,-l*.24,0,1.8,1.4,'#ffde9c');oval(ctx,l*.24,sway,1.8,1.4,'#ffde9c');
+    return;
+  }
+  const tracked=style==='tank'||style==='dozer';
+  if(tracked) {
+    for(const side of [-1,1]) {
+      const y=side*w*.36;
+      rounded(ctx,-l*.45,y-4.2,l*.83,8.4,3,'#394340');
+      for(let x=-l*.39;x<l*.36;x+=4) rounded(ctx,x,y-3.4,1.55,6.8,.5,'#69776a');
+    }
+  } else {
+    const chunky=style==='rally'||style==='tractor'||style==='logging';
+    for(const [x,left,right] of [[l*.28,3,6],[-l*.30,5,8]]) {
+      for(const [side,i] of [[-1,left],[1,right]]) racingTyre(ctx,x,side*w*.41,chunky?10.8:8.7,chunky?6.6:5.1,sectionStage(damage[i]),chunky);
+    }
+    if(style==='tractor'||style==='logging') for(const y of [-1,1]) racingTyre(ctx,-l*.07,y*w*.41,8.5,6.1,0,true);
+  }
+  const bodyW=w*(tracked?.6:style==='hotrod'?.59:.76);
+  const nose=l*(style==='dozer'?.31:.45);
+  rounded(ctx,-l*.44,-bodyW/2,l*.44+nose,bodyW,style==='electric'?bodyW*.43:3,shade);
+  for(const side of [-1,1]) for(let i=0;i<3;i++)
+    panel(ctx,l*(.27-i*.26),side*bodyW*.38,l*.235,bodyW*.24,(side===1?6:3)+i,damage,side===1?hi:shade,1.4);
+  for(let i=0;i<3;i++) {
+    panel(ctx,nose-l*.085,bodyW*(i-1)*-.30,l*.185,bodyW*.29,i,damage,hi,1.4);
+    panel(ctx,-l*.35,bodyW*(i-1)*.30,l*.19,bodyW*.29,9+i,damage,color,1.4);
+  }
+  if(style==='tank') {
+    panel(ctx,-1,0,l*.45,w*.56,12,damage,hi,5);
+    rounded(ctx,1,-2,24,4,1.45,shade);rounded(ctx,17,-1.7,9,3.4,1,hi);
+    oval(ctx,-5,-1,4,4,shade);oval(ctx,-5,-1,2.6,2.6,hex(color,.33));
+    return;
+  }
+  if(style==='dozer') {
+    panel(ctx,-7,0,19,15,12,damage,hi,2);
+    rounded(ctx,-2,-6,3,12,1,glass);rounded(ctx,-12,-6,3,12,1,glass);
+    for(const y of [-1,1]) rounded(ctx,4,y*8-1.75,19,3.5,1,shade);
+    polygon(ctx,[[l*.32,-w*.47],[l*.48,-w*.48],[l*.43,-w*.29],[l*.43,w*.29],[l*.48,w*.48],[l*.32,w*.47]],'#505854');
+    rounded(ctx,l*.42,-w*.49,2.2,w*.98,.65,'#b1ae8e');
+    for(const y of [-.38,-.19,0,.19,.38]) rounded(ctx,l*.44,w*y-1.3,3.4,2.6,.6,'#ddd0a3');
+    return;
+  }
+  const isRig=style==='tractor'||style==='logging', box=style==='van'||isRig;
+  const cx=box?l*.16:style==='hotrod'?-l*.12:0;
+  const roofLength=l*(box?.38:style==='electric'?.60:.35);
+  panel(ctx,cx,0,roofLength,bodyW*.79,12,damage,hi,style==='electric'?5:2.5);
+  if(sectionStage(damage[12])<3) {
+    rounded(ctx,cx+roofLength*.25,-bodyW*.32,roofLength*.16,bodyW*.64,1.25,glass);
+    if(!isRig) rounded(ctx,cx-roofLength*.40,-bodyW*.30,roofLength*.15,bodyW*.60,1.15,shine);
+  }
+  for(const y of [-1,1]) {
+    rounded(ctx,l*.385,y*bodyW*.32-1.35,2.7,2.7,.8,style==='electric'?'#c0ffee':'#ffedbe');
+    rounded(ctx,-l*.448,y*bodyW*.32-1.25,2,2.5,.65,'#f08266');
+  }
+  if(style==='rally') {
+    for(const y of [-1,1]) racingTyre(ctx,-l*.23,y*bodyW*.23,9,7.1,0,true);
+    for(const y of [-1,1]) oval(ctx,l*.466,y*bodyW*.21,1.65,1.6,'#ffe8a5');
+  } else if(style==='hotrod') {
+    rounded(ctx,3,-4,11,8,1.2,'#96a098');
+    for(const y of [-1,1]) rounded(ctx,4,y*4.2-1,10,2,1,'#d7cfad');
+    oval(ctx,8,0,2.6,2.3,'#4b5650');
+  } else if(style==='van') {
+    rounded(ctx,-l*.40,-bodyW*.34,l*.57,bodyW*.68,2,hex(color,.30));
+    rounded(ctx,-l*.32,-1,l*.43,2,1,shade);
+  } else if(style==='mini') {
+    rounded(ctx,-l*.16,-bodyW*.34,l*.30,bodyW*.68,2,'#ede2c9');
+    for(const y of [-1,1]) rounded(ctx,l*.24,y*3-1,6,2,1,'#ebd8ad');
+  } else if(style==='electric') {
+    polygon(ctx,[[7,-1],[2,4],[2,1],[-4,1],[2,-4],[2,-1]],'#a6ead6');
+    rounded(ctx,l*.39,-bodyW*.24,1.25,bodyW*.48,.6,'#a6ead6');
+  } else if(isRig) {
+    if(!spec.trailers) oval(ctx,-l*.28,0,4.3,4.3,'#8d8e7c');
+    for(const y of [-1,1]) rounded(ctx,-.5,y*bodyW*.45-1.85,6,3.7,1,'#989c88');
+    rounded(ctx,l*.43,-bodyW*.21,1.1,bodyW*.42,.5,'#bdb9a0');
+  } else if(style==='police') {
+    const phase=options.time==null?0:Math.floor(options.time*4)%2;
+    rounded(ctx,-4.5,-bodyW*.39,4,bodyW*.78,1,'#2a4140');
+    const left=phase?'#b65a58':'#ff8176',right=phase?'#7dcaff':'#4c7aa4';
+    rounded(ctx,-4.2,-bodyW*.36,3.2,bodyW*.34,.85,left);
+    rounded(ctx,-4.2,bodyW*.02,3.2,bodyW*.34,.85,right);
+    if(!options.ghost) oval(ctx,-2.7,(phase?1:-1)*bodyW*.245,4.9,4.3,phase?'#79caff54':'#ff7b744d');
+  }
+}
 const originalDamageSteps=[0,8,16,25,40,55,75,100];
 const damageControls={
   contact:['Base contact',150],normal:['Speed into surface',200],overlap:['Overlap',8],
@@ -1819,7 +2113,8 @@ function openTuning() {
 function tuningText() {
   return JSON.stringify({format:'Track’n’Trace’n settings',version:3,tuning,
     setup:{course:courses[options.course].id,vehicle:options.type,colors:options.colors,laps:options.laps,
-      event:options.mode,drag:options.drag,damage:options.damage,ghost:options.ghost,audio:audio.mode}},null,2);
+      event:options.mode,drag:options.drag,damage:options.damage,ghost:options.ghost,audio:audio.mode,
+      hazards:options.hazards,music:options.music}},null,2);
 }
 function applyTuningText(text) {
   const data=JSON.parse(text);
@@ -1843,9 +2138,9 @@ function applyTuningText(text) {
     const course=courses.findIndex(c=>c.id===s.course);
     if(course>=0) selectCourseState(course);
     if(Number.isInteger(s.vehicle)&&vehicles[s.vehicle]) options.type=s.vehicle;
-    if(Array.isArray(s.colors)&&s.colors.length===vehicles.length) {
-      options.colors=s.colors.map((v,i)=>vehicles[i].palette[v]?Number(v):0);
-    }
+    if(Array.isArray(s.colors)) options.colors=normalizePaint(s.colors);
+    if(Object.hasOwn(s,'hazards')) options.hazards=normalizeHazardSettings(s.hazards);
+    if(Object.hasOwn(s,'music')) options.music=musicChoice(s.music);
     if(Number.isInteger(s.laps)) options.laps=clamp(s.laps,1,10);
     if(['race','one-hit','damage'].includes(s.event)) options.mode=s.event;
     if(['trace','free'].includes(s.drag)) options.drag=s.drag;
@@ -1874,13 +2169,37 @@ function exchangeSettings() {
     message.setAttribute('aria-live','polite');body.append(area,message);
   },openTuning);
 }
-function propSetup(course) {
-  return (course.props||[]).map((o,i)=>({...o,id:'prop-'+i,vx:0,vy:0,spin:0,bounces:0,shot:null}));
+function propSetup(course,hazards) {
+  return [...(course.props||[]),...(hazards?course.hazards||[]:[])].map((o,i)=>makeProp(o,'prop-'+i));
+}
+function makeProp(object,id) {
+  return {...object,id,vx:0,vy:0,spin:0,bounces:0,shot:null};
+}
+function runSurface(game,x,y,index) {
+  if(game.spec.hover) return 'asphalt';
+  if(game.oil.length) {
+    const level=routeLevelAt(game.course,index);
+    if(game.oil.some(o=>o.level===level&&onPatch(x,y,o))) return 'oil';
+  }
+  return surfaceAt(game.course,x,y,index);
 }
 function drawProp(ctx,prop) {
   const {x,y,a,type}=prop;
   ctx.save();ctx.translate(x,y);ctx.rotate(a||0);
-  if(type==='tyres'||type==='wheel') {
+  if(type==='oil') {
+    oval(ctx,3,1,15,9,'#34383eaa');
+    oval(ctx,-3,1,14,8,'#282e37');
+    oval(ctx,3,-2,12,8,'#333242');
+    oval(ctx,9,2,8,6,'#333242');
+    ctx.lineCap='round';
+    for(const [x,y,stroke] of [[-9,-2,'#9b72a9'],[-3,1,'#678caa'],[3,-4,'#9bb08b']]) {
+      ctx.beginPath();ctx.moveTo(x-3,y+1);ctx.quadraticCurveTo(x,y-2,x+5,y);
+      ctx.lineWidth=1.35;ctx.strokeStyle=stroke;ctx.stroke();
+    }
+    oval(ctx,16,-5,2.7,1.5,'#3e394a');
+  } else if(type==='log') {
+    rounded(ctx,-10,-2,22,8,3,'#3b4a416e');drawTimber(ctx,22,8.6);
+  } else if(type==='tyres'||type==='wheel') {
     oval(ctx,3,4,14,11,'#35433c6b');
     oval(ctx,0,2,13,10,'#42534f');
     oval(ctx,0,0,12.2,10,'#5a6a62');
@@ -1947,35 +2266,51 @@ function awardChain(game,source,target,closing) {
   game.chainCount=Math.max(game.chainCount,shot.links);
   game.lastChain={links:shot.links,bonus,until:game.elapsed+1.75};
 }
-function touchProp(game,x,y,angle,velocity,dx,dy) {
-  for(const prop of game.props) {
-    if((prop.level||0)!==routeLevelAt(game.course,game.car.index)) continue;
-    const type=propTypes[prop.type], gap=Math.hypot(prop.x-x,prop.y-y);
-    if(gap>type.r+game.spec.length*.46+2) continue;
+function touchProp(game,x,y,angle,velocity,dx,dy,body=game.spec,trailer=false,routeIndex=game.car.index) {
+  if(game.spec.hover) return {x,y};
+  const level=routeLevelAt(game.course,routeIndex), count=game.props.length;
+  for(let i=0;i<count&&!game.finished;i++) {
+    const prop=game.props[i], type=propTypes[prop.type];
+    if(type.stationary||(prop.level||0)!==level||
+      prop.graceUntil>game.elapsed) continue;
+    const gap=Math.hypot(prop.x-x,prop.y-y);
+    if(gap>type.r+Math.max(body.length,body.width)*.48+6) continue;
     const nx=gap>.1?(prop.x-x)/gap:dx,ny=gap>.1?(prop.y-y)/gap:dy;
-    const depth=type.r+footprint(game.spec,angle,nx,ny)-gap;
+    const blade=isBladeHit(body,angle,nx,ny);
+    const depth=type.r+footprint(body,angle,nx,ny)+(blade?3.5:0)-gap;
     if(depth<=0) continue;
     const inward=dx*nx+dy*ny;
     const fresh=contactStart(game,{id:prop.id,nx,ny,over:depth});
     if(inward>.08&&fresh) {
       const force=clamp(velocity*inward,0,470);
-      const kick=Math.min(type.cap,force*.77/type.mass);
+      const kick=Math.min(type.cap,(blade?(force+34)*2.55:force*.77)/type.mass);
       if(kick>=6) {
         prop.vx=nx*kick;prop.vy=ny*kick;prop.spin=(dx*ny-dy*nx)*kick*.023;prop.bounces=0;
         givePropShot(prop,{links:0,visited:new Set()});
       }
-      const amount=damageMode(game.config)==='off'?0:(1.4+force*.016)*damageFactor(game,'props')*game.spec.resistance;
-      const section=hitSection(angle,nx,ny);
+      const amount=blade||damageMode(game.config)==='off'?0:(1.4+force*.016)*damageFactor(game,'props')*game.spec.resistance;
+      const section=trailer?hitSection(game.car.a,-Math.cos(angle),-Math.sin(angle)):hitSection(angle,nx,ny);
       const actual=applySectionDamage(game.car,section,amount);
-      game.car.speed*=.88;
-      const hit={t:Math.round(game.elapsed*1000),x:prop.x-nx*type.r,y:prop.y-ny*type.r,
-        amount:actual,strength:clamp(force/330,.22,.64),index:game.car.index,nx,ny,prop:true};
-      logHit(game,hit);
+      if(!blade) {
+        game.car.speed*=trailer?.79:.88;
+        recoverFromHit(game);
+        dropTimber(game,force,nx,ny);
+      }
+      if(game.spec.blade&&blade) {
+        audio.effect('prop',clamp(force/330,.28,.64));
+        spark(game,prop.x,prop.y,'impact',.38,angle+Math.PI);
+      } else {
+        const hit={t:Math.round(game.elapsed*1000),x:prop.x-nx*type.r,y:prop.y-ny*type.r,
+          amount:actual,strength:clamp(force/330,.22,.64),index:routeIndex,nx,ny,prop:true};
+        logHit(game,hit);
+      }
     }
     if(depth>1) {
-      const shift=Math.min(depth*.40,2.7);
-      nudgeProp(game,prop,nx*shift,ny*shift);
-      x-=nx*Math.min(depth*.28,1.5);y-=ny*Math.min(depth*.28,1.5);
+      const shift=Math.min(depth*(blade?.84:.40),blade?5.5:2.7);
+      const moved=nudgeProp(game,prop,nx*shift,ny*shift);
+      if(!trailer&&(!blade||!moved)) {
+        x-=nx*Math.min(depth*.28,1.5);y-=ny*Math.min(depth*.28,1.5);
+      }
     }
   }
   return {x,y};
@@ -1993,11 +2328,12 @@ function propBoundary(game,prop,x,y) {
   const allowed=course.widths[mod(p.index,course.samples.length)][p.d>0?1:0].width;
   if(Math.abs(p.d)>allowed-r*.56) return true;
   prop.routeIndex=p.index;
+  prop.level=routeLevelAt(course,p.index);
   return false;
 }
 function overlappingProp(game,prop,x,y) {
   const r=propTypes[prop.type].r;
-  return game.props.find(o=>o!==prop&&(o.level||0)===(prop.level||0)&&
+  return game.props.find(o=>o!==prop&&!propTypes[o.type].stationary&&(o.level||0)===(prop.level||0)&&
     (o.x-x)**2+(o.y-y)**2<(r+propTypes[o.type].r)**2);
 }
 function nudgeProp(game,prop,dx,dy) {
@@ -2101,26 +2437,32 @@ function drawScars(ctx,game,level=0,accept=null) {
     ctx.stroke();ctx.restore();
   }
 }
-const driveOptions = {asphalt:1,curb:.93,dirt:.74,grass:.57,water:.55};
-const gripOptions = {asphalt:1,curb:.83,dirt:.72,grass:.63,water:.59};
+const driveOptions = {asphalt:1,curb:.93,dirt:.74,grass:.57,water:.55,oil:.69};
+const gripOptions = {asphalt:1,curb:.83,dirt:.72,grass:.63,water:.59,oil:.27};
 const hitVisuals = {impact:'#ffd586',dust:'#ead3a3',water:'#b9ece4',curb:'#f2ceab'};
 let run = null;
 const mainCtx = $('track').getContext('2d', {alpha:false});
 
 function makeRun(config,ghost=null,recordedCourse=null) {
   const course=recordedCourse||prepare(config.course), spec=vehicles[config.type], color=spec.palette[config.color];
-  const origin=course.openYard ? {x:203,y:330,tx:1,ty:0} : course.samples[0];
+  const rearClearance=rigVisualLength(spec)-spec.length*.5+12;
+  const origin=course.openYard ? {x:Math.max(203,yard.left+rearClearance),y:330,tx:1,ty:0} : course.samples[0];
   const car={x:origin.x,y:origin.y,a:Math.atan2(origin.ty,origin.tx),speed:0,index:course.practice?practiceRoute(course,origin.x,origin.y,0):0,surface:'asphalt',damage:zeroDamage()};
-  car.surface=surfaceAt(course,car.x,car.y,0);
-  return {
-    config, course, spec, color, car, ghost, rules:{...tuning},props:propSetup(course),contacts:new Map(),scars:[],
-    emitAt:0, rubAt:-10, squealAt:-10, streak:{x:car.x,y:car.y,time:0}, tune:Math.floor(Math.random()*tunes.length),
+  const props=propSetup(course,config.hazards);
+  const oil=props.filter(o=>o.type==='oil').map(o=>({...o,rx:propTypes.oil.r,ry:propTypes.oil.ry,level:o.level||0}));
+  const game={
+    config, course, spec, color, car, ghost, rules:{...tuning},props,oil,contacts:new Map(),scars:[],
+    emitAt:0, rubAt:-10, squealAt:-10, streak:{x:car.x,y:car.y,time:0}, tune:chooseTune(config.music),
+    cargo:spec.cargo||0,basePropCount:props.length,recoveryUntil:0,slipUntil:0,
+    slideHeading:car.a,dropAfter:0,
     started:false, elapsed:0, paused:false, finished:false, orientation:null, inspect:false,
     route:[], fingers:[], pointer:null, tip:null, totalDistance:0, trail:[], moving:false,
     wallTime:-5, bumpTime:-5, materialTime:-5, emissionTime:-5, boost:1,
     hits:0, objectScore:0, chainScore:0, chainCount:0, lastChain:null, impacts:[], particles:[], frames:[], lastFrame:-10,
     nextGate:1, splits:[], progress:0, touchWall:false, curbTime:-5, workTime:performance.now()
   };
+  car.surface=runSurface(game,car.x,car.y,car.index);
+  return game;
 }
 function timedIntensity(game,car=game.car) {
   if(game.course.training) return false;
@@ -2154,8 +2496,8 @@ function solveRoad(game,x,y,a,assist=true) {
   if(over>-.85) wall={nx,ny,over,id:'road-'+side};
   return {x,y,index:p.index,s:p.s,wall};
 }
-function solveYard(game,x,y,a) {
-  const xr=footprint(game.spec,a,1,0), yr=footprint(game.spec,a,0,1);
+function solveYard(game,x,y,a,body=game.spec) {
+  const xr=footprint(body,a,1,0), yr=footprint(body,a,0,1);
   const dx=x-clamp(x,yard.left+xr,yard.right-xr),dy=y-clamp(y,yard.top+yr,yard.bottom-yr);
   const over=Math.hypot(dx,dy);
   let wall=null;
@@ -2168,9 +2510,9 @@ function solveYard(game,x,y,a) {
       [y-(yard.top+yr),0,-1,'yard-y-1'],[yard.bottom-yr-y,0,1,'yard-y1']].find(edge=>edge[0]<.85);
     if(near) wall={nx:near[1],ny:near[2],over:-near[0],id:near[3]};
   }
-  if(game.course.park) for(const [i,o] of obstacles.entries()) {
+  if(game.course.park&&!game.spec.hover) for(const [i,o] of obstacles.entries()) {
     const c=Math.cos(o.a),s=Math.sin(o.a),px=(x-o.x)*c+(y-o.y)*s,py=-(x-o.x)*s+(y-o.y)*c;
-    const ox=footprint(game.spec,a,c,s)+o.w/2-Math.abs(px),oy=footprint(game.spec,a,-s,c)+o.h/2-Math.abs(py);
+    const ox=footprint(body,a,c,s)+o.w/2-Math.abs(px),oy=footprint(body,a,-s,c)+o.h/2-Math.abs(py);
     if(ox<-.85||oy<-.85) continue;
     const chooseX=ox<oy, sign=Math.sign(chooseX?px:py)||1;
     const nx=(chooseX?-c:s)*sign,ny=(chooseX?-s:-c)*sign,depth=Math.min(ox,oy);
@@ -2186,6 +2528,61 @@ function hitSection(a,nx,ny) {
   const sectors=[1,0,6,7,8,11,10,9,5,4,3,2];
   return sectors[mod(Math.round(angle/(TAU/12)),12)];
 }
+function isBladeHit(spec,a,nx,ny) {
+  return !!spec.blade&&Math.cos(a)*nx+Math.sin(a)*ny>=.66;
+}
+function recoverFromHit(game) {
+  if(game.spec.recovery) game.recoveryUntil=game.elapsed+.82;
+}
+function dropTimber(game,force,nx,ny) {
+  if(!game.cargo||force<100||game.elapsed<game.dropAfter) return;
+  const p=trailerPoses(game.spec,game.car)[0], cos=Math.cos(p.a), sin=Math.sin(p.a);
+  const side=-Math.sign(-nx*sin+ny*cos)||1;
+  const rear={x:p.x-cos*p.length*.43,y:p.y-sin*p.length*.43};
+  for(const offset of [side*23,-side*23,side*15,-side*15,0]) {
+    const x=rear.x-sin*offset, y=rear.y+cos*offset;
+    const routeIndex=trailerRouteIndex(game,p,p.length*.5+game.spec.length*.5);
+    const level=routeLevelAt(game.course,routeIndex);
+    const prop=makeProp({type:'log',x,y,a:p.a+Math.sign(offset)*.42,level,routeIndex},'cargo-'+game.cargo);
+    if(propBoundary(game,prop,x,y)||overlappingProp(game,prop,x,y)) continue;
+    prop.graceUntil=game.elapsed+.42;
+    prop.vx=cos*force*.18-sin*Math.sign(offset)*38;prop.vy=sin*force*.18+cos*Math.sign(offset)*38;
+    prop.spin=Math.sign(offset)*1.8;
+    game.props.push(prop);game.cargo--;game.dropAfter=game.elapsed+.42;
+    return;
+  }
+}
+function trailerRouteIndex(game,pose,distance) {
+  const {course,car}=game;
+  if(course.openYard) return course.practice?practiceRoute(course,pose.x,pose.y,car.index):0;
+  const behind=Math.round(distance/course.step);
+  return project(course,pose.x,pose.y,car.index-behind,Math.max(13,Math.ceil(behind*.65))).index;
+}
+function checkTrailerContacts(game,prior,velocity) {
+  const car=game.car;
+  steerTrailers(game.spec,car,prior);
+  let distance=game.spec.length*.46;
+  for(const [i,p] of trailerPoses(game.spec,car).entries()) {
+    distance+=p.length*.5+3;
+    const index=trailerRouteIndex(game,p,distance);
+    distance+=p.length*.5;
+    const delta=dist(p,prior[i]);
+    if(delta<.06) continue;
+    const dx=(p.x-prior[i].x)/delta,dy=(p.y-prior[i].y)/delta;
+    touchProp(game,p.x,p.y,p.a,velocity,dx,dy,p,true,index);
+    if(game.finished) return;
+    let wall;
+    if(game.course.openYard) wall=solveYard(game,p.x,p.y,p.a,p).wall;
+    else {
+      const course=game.course, q=project(course,p.x,p.y,index,4);
+      const side=q.d>=0?1:-1,nx=q.nx*side,ny=q.ny*side;
+      const over=Math.abs(q.d)+footprint(p,p.a,nx,ny)-course.widths[mod(q.index,course.samples.length)][side>0?0:1].width;
+      if(over>1.1) wall={nx,ny,over,id:'road-'+side};
+    }
+    if(wall?.over>1.1) wallImpact(game,{...wall,id:'trailer-'+i+'-'+wall.id},velocity*.76,dx,dy,delta,p,index);
+    if(game.finished) return;
+  }
+}
 function spark(game,x,y,kind,strength,direction,burst=1) {
   const count=Math.round((kind==='impact'?8:5)*strength)+2+(burst>1?Math.round(burst*4):0);
   for(let i=0;i<count;i++) {
@@ -2196,6 +2593,7 @@ function spark(game,x,y,kind,strength,direction,burst=1) {
   }
 }
 function engineWear(game) {
+  if(game.spec.hover||game.spec.style==='electric') return;
   const car=game.car, strength=Math.max(sectionStage(car.damage[1]),sectionStage(car.damage[12]));
   if(strength<2||game.elapsed<game.emitAt) return;
   const heavy=sectionStage(car.damage[1])===4&&sectionStage(car.damage[12])===4;
@@ -2217,10 +2615,10 @@ function damagePoints(game) {
   ];
   return {movement,chain,body,total:movement+chain+body};
 }
-function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
+function wallImpact(game,wall,velocity,naturalX,naturalY,moved,trailer=null,routeIndex=game.car.index) {
   const car=game.car,nx=wall.nx,ny=wall.ny;
   const inward=clamp((naturalX*nx+naturalY*ny)||0,0,1);
-  if(wall.over>0) game.wallThisStep=wall;
+  if(wall.over>0&&!trailer) game.wallThisStep=wall;
   if(wall.over<=0||inward<.025) {
     const last=game.contacts.get(wall.id);
     if(last!=null&&game.elapsed-last<game.rules.rearm/1000) contactStart(game,wall);
@@ -2234,7 +2632,8 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
     }
     return;
   }
-  game.hits++;
+  const blade=!trailer&&isBladeHit(game.spec,car.a,nx,ny);
+  if(!blade) {game.hits++;recoverFromHit(game);}
   const force=clamp(velocity*inward,0,720);
   const base=4.1*damageFactor(game,'contact')+force*.074*damageFactor(game,'normal')+
     Math.min(wall.over,4)*.32*damageFactor(game,'overlap');
@@ -2242,9 +2641,9 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
   const amount=base*resistance;
   const spreadLimit=3*(4.1+force*.074+Math.min(wall.over,4)*.32)*resistance;
   const spread=(factor,share)=>Math.min(amount*damageFactor(game,factor),spreadLimit)*share;
-  const index=hitSection(car.a,nx,ny);
+  const index=trailer?(nx*Math.cos(car.a+Math.PI/2)+ny*Math.sin(car.a+Math.PI/2)>0?11:9):hitSection(car.a,nx,ny);
   let added=0,crumpled=0;
-  if(damageMode(game.config)!=='off') {
+  if(!blade&&damageMode(game.config)!=='off') {
     const add=(section,amount)=>{
       const before=car.damage[section];
       added+=applySectionDamage(car,section,amount);
@@ -2259,7 +2658,7 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
   }
   const strength=clamp(.19+force/540,.19,1.32);
   const burst=crumpled>=3?5:clamp(1+force/315+added/135,1,4.65);
-  const r=footprint(game.spec,car.a,nx,ny)*.98;
+  const body=trailer||car, r=footprint(trailer||game.spec,body.a,nx,ny)*.98;
   if(!shallow) {
     const loss=clamp(.09+inward*.54,.09,.63);
     car.speed*=1-loss;
@@ -2270,14 +2669,21 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved) {
   }
   if(force>245&&car.surface==='asphalt'&&!shallow) tyreCue(game,'brake',clamp(force/450,.32,.9));
   game.wallTime=game.elapsed;game.rubAt=game.elapsed;
-  logHit(game,{t:Math.round(game.elapsed*1000),x:Math.round(car.x+nx*r),y:Math.round(car.y+ny*r),
-    amount:Math.round(added*10)/10,strength,index:car.index,nx,ny,burst});
+  if(blade) {
+    audio.effect('impact',strength*.55);
+    spark(game,car.x+nx*r,car.y+ny*r,'impact',strength*.65,car.a+Math.PI);
+    return;
+  }
+  dropTimber(game,force,nx,ny);
+  logHit(game,{t:Math.round(game.elapsed*1000),x:Math.round(body.x+nx*r),y:Math.round(body.y+ny*r),
+    amount:Math.round(added*10)/10,strength,index:routeIndex,nx,ny,burst});
 }
 function tyreCue(game,name,strength=1) {
-  if(game.elapsed-game.squealAt<game.rules.squeal/1000) return;
+  if(game.spec.hover||game.spec.style==='electric'||game.elapsed-game.squealAt<game.rules.squeal/1000) return;
   audio.effect(name,strength);game.squealAt=game.elapsed;
 }
 function touchesCurb(game) {
+  if(game.spec.hover) return false;
   const car=game.car;
   if(car.surface==='curb') return true;
   const lever=game.spec.width*.39, dx=-Math.sin(car.a)*lever,dy=Math.cos(car.a)*lever;
@@ -2290,6 +2696,7 @@ function curbWear(game) {
   const car=game.car;
   const p=game.course.openYard ? {d:car.y-practiceCurb.y,nx:0,ny:1} : project(game.course,car.x,car.y,car.index);
   const side=p.d>0?1:-1, affected=hitSection(car.a,p.nx*side,p.ny*side);
+  if(isBladeHit(game.spec,car.a,p.nx*side,p.ny*side)) return;
   const amount=clamp(car.speed/game.spec.max-.68,0,.78)*7.5*game.spec.resistance*damageFactor(game,'curb');
   car.damage[affected]=Math.min(100,car.damage[affected]+amount);
   if(damageMode(game.config)==='total') checkDamageEnd(game);
@@ -2303,11 +2710,13 @@ function checkDamageEnd(game) {
 function saveFrame(game,force=false) {
   if(!force&&game.elapsed-game.lastFrame<.088) return;
   const car=game.car,t=Math.round(game.elapsed*1000);
-  const frame=[t,Math.round(car.x*2),Math.round(car.y*2),Math.round(mod(car.a,TAU)*1000),car.index,packDamage(car.damage),game.props.map(o=>[Math.round(o.x*2),Math.round(o.y*2),Math.round(o.a*1000)])];
+  const objects=game.props.map(o=>[Math.round(o.x*2),Math.round(o.y*2),Math.round(o.a*1000),o.level||0,o.routeIndex??null]);
+  const frame=[t,Math.round(car.x*2),Math.round(car.y*2),Math.round(mod(car.a,TAU)*1000),car.index,packDamage(car.damage),objects];
   if(game.config.mode==='damage') {
     const {movement,chain,body}=damagePoints(game);
     frame.push([movement,chain,body]);
   }
+  if(car.trailerAngles?.length) frame[8]=car.trailerAngles.map(a=>Math.round(mod(a,TAU)*1000));
   if(game.frames.at(-1)?.[0]===t) game.frames[game.frames.length-1]=frame;
   else game.frames.push(frame);
   game.lastFrame=game.elapsed;
@@ -2355,14 +2764,24 @@ function sweep(game,x,y,angle,velocity) {
         }
       }
     }
+    if((car.surface==='oil'&&velocity>36)||game.elapsed<game.slipUntil) {
+      const desired=Math.atan2(steeredY,steeredX);
+      const response=clamp(step*(car.surface==='oil'?.022:.045),0,1);
+      game.slideHeading+=deltaAngle(game.slideHeading,desired)*response;
+      steeredX=Math.cos(game.slideHeading);steeredY=Math.sin(game.slideHeading);
+    } else game.slideHeading=Math.atan2(steeredY,steeredX);
     const qx=car.x+steeredX*step,qy=car.y+steeredY*step;
+    const prior=game.spec.trailers?trailerPoses(game.spec,car):null;
     const prop=touchProp(game,qx,qy,angle,velocity,steeredX,steeredY);
     if(game.finished) break;
     const q=game.course.openYard ? solveYard(game,prop.x,prop.y,angle) : solveRoad(game,prop.x,prop.y,angle);
     const moved=Math.hypot(q.x-car.x,q.y-car.y);
     car.x=q.x;car.y=q.y;car.index=game.course.practice?practiceRoute(game.course,q.x,q.y,car.index):q.index;car.a=angle;
     total+=moved;game.totalDistance+=moved;
-    car.surface=surfaceAt(game.course,car.x,car.y,car.index);
+    car.surface=runSurface(game,car.x,car.y,car.index);
+    if(car.surface==='oil'&&velocity>36) game.slipUntil=game.elapsed+.43;
+    if(prior) checkTrailerContacts(game,prior,velocity);
+    if(game.finished) break;
     if(q.wall) wallImpact(game,q.wall,velocity,steeredX,steeredY,moved);
     if(game.finished) break;
     if(velocity>50 && touchesCurb(game)) {
@@ -2372,7 +2791,7 @@ function sweep(game,x,y,angle,velocity) {
       }
       curbWear(game);
     }
-    if(car.surface==='water' && previous!=='water' && velocity>48 && game.elapsed-game.materialTime>.24) {
+    if(game.spec.style!=='electric'&&car.surface==='water' && previous!=='water' && velocity>48 && game.elapsed-game.materialTime>.24) {
       spark(game,car.x,car.y,'water',1.1,car.a+Math.PI);
       audio.effect('water');game.materialTime=game.elapsed;
     }
@@ -2429,10 +2848,11 @@ function shiftRoute(game) {
 }
 function traceMove(game,dt) {
   const car=game.car, spec=game.spec;
+  const {max,accel}=driveRatings(game);
   shiftRoute(game);
   if(!game.route.length) {
     if(car.speed>115&&game.moving&&car.surface==='asphalt') tyreCue(game,'brake',clamp(car.speed/380,.38,1.1));
-    car.speed=Math.max(0,car.speed-dt*spec.accel*4.1);
+    car.speed=Math.max(0,car.speed-dt*accel*4.1);
     return 0;
   }
   let target=game.route[0], length=dist(target,car);
@@ -2447,10 +2867,10 @@ function traceMove(game,dt) {
     length+=gap;target=next;
   }
   const heading=Math.atan2(target.y-car.y,target.x-car.x), turn=deltaAngle(car.a,heading);
-  const grip=gripOptions[car.surface], ratio=clamp(car.speed/spec.max,0,1);
+  const grip=steeringGrip(game), ratio=clamp(car.speed/max,0,1);
   const a=car.a+clamp(turn,-spec.turn*grip*(1.35-ratio*.57)*dt,spec.turn*grip*(1.35-ratio*.57)*dt);
   const curveFactor=clamp(1-Math.abs(turn)*.57,.17,1);
-  let top=spec.max*driveOptions[car.surface]*curveFactor;
+  let top=max*driveOptions[car.surface]*curveFactor;
   for(let i=0;i+8<Math.min(game.route.length,21);i+=3) {
     const a=game.route[i], b=game.route[i+4], c=game.route[i+8];
     const turnAhead=Math.abs(deltaAngle(Math.atan2(b.y-a.y,b.x-a.x),Math.atan2(c.y-b.y,c.x-b.x)));
@@ -2458,21 +2878,52 @@ function traceMove(game,dt) {
     const radius=(dist(a,b)+dist(b,c))/(2*turnAhead);
     const atCorner=clamp(radius*spec.turn*grip*.69,93,top);
     const brakingDistance=Math.max(0,dist(car,b)-33);
-    top=Math.min(top,Math.hypot(atCorner,Math.sqrt(2*spec.accel*1.4*brakingDistance)));
+    top=Math.min(top,Math.hypot(atCorner,Math.sqrt(2*accel*1.4*brakingDistance)));
   }
   const last=game.route.at(-1);
   if(game.route.length<8) {
     const remaining=dist(car,last);
-    top=Math.min(top,Math.sqrt(2*spec.accel*4.4*remaining)+11);
+    top=Math.min(top,Math.sqrt(2*accel*4.4*remaining)+11);
   }
-  if(car.speed<top) car.speed=Math.min(top,car.speed+spec.accel*driveOptions[car.surface]*dt);
-  else car.speed=Math.max(top,car.speed-dt*spec.accel*(spec.resistance<.6?1.3:2.35));
+  if(car.speed<top) car.speed=Math.min(top,car.speed+accel*driveOptions[car.surface]*recoveryRate(game)*dt);
+  else car.speed=Math.max(top,car.speed-dt*accel*(spec.resistance<.6?1.3:2.35));
   const gap=Math.min(dist(car,target),car.speed*dt);
   if(Math.abs(turn)>1.3 && ratio<.33) {
+    const prior=spec.trailers?trailerPoses(spec,car):null;
     car.a=a;
+    if(prior) steerTrailers(spec,car,prior);
     return 0;
   }
   return sweep(game,car.x+Math.cos(a)*gap,car.y+Math.sin(a)*gap,a,car.speed);
+}
+function driveRatings(game) {
+  const {spec,cargo}=game, unloaded=spec.cargo?spec.cargo-cargo:0;
+  return {max:spec.max+unloaded*8,accel:spec.accel+unloaded*13};
+}
+function recoveryRate(game) {
+  return game.elapsed<game.recoveryUntil?game.spec.recovery:1;
+}
+function steeringGrip(game) {
+  return game.elapsed<game.slipUntil?Math.min(gripOptions[game.car.surface],.56):gripOptions[game.car.surface];
+}
+function moveFreeFleet(game,target,dt) {
+  const car=game.car, spec=game.spec, {max,accel}=driveRatings(game);
+  const distance=dist(target,car);
+  if(distance<.65) {car.speed=0;return 0;}
+  const heading=Math.atan2(target.y-car.y,target.x-car.x), turn=deltaAngle(car.a,heading);
+  const cap=spec.turn*steeringGrip(game)*dt*(car.speed<40?1.65:1);
+  const oldPose=spec.trailers?trailerPoses(spec,car):null;
+  car.a+=clamp(turn,-cap,cap);
+  if(Math.abs(turn)>1.25&&car.speed<30) {
+    if(oldPose) steerTrailers(spec,car,oldPose);
+    return 0;
+  }
+  const top=Math.min(max*driveOptions[car.surface]*game.boost*clamp(1-Math.abs(turn)*.52,.15,1),
+    Math.sqrt(2*accel*4*distance));
+  const change=accel*dt;
+  car.speed+=clamp(top-car.speed,-change*3.1,change*recoveryRate(game));
+  const step=Math.min(distance,car.speed*dt);
+  return sweep(game,car.x+Math.cos(car.a)*step,car.y+Math.sin(car.a)*step,car.a,car.speed);
 }
 function freeMove(game,dt) {
   const car=game.car, targets=game.fingers.splice(0);
@@ -2486,7 +2937,8 @@ function freeMove(game,dt) {
     if(car.speed<18 || (game.wallThisStep&&moved<speed*dt*.18)) {game.flick=null;car.speed=0;}
     return moved;
   }
-  game.boost=Math.min(1,game.boost+dt*4.5);
+  game.boost=Math.min(1,game.boost+dt*4.5*recoveryRate(game));
+  if(game.spec.style&&(targets.length||game.tip)) return moveFreeFleet(game,targets.at(-1)||game.tip,dt);
   if(!targets.length&&game.tip) targets.push(game.tip);
   const length=targets.reduce((sum,p,i)=>sum+dist(p,targets[i-1]||car),0);
   const estimated=Math.min(780,length/Math.max(dt,.009));
@@ -2530,7 +2982,7 @@ function avoidPinnedWall(game,wall) {
   const sample=game.course.samples?.[mod(car.index,game.course.samples.length)];
   const along=target?(target.x-car.x)*tx+(target.y-car.y)*ty:0;
   const direction=Math.abs(along)>7?Math.sign(along):Math.sign((sample?.tx??1)*tx+(sample?.ty??0)*ty)||1;
-  const duration=game.rules.avoid/1000;
+  const duration=game.rules.avoid/1000/(game.spec.recovery?1.4:1);
   game.avoid={nx:wall.nx,ny:wall.ny,tx:tx*direction,ty:ty*direction,id:wall.id,
     kickEnd:game.elapsed+Math.min(.135,duration*.35),until:game.elapsed+duration};
 }
@@ -2545,7 +2997,7 @@ function tickRace(game,dt) {
   let moved;
   if(escape&&game.elapsed<escape.kickEnd&&(game.route.length||game.pointer!=null)) {
     const dx=-escape.nx*.74+escape.tx*.64,dy=-escape.ny*.74+escape.ty*.64;
-    car.speed=Math.max(car.speed,115);
+    car.speed=Math.max(car.speed,Math.min(game.spec.max,game.spec.recovery?167:115));
     moved=sweep(game,car.x+dx*car.speed*dt,car.y+dy*car.speed*dt,Math.atan2(dy,dx),car.speed);
   } else moved=game.config.drag==='trace'?traceMove(game,dt):freeMove(game,dt);
   if(game.finished) return;
@@ -2569,19 +3021,19 @@ function tickRace(game,dt) {
     car.speed*=drag;game.boost=Math.max(.54,game.boost*(shallow?.99:.96));
     if(game.flick) game.flick.speed*=drag;
     game.pinned=(moved<Math.max(.65,dt*60))?(game.pinned||0)+dt:0;
-    if(game.pinned>=game.rules.pinned/1000&&(!game.avoid||game.elapsed>=game.avoid.until)) {
+    if(game.pinned>=game.rules.pinned/1000/(game.spec.recovery||1)&&(!game.avoid||game.elapsed>=game.avoid.until)) {
       avoidPinnedWall(game,wall);
     }
   } else game.pinned=0;
   if(game.config.drag==='trace'&&game.route.length) {
     if(dist(game.streak,car)>7) game.streak={x:car.x,y:car.y,time:game.elapsed};
-    if(game.elapsed-game.streak.time>=game.rules.stall/1000) {
+    if(game.elapsed-game.streak.time>=game.rules.stall/1000*(game.spec.recovery?1.65:1)) {
       game.route=[];car.speed=0;game.stalled=true;game.tip=null;
     }
   } else game.streak={x:car.x,y:car.y,time:game.elapsed};
   if(speed>46&&game.elapsed-game.materialTime>.23&&['grass','dirt','water'].includes(car.surface)) {
     spark(game,car.x,car.y,car.surface==='water'?'water':'dust',.57,car.a+Math.PI);
-    if(car.surface!=='water') audio.effect('rough');
+    if(car.surface!=='water'&&game.spec.style!=='electric') audio.effect('rough');
     game.materialTime=game.elapsed;
   }
   tickProps(game,dt);engineWear(game);updateEffects(game,dt);
@@ -2599,8 +3051,10 @@ function poseAt(record,ms) {
   return {x:mix(a[1],b[1],t)/2,y:mix(a[2],b[2],t)/2,a:a[3]/1000+deltaAngle(a[3]/1000,b[3]/1000)*t,
     speed:b===a?0:Math.hypot(a[1]-b[1],a[2]-b[2])*500/(b[0]-a[0]),
     index:t<.5?a[4]:b[4],damage:unpackDamage(a[5]),score:a[7],props:a[6]?.map((p,i)=>{
-      const next=b[6]?.[i]||p;return {x:mix(p[0],next[0],t)/2,y:mix(p[1],next[1],t)/2,a:mix(p[2],next[2],t)/1000};
-    })};
+      const next=b[6]?.[i]||p;
+      return {x:mix(p[0],next[0],t)/2,y:mix(p[1],next[1],t)/2,a:mix(p[2],next[2],t)/1000,
+        level:p[3],routeIndex:p[4]??undefined};
+    }),trailerAngles:a[8]?.map((angle,i)=>angle/1000+deltaAngle(angle/1000,(b[8]?.[i]??angle)/1000)*t)};
 }
 function rebuildReplayTrail(game,time) {
   game.trail=[];game.totalDistance=0;game.particles=[];
@@ -2617,21 +3071,21 @@ function rebuildReplayTrail(game,time) {
   let previous;
   for(let k=start;k<=i;k++) {
     const pose=poseAt(game.replay,Math.min(goal,frames[k][0]));
-    pose.surface=surfaceAt(game.course,pose.x,pose.y,pose.index);
+    pose.surface=runSurface(game,pose.x,pose.y,pose.index);
     game.car=pose;
     if(previous) game.totalDistance+=dist(pose,previous);
     addTrail(game,true);previous=pose;
   }
   game.emitAt=time;
   game.car=poseAt(game.replay,goal);
-  game.car.surface=surfaceAt(game.course,game.car.x,game.car.y,game.car.index);
+  game.car.surface=runSurface(game,game.car.x,game.car.y,game.car.index);
 }
 function tickReplay(game,dt) {
   if(game.paused || !game.replayPlaying || game.finished) return;
   const record=game.replay, previous=game.car, oldMs=game.elapsed*1000;
   game.elapsed=Math.min(game.replayHigh,game.elapsed+dt);
   game.car=poseAt(record,game.elapsed*1000);
-  game.car.surface=surfaceAt(game.course,game.car.x,game.car.y,game.car.index);
+  game.car.surface=runSurface(game,game.car.x,game.car.y,game.car.index);
   game.splits=record.splits.filter((_,i)=>record.splits.slice(0,i+1).reduce((a,b)=>a+b,0)<=game.elapsed+.001);
   if(!game.course.openYard) game.progress=game.car.index*game.course.step-game.splits.length*game.course.length;
   game.totalDistance+=dist(previous,game.car);
@@ -2642,7 +3096,7 @@ function tickReplay(game,dt) {
       audio.effect(hit.prop?'prop':'impact',hit.strength);
     }
   }
-  if(game.car.surface!==previous.surface) {
+  if(game.spec.style!=='electric'&&game.car.surface!==previous.surface) {
     if(game.car.surface==='water') audio.effect('water');
     if(game.car.surface==='curb') audio.effect('curb',.61);
   }
@@ -2653,6 +3107,21 @@ function paintTrail(ctx,game,accept=null) {
   const priorAlpha=ctx.globalAlpha;
   const points=game.trail, length=game.course.openYard?1650:game.course.length*.92;
   if(points.length<2) return;
+  if(game.spec.hover) {
+    for(const [i,p] of points.entries()) {
+      const age=(game.totalDistance-p.distance)/505;
+      if(age>1||(accept&&!accept(p.index))||i%2!==0) continue;
+      const drift=Math.sin(p.distance*.77)*11;
+      const x=p.x-Math.sin(p.a)*drift,y=p.y+Math.cos(p.a)*drift;
+      const size=1.24+(1-age)*.95, phase=Math.floor(p.distance*.119)%3;
+      ctx.globalAlpha=priorAlpha*(1-age)*(.53+.38*Math.cos(p.distance*1.9-game.elapsed*11)**2);
+      polygon(ctx,[[x-size*1.9,y],[x,y-size*1.65],[x+size*1.9,y],[x,y+size*1.65]],
+        ['#ffe089','#ffc8ed','#c6f3f2'][phase]);
+      oval(ctx,x+2.5,y-3,1,1,'#fff6d1');
+    }
+    ctx.globalAlpha=priorAlpha;
+    return;
+  }
   const width=game.config.type===3?2.1:2.65;
   const gap=game.config.type===3?0:game.spec.width*.34;
   ctx.lineCap='round';ctx.lineJoin='round';ctx.lineWidth=width;
@@ -2714,25 +3183,35 @@ function paintPath(ctx,game) {
   const tip=path.at(-1)||(game.pointer!=null&&game.tip)||game.frozenTip;
   if(tip&&!game.stalled) oval(ctx,tip.x,tip.y,3.3,3.3,'#ffedb8');
 }
+function visibleCargo(game) {
+  return game.replay?Math.max(0,(game.spec.cargo||0)-Math.max(0,(game.car.props?.length||0)-game.basePropCount)):game.cargo;
+}
+function visibleProps(game) {
+  if(!game.replay) return game.props;
+  const poses=game.car.props||[];
+  return game.props.map((p,i)=>{
+    const pose=poses[i];
+    if(!pose) return p;
+    return {...p,...pose,level:pose.level??p.level,routeIndex:pose.routeIndex??p.routeIndex};
+  }).concat(poses.slice(game.basePropCount).map(p=>({...p,type:'log'})));
+}
 function drawScene(game) {
-  const ctx=mainCtx;
+  const ctx=mainCtx, props=visibleProps(game);
   ctx.setTransform($('track').width/W,0,0,$('track').height/H,0,0);
   ctx.drawImage(game.course.map,0,0,W,H);
   if(game.course.elevationData) {
     const course=game.course, sectionByLayer=new Map();
-    const position=prop=>game.car.props?.[game.props.indexOf(prop)]||prop;
-    for(const prop of game.props) {
-      const level=prop.level||0;
-      const p=position(prop),n=course.samples.length;
+    for(const prop of props) {
+      const level=prop.level||0,n=course.samples.length;
       let best=prop.routeIndex??-1,distance=Infinity;
-      if(game.replay||best<0) for(let i=0;i<n;i++) {
+      if(best<0||(game.replay&&game.car.props?.[0]?.routeIndex==null)) for(let i=0;i<n;i++) {
         if(routeLevelAt(course,i)!==level) continue;
-        const gap=(p.x-course.samples[i].x)**2+(p.y-course.samples[i].y)**2;
+        const gap=(prop.x-course.samples[i].x)**2+(prop.y-course.samples[i].y)**2;
         if(gap<distance) {distance=gap;best=i;}
       }
       const layer=best<0?null:elevationSectionAt(course,best)??null;
       if(!sectionByLayer.has(layer)) sectionByLayer.set(layer,[]);
-      sectionByLayer.get(layer).push({prop:{...prop,...p},index:best});
+      sectionByLayer.get(layer).push({prop,index:best});
     }
     const drawObjects=(layer,filter=()=>true)=>{
       for(const {prop,index} of sectionByLayer.get(layer)||[]) if(filter(index)) drawProp(ctx,prop);
@@ -2750,8 +3229,8 @@ function drawScene(game) {
     }
   } else {
     paintTrail(ctx,game);drawScars(ctx,game);
-    const objects=level=>game.props.forEach((prop,i)=>{
-      if((prop.level||0)===level) drawProp(ctx,game.car.props?.[i]?{...prop,...game.car.props[i]}:prop);
+    const objects=level=>props.forEach(prop=>{
+      if((prop.level||0)===level) drawProp(ctx,prop);
     });
     objects(0);
     const levels=new Set();
@@ -2764,7 +3243,8 @@ function drawScene(game) {
   if(game.ghost&&game.elapsed<=game.ghost.duration+.28) {
     const p=poseAt(game.ghost,game.elapsed*1000),cfg=game.ghost.config;
     ctx.globalAlpha=.42;
-    drawVehicle(ctx,p.x,p.y,p.a,cfg.type,hex(vehicles[cfg.type].palette[cfg.color],.40),p.damage,{ghost:true});
+    drawVehicle(ctx,p.x,p.y,p.a,cfg.type,hex(vehicles[cfg.type].palette[cfg.color],.40),p.damage,{ghost:true,time:game.elapsed,trailerAngles:p.trailerAngles,
+      cargo:cfg.type===game.config.type&&game.spec.cargo?Math.max(0,game.spec.cargo-((p.props?.length??game.basePropCount)-game.basePropCount)):undefined});
     ctx.globalAlpha=1;
   }
   const car=game.car;
@@ -2782,7 +3262,9 @@ function drawScene(game) {
     ctx.beginPath();ctx.arc(car.x,car.y,r,0,TAU);ctx.lineWidth=1.8;
     ctx.strokeStyle='#fff3bf94';ctx.stroke();
   }
-  drawVehicle(ctx,car.x,car.y,car.a,game.config.type,game.color,car.damage,{lights:car.speed<26&&game.started});
+  drawVehicle(ctx,car.x,car.y,car.a,game.config.type,game.color,car.damage,{
+    lights:car.speed<26&&game.started,time:game.started?game.elapsed:performance.now()/1000,trailerAngles:car.trailerAngles,cargo:visibleCargo(game)
+  });
 }
 const designer={file:null,mode:'track',point:0,riverPoint:null,prop:null,deck:null,selectedPasses:[],tool:'',pointer:null,drag:null,preview:null,frame:0,baseline:''};
 const creatorKey='track-and-trace-courses-v1',maxCourseProps=72;
@@ -2880,7 +3362,7 @@ function loadCustomCourses() {
     }
   } catch {}
 }
-function copyTemplate(index,duplicate=false) {
+function copyTemplate(index,duplicate=false,withHazards=false) {
   const c=prepare(index);
   if(c.custom) {
     const file=jsonCopy(c.courseFile);
@@ -2888,7 +3370,7 @@ function copyTemplate(index,duplicate=false) {
   }
   const common={format:'Track’n’Trace’n course',version:2,id:newCourseId(),name:c.name+' copy',
     theme:c.theme,damageEvent:!!c.damageEvent,crossings:jsonCopy(c.crossings||[]),elevationOrders:jsonCopy(c.elevationOrders||[]),
-    props:(c.props||[]).map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:p.level||0})),
+    props:[...(c.props||[]),...(withHazards?c.hazards||[]:[])].map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:p.level||0})),
     curve:c.smoothing??50,revision:0,scenerySeed:c.scenerySeed??(673+c.index*87)};
   if(c.openYard) return {...common,layout:'yard',points:[],park:!!c.park,arena:c.arena||0,
     floor:c.floor,parking:c.parking,patches:c.patches?jsonCopy(c.patches):undefined};
@@ -2907,7 +3389,7 @@ function resetDraftSelection() {
   designer.baseline=JSON.stringify(designer.file);
 }
 function newDraft(template=0,rename=false,duplicate=false) {
-  designer.file=copyTemplate(template,duplicate);
+  designer.file=copyTemplate(template,duplicate,!rename&&hazardsEnabled(courses[template]));
   if(rename) {designer.file.name='Untitled course';designer.file.id=newCourseId();}
   resetDraftSelection();editorRender(true);
 }
@@ -3117,7 +3599,7 @@ function selectNearby(values,p,radius=21) {
   return index;
 }
 function addEditorProp(type,p) {
-  if(designer.file.props.length>=maxCourseProps) {editorStatus('A course can use up to '+maxCourseProps+' movable objects.');return;}
+  if(designer.file.props.length>=maxCourseProps) {editorStatus('A course can use up to '+maxCourseProps+' objects and hazards.');return;}
   designer.file.props.push({type,x:clamp(p.x,0,W),y:clamp(p.y,0,H),a:0,level:0});
   designer.prop=designer.file.props.length-1;designer.tool='';
 }
@@ -3308,12 +3790,13 @@ function nearbyCourses(list,index) {
   return [...new Set(shifts.map(shift=>list[mod(index+shift,list.length)]))];
 }
 function drawCourseTile(canvas,index) {
-  const definition=courses[index], key=definition.id+':'+(definition.revision||0);
+  const definition=courses[index], withHazards=hazardsEnabled(definition);
+  const key=definition.id+':'+(definition.revision||0)+':'+withHazards;
   let art=courseTileCache.get(key);
   if(!art) {
     art=document.createElement('canvas');art.width=180;art.height=100;
     const ctx=art.getContext('2d');
-    ctx.scale(.15,.15);drawCoursePreview(ctx,prepare(index));
+    ctx.scale(.15,.15);drawCoursePreview(ctx,prepare(index),true,withHazards);
     if(courseTileCache.size>=64) courseTileCache.delete(courseTileCache.keys().next().value);
     courseTileCache.set(key,art);
   }
@@ -3326,10 +3809,11 @@ function renderCoursePicker(course) {
   $('races-tab').setAttribute('aria-pressed',!training&&!course.damageEvent);
   $('training-tab').setAttribute('aria-pressed',training);
   $('damage-tab').setAttribute('aria-pressed',!!course.damageEvent);
-  if(drawnCourse===courses[options.course]) return;
-  drawnCourse=courses[options.course];
+  const definition=courses[options.course], withHazards=hazardsEnabled(definition);
+  if(drawnCourse?.definition===definition&&drawnCourse?.withHazards===withHazards) return;
+  drawnCourse={definition,withHazards};
   const ctx=$('preview').getContext('2d');
-  ctx.save();ctx.scale(.8,.8);drawCoursePreview(ctx,course);ctx.restore();
+  ctx.save();ctx.scale(.8,.8);drawCoursePreview(ctx,course,true,withHazards);ctx.restore();
   const mount=$('courses'),focused=document.activeElement?.dataset?.courseTile!=null;
   mount.replaceChildren();let selected=null;
   for(const i of nearbyCourses(list,index)) {
@@ -3350,7 +3834,10 @@ function vehicleColour(type) {
 function drawPickerVehicle(canvas,type,scale) {
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  drawVehicle(ctx,canvas.width/2,canvas.height/2,-.18,type,vehicleColour(type),zeroDamage(),{scale});
+  const spec=vehicles[type], length=rigVisualLength(spec);
+  const zoom=Math.min(scale,canvas.width/(length+12),canvas.height/(spec.width+4));
+  const offset=(length-spec.length)*.50*zoom;
+  drawVehicle(ctx,canvas.width/2+offset,canvas.height/2-offset*.18,-.18,type,vehicleColour(type),zeroDamage(),{scale:zoom});
 }
 function renderVehiclePicker() {
   const current=options.type, key=[current,...options.colors].join('/');
@@ -3362,7 +3849,9 @@ function renderVehiclePicker() {
   drawPickerVehicle($('vehicle-next-art'),right,1.45);
   $('prev-vehicle').setAttribute('aria-label','Previous vehicle · '+vehicles[left].name);
   $('next-vehicle').setAttribute('aria-label','Next vehicle · '+vehicles[right].name);
-  $('vehicle-name').textContent=vehicles[current].name;
+  $('vehicle-name').value=String(current);
+  $('vehicle-detail').textContent=vehicles[current].description||'';
+  $('vehicle-detail').hidden=!vehicles[current].description;
   const selected=vehicleColour(current), mount=$('swatches'),previous=document.activeElement?.dataset?.paint;
   mount.replaceChildren();
   for(const [name,colour] of paintChoices) {
@@ -3422,14 +3911,34 @@ function attachCarousel(id,step) {
     e.preventDefault();step(e.key==='ArrowLeft'?-1:1);
   });
 }
+function initializeFleetControls() {
+  const select=$('vehicle-name');
+  for(const [label,...indexes] of fleetGroups) {
+    const group=document.createElement('optgroup');group.label=label;
+    for(const index of indexes) group.append(new Option(vehicles[index].name,String(index)));
+    select.append(group);
+  }
+  select.addEventListener('change',event=>{options.type=Number(event.target.value);renderSetup();});
+  const sound=$('music-select');
+  sound.add(new Option('Shuffle','shuffle'));
+  for(const [index,tune] of tunes.entries()) sound.add(new Option(tune.name,String(index)));
+  sound.addEventListener('change',event=>{options.music=musicChoice(event.target.value);saveOptions();});
+}
 function renderRuleCopy(config,course) {
   const event=eventNames[config.mode], steering=config.drag==='trace'?'Draw path':'Free drag';
   const distance=course.arena?course.arena+' seconds':course.training?'':config.laps+(config.laps===1?' lap':' laps');
-  $('rules-summary').textContent=[event,distance,steering,damageNames[config.damage]].filter(Boolean).join(' · ');
+  $('rules-summary').textContent=[event,distance,steering,damageNames[config.damage],config.hazards?'Hazards on':''].filter(Boolean).join(' · ');
   $('rule-course').textContent=course.name+' · '+vehicles[config.type].name;
   const oneHit=config.mode==='one-hit';
   $('event-explanation').hidden=!oneHit;
-  $('event-explanation').textContent='The first wall or object hit ends the run.';
+  $('event-explanation').textContent=vehicles[config.type].blade
+    ? 'The first hit to the sides or rear ends the run.'
+    : 'The first wall or object hit ends the run.';
+  $('hazards-row').hidden=!course.hazards?.length;
+  segmentation('hazards-select',config.hazards?'on':'off');
+  const hazards=course.hazards||[];
+  $('hazards-copy').textContent=hazards.length+' placements'+(hazards.some(p=>p.type==='oil')?' including an oil spill.':'.');
+  $('music-select').value=options.music==null?'shuffle':String(options.music);
   $('rules-open').setAttribute('aria-expanded',String(modalType==='rules'));
   if(modalType==='rules') $('rules-start').textContent=$('start').textContent;
 }
@@ -3506,6 +4015,7 @@ function recordKey(c,kind) {
   const parts=[c.courseId||courses[c.course]?.id,c.layout||0,c.type,c.laps,c.drag,
     c.drag==='free'?(c.release||'stop'):'',damageMode(c),c.tuneKey||tuningId(tuning),kind];
   if(kind==='damage'&&c.scoring) parts.push(c.scoring);
+  if(c.hazards) parts.push('hazards');
   if(c.mode==='one-hit'&&(kind==='fast'||kind==='clean')) parts.push('one-hit');
   return parts.join('/');
 }
@@ -3545,7 +4055,16 @@ function saveRun(game,completed,highlightsOnly=false) {
 }
 
 loadCustomCourses();
-const options={course:0,type:0,colors:[0,0,0,0],laps:3,mode:'race',drag:'trace',damage:'total',ghost:'none'};
+const options={course:0,type:0,colors:[],laps:3,mode:'race',drag:'trace',damage:'total',ghost:'none',hazards:{},music:null};
+function musicChoice(value) {
+  return (typeof value==='number'||typeof value==='string'&&/^\d+$/.test(value))&&tunes[Number(value)]?Number(value):null;
+}
+function normalizeHazardSettings(values) {
+  return Object.fromEntries(courses.filter(c=>c.hazards?.length&&values?.[c.id]===true).map(c=>[c.id,true]));
+}
+function hazardsEnabled(course) {
+  return !!course.hazards?.length&&options.hazards[course.id]===true;
+}
 try {
   const saved=JSON.parse(localStorage.getItem('track-and-trace-setup-v1')||'null');
   if(saved) {
@@ -3556,6 +4075,10 @@ try {
     audio.setMode(audioStates[saved.audio]?saved.audio:saved.muted?'off':'both');
   }
 } catch {}
+if(!Number.isInteger(options.type)||!vehicles[options.type]) options.type=0;
+options.colors=normalizePaint(options.colors);
+options.music=musicChoice(options.music);
+options.hazards=normalizeHazardSettings(options.hazards);
 let training=!!courses[options.course].training;
 let raceCourse=courseOptions(false).includes(options.course)?options.course:0;
 let trainingCourse=training?options.course:courseOptions(true)[0];
@@ -3569,7 +4092,7 @@ function configNow() {
   const mode=training?'training':course.damageEvent?'damage':options.mode;
   return {course:options.course,courseId:course.id,layout:course.revision,type:options.type,
     color:options.colors[options.type],laps:course.arena?0:options.laps,arena:course.arena||undefined,
-    mode,scoring:mode==='damage'?'objects-v1':undefined,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
+    mode,hazards:hazardsEnabled(course)||undefined,music:options.music,scoring:mode==='damage'?'objects-v1':undefined,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
 }
 function clock(s) {
   const ms=Math.max(0,Math.round(s*1000));
@@ -3737,7 +4260,13 @@ function inspectCar() {
     rounded(c,10,10,640,440,28,'#25413f');
     rounded(c,22,22,616,416,21,'#36514a');
     const type=run.config.type;
-    drawVehicle(c,330,230,run.car.a,type,run.color,run.car.damage,{scale:7.0});
+    const spec=vehicles[type], angles=run.car.trailerAngles;
+    const poses=trailerPoses(spec,run.car), rear=poses.at(-1);
+    const length=rigVisualLength(spec), zoom=Math.min(7,395/length);
+    const originX=rear?(run.car.x-rear.x+Math.cos(rear.a)*rear.length*.5)*zoom*.48:0;
+    const originY=rear?(run.car.y-rear.y+Math.sin(rear.a)*rear.length*.5)*zoom*.48:0;
+    drawVehicle(c,330+originX,230+originY,run.car.a,type,run.color,run.car.damage,
+      {scale:zoom,time:run.elapsed,cargo:visibleCargo(run),trailerAngles:angles});
   }
   renderControls();
 }
@@ -3817,7 +4346,7 @@ function stat(label,value) {
 function configLabel(c) {
   const length=c.laps?c.laps+(c.laps===1?' lap':' laps'):(c.arena||courses[c.course]?.arena||60)+' s arena';
   return vehicles[c.type].name+' · '+length+' · '+(c.drag==='trace'?'Draw path':'Free drag')+
-    (c.drag==='free'&&c.release==='flick'?' · Flick':'')+
+    (c.drag==='free'&&c.release==='flick'?' · Flick':'')+(c.hazards?' · Hazards':'')+
     ({off:' · Damage off',open:' · Damage only',total:''}[damageMode(c)])+(c.mode==='damage'?' · Challenge':c.mode==='one-hit'?' · One Hit Loss':'');
 }
 function showRecords(courseIndex) {
@@ -3951,7 +4480,7 @@ $('track').addEventListener('pointerdown',e=>{
   if(game.config.drag==='trace') {
     game.route=[];game.routeArc=0;appendRoute(game,pos);
   } else game.fingers=[game.tip];
-  audio.effect('rev',.8);
+  audio.engage(game.config.type);
 });
 $('track').addEventListener('pointermove',e=>{
   const game=run;
@@ -3977,7 +4506,7 @@ for(const name of ['pointerup','pointercancel','lostpointercapture']) {
       if(run.config.drag==='free'&&run.gesture.length>=2) {
         const tail=run.gesture.at(-1), head=run.gesture[0], now=e.timeStamp??performance.now();
         const gap=dist(head,tail), seconds=Math.max(.018,(tail.t-head.t)/1000);
-        if(now-tail.t<95&&gap>7) run.releasePending={a:Math.atan2(tail.y-head.y,tail.x-head.x),speed:Math.min(980,gap/seconds)};
+        if(now-tail.t<95&&gap>7) run.releasePending={a:Math.atan2(tail.y-head.y,tail.x-head.x),speed:Math.min(run.spec.style?Math.max(0,run.car.speed):980,gap/seconds)};
       }
     }
     run.pointer=null;run.tip=null;
@@ -3996,6 +4525,10 @@ $('damage-tab').addEventListener('click',()=>setCourse(damageCourse));
 $('prev-course').addEventListener('click',()=>changeCourse(-1));$('next-course').addEventListener('click',()=>changeCourse(1));
 $('prev-vehicle').addEventListener('click',()=>changeVehicle(-1));
 $('next-vehicle').addEventListener('click',()=>changeVehicle(1));
+onSegment('hazards-select',value=>{
+  const course=courses[options.course];
+  if(course.hazards?.length) options.hazards[course.id]=value==='on';
+});
 onSegment('event-select',value=>{options.mode=value;});
 onSegment('drag-select',value=>{options.drag=value;});
 onSegment('damage-select',value=>{options.damage=value;if(value==='off'&&options.mode==='damage') options.mode='race';});
@@ -4064,7 +4597,7 @@ function animate(now) {
   } else audio.tick(false,false,0,0,false);
   requestAnimationFrame(animate);
 }
-renderSetup();initializeEditor();
+initializeFleetControls();renderSetup();initializeEditor();
 records.ready.then(()=>{if(!run) renderSetup();});
 requestAnimationFrame(animate);
 
