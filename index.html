@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.11</title>
+<title>Track’n’Trace’n v0.12</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -244,13 +244,58 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 #course-position{justify-self:center}
 #net-full{min-width:39px;padding:3px;color:var(--cream)}
 
+
+.course-strip{touch-action:pan-y}
+.course-strip .course-list{overflow:hidden;touch-action:pan-y;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.course-strip .course-list button{min-width:0;transform:translateX(var(--swipe-shift,0px))}
+.course-strip #vehicle-tiles canvas{display:block;width:100%;height:clamp(29px,6vh,48px);object-fit:contain}
+.vehicle-hero{display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:#1c3931}
+.vehicle-hero canvas{display:block;max-width:100%;height:clamp(53px,11vh,95px);object-fit:contain}
+#course-select{min-height:34px;font-size:clamp(12px,1.8vw,16px)}
+
+
+#race-hud{z-index:3}
+#play[data-network] #race-hud{display:flex;inset:6px 8px auto;justify-content:space-between;align-items:flex-start}
+#play[data-network] #race-hud .buttons{margin-left:auto;align-items:center}
+#play[data-network] #race-hud .left-hud{margin:0;align-self:center}
+#play[data-network] #race-hud .hud-run-info{gap:4px}
+#net-order{top:62px}
+#net-paused{top:52%}
+#net-roster li[data-host=true]{background:linear-gradient(90deg,#4f4930,#20362b 72%);border-left:3px solid #e9cb77}
+#net-roster li[data-director=true]{outline:1px solid #a7d8bd;animation:director-rim 2.8s ease-in-out infinite}
+@keyframes director-rim{50%{outline-color:#a7d8bd55;box-shadow:0 0 8px #9edec637}}
+.net-roster-car{width:72px;height:35px;object-fit:contain;background:#243e35;border-radius:5px}
+.net-role{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#f4de9d}
+.net-role.director{color:#bde3c1}
+.net-rule-switches{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.net-rule-switches button{flex:1 1 145px}
+.net-rule-switches button[aria-pressed=true]{background:#4b7357;color:#fff3ce;border-color:#91bc84}
+.net-rule-switches button[aria-disabled=true],#rule-fields[data-suggest=true] button:not([disabled]){opacity:.72;border-style:dashed}
+#net-rule-requests{border-left:3px solid var(--suggest-colour,#8bb7a1);padding-left:8px}
+.rule-splash{outline:2px solid var(--suggest-colour)}
+#pause-ready-list{display:grid;gap:5px;padding:0;margin:8px 0;list-style:none}
+#pause-ready-list li{display:flex;justify-content:space-between;gap:12px;padding:6px 9px;border-radius:5px;background:#203b33}
+#pause-ready-list li[data-ready=true] span{color:#cfe7a6}
+@media(prefers-reduced-motion:reduce){#net-roster li[data-director=true]{animation:none}}
+
+
+#pickup-hud{position:absolute;z-index:5;top:61px;left:max(8px,env(safe-area-inset-left));max-width:48vw;pointer-events:none}
+.pickup-grid{display:grid;gap:6px}
+.pickup-row{display:grid;grid-template-columns:minmax(146px,1fr) auto minmax(100px,.8fr);gap:6px;align-items:center;border-bottom:1px solid var(--line);padding:8px 0}
+.pickup-row label{display:flex;align-items:center;gap:5px;font-size:12px}
+.pickup-row canvas{width:29px;height:27px;flex:none}
+.pickup-row small{grid-column:1/-1;color:var(--muted)}
+.pickup-row input[type=number]{max-width:57px}
+.pickup-row [aria-disabled=true]{opacity:.68}
+@media(max-width:525px){.pickup-row{grid-template-columns:1fr 1fr}.pickup-row>label:first-child{grid-column:1/-1}}
+
 </style>
 </head>
 <body>
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.11</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.12</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -264,14 +309,16 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
      <div id="courses" class="course-list" aria-label="Course thumbnails" tabindex="0"></div>
      <button class="icon" id="next-course" aria-label="Next course">›</button>
     </div>
+    <select class="vehicle-name" id="course-select" aria-label="Choose course"></select>
     <output id="course-position" class="course-position"></output>
    </section>
    <section class="garage" aria-label="Vehicle and start">
     <h2>Garage</h2>
-    <div class="vehicle-preview carousel-surface" id="vehicle-carousel" role="group" aria-label="Vehicle carousel" tabindex="0">
-     <button class="neighbor" id="prev-vehicle" aria-label="Previous vehicle"><canvas id="vehicle-prev-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">‹</span></button>
-     <canvas class="slide-surface" id="vehicle" width="260" height="130" aria-hidden="true"></canvas>
-     <button class="neighbor" id="next-vehicle" aria-label="Next vehicle"><canvas id="vehicle-next-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">›</span></button>
+    <div class="vehicle-hero"><canvas id="vehicle" width="260" height="130" aria-hidden="true"></canvas></div>
+    <div class="course-strip carousel-surface" id="vehicle-carousel" role="group" aria-label="Vehicle carousel" tabindex="0">
+     <button class="icon" id="prev-vehicle" aria-label="Previous vehicle">‹</button>
+     <div id="vehicle-tiles" class="course-list" aria-label="Nearby vehicles"></div>
+     <button class="icon" id="next-vehicle" aria-label="Next vehicle">›</button>
     </div>
     <select class="vehicle-name" id="vehicle-name" aria-label="Choose vehicle" aria-describedby="vehicle-detail"></select>
     <p id="vehicle-detail" class="vehicle-detail" hidden></p>
@@ -293,6 +340,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
     <div class="rule-field" id="lap-row"><span class="label">Laps</span><div class="segmented"><button id="less-laps" aria-label="Fewer laps">−</button><button id="laps-value" aria-label="Lap count, press to increase">3</button><button id="more-laps" aria-label="More laps">+</button></div></div>
     <div class="rule-field" id="hazards-row" hidden><span class="label">Track hazards</span><div class="segmented" id="hazards-select"><button data-value="off">Off</button><button data-value="on">On</button></div><p id="hazards-copy" class="rule-explanation"></p></div>
     <div class="rule-field"><label for="music-select">Soundtrack</label><select id="music-select"></select></div>
+    <div class="rule-field"><span class="label">Bonus items</span><button id="pickup-rules-open">Off</button></div>
     <div class="rule-field" id="last-car-row" hidden><span class="label">Last car running wins</span><div class="segmented" id="last-car-select"><button data-value="off">Off</button><button data-value="on">On</button></div></div>
     <div class="rule-field" id="ghost-row"><label for="ghost-select">Ghost</label><select id="ghost-select" aria-label="Ghost"></select></div>
    </div>
@@ -324,7 +372,8 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
     <div id="creator-track-tools" class="editor-group">
      <h3>Route point</h3>
      <div class="segmented"><button id="creator-add">Add point</button><button id="creator-remove">Remove</button><button id="creator-startline">Set start</button></div>
-     <div class="segmented"><button id="creator-split">Split after point</button><button id="creator-merge" hidden>Remove split</button></div>
+     <div class="segmented"><button id="creator-split">Split after point</button><button id="creator-fork-add" hidden>Add branch point</button><button id="creator-fork-remove" hidden>Remove branch point</button><button id="creator-merge" hidden>Remove split</button></div>
+     <p id="creator-fork-hint" class="hint" hidden>Both routes through a split stay on the ground. Add bridges and tunnels on shared track before or after the split.</p>
      <label>Track width <output id="creator-width-value"></output><input id="creator-width" type="range" min="49" max="152"></label>
      <label for="creator-road">Road to the next point</label><select id="creator-road"><option value="">Style default</option><option value="asphalt">Asphalt</option><option value="dirt">Dirt</option><option value="grass">Grass</option></select>
      <div class="editor-pair">
@@ -400,30 +449,35 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
   <section id="net-expanded-rules" aria-label="Current race rules" hidden>
    <h3>Race rules</h3><dl id="net-rule-details"></dl>
   </section>
-  <label id="net-lock-row" hidden><input type="checkbox" id="net-free-lock"> Require Free drag for everyone</label>
+  <div id="net-lock-row" class="net-rule-switches">
+   <button id="net-free-lock" aria-pressed="false">Everyone Free Drag</button>
+   <button id="net-car-contact" aria-pressed="true">Cars hit Cars</button>
+  </div>
+  <p id="net-rule-requests" role="status" hidden></p>
   <div class="rule-field" id="net-steering-row">
    <span class="label">Your steering</span>
    <div class="segmented" id="net-personal-steering"><button data-value="trace">Draw path</button><button data-value="drive">Drag to drive</button></div>
   </div>
   <p id="net-steering-locked" hidden>Free drag is required for this round.</p>
   <div id="net-pickers"></div>
-  <div class="net-buttons"><button id="net-ready-button" class="primary">Ready</button><button id="net-start" class="primary" hidden>Start race</button></div>
+  <div class="net-buttons"><button id="net-ready-button" class="primary">Ready</button><button id="net-start" class="primary" hidden>Start race</button><button id="net-watch" hidden>Back to race</button></div>
  </section>
 </main>
 
 <main id="play" hidden>
  <div id="stage">
   <canvas id="track" width="1800" height="990" aria-label="Race course"></canvas>
-  <div class="hud">
+ </div>
+ <div class="hud" id="race-hud">
    <div class="left-hud"><div class="hud-run-info"><div class="hud-pill" id="lap-hud"></div><div class="hud-pill" id="score-hud" hidden></div><div class="hud-pill" id="chain-hud" hidden></div></div><div id="splits" class="live-splits"></div></div>
    <div class="buttons"><div class="hud-pill" id="net-race-hud" hidden></div><div class="timers"><div class="hud-pill" id="time-hud"></div></div><button class="icon" id="pause" aria-label="Race menu">☰</button></div>
-  </div>
  </div>
  <div id="net-countdown" aria-live="polite" hidden></div>
  <ol id="net-order" aria-label="Running order" hidden></ol>
 
- <div id="net-paused" class="hud-pill" hidden></div>
- <div id="inspection" hidden><canvas id="inspect-car" width="660" height="460" aria-label="Enlarged vehicle, tap to return"></canvas></div>
+  <div id="net-paused" class="hud-pill" hidden></div>
+ <div id="pickup-hud" class="hud-pill" hidden></div>
+ <div id="inspection" hidden><canvas id="inspect-car" width="660" height="460" aria-label="Undamaged and current vehicle condition, tap to return"></canvas></div>
  <div id="run-controls" hidden><div class="pause-tray">
   <button id="resume" class="race-continue">▶ Continue</button>
   <button id="race-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button>
@@ -835,9 +889,11 @@ const prepared = new Map();
 // Route branches and arena geometry
 function forkReference(points,fork) {
   const start=points.findIndex(p=>p.id===fork.from);
-  if(start<0||start+2>=points.length||points[start+1].id!==fork.via) return null;
-  return {start,via:start+1,end:start+2};
+  const end=fork.to?points.findIndex(p=>p.id===fork.to):start+2;
+  if(start<0||end>=points.length||end-start<2||end-start>9||points[start+1]?.id!==fork.via) return null;
+  return {start,via:start+1,end};
 }
+const forkAltPoints=fork=>[fork.alt,...(fork.altPoints||[])];
 function buildRouteForks(course) {
   return (course.forks||[]).flatMap(fork=>{
     const anchors=course.pointIds.map(id=>({id}));
@@ -845,25 +901,26 @@ function buildRouteForks(course) {
     if(!ref) return [];
     const start=course.elevationData.anchors[ref.start],end=course.elevationData.anchors[ref.end];
     if(end-start<10||course.elevationData.heights.slice(start,end+1).some(h=>h!==0)) return [];
-    const first=course.samples[start],last=course.samples[end],mid=fork.alt;
-    const direction=normalizeVector(last.x-first.x,last.y-first.y);
+    const first=course.samples[start],last=course.samples[end],controls=forkAltPoints(fork);
+    const points=[{...first,width:course.widthAt[start]*2},...controls,{...last,width:course.widthAt[end]*2}];
+    const normals=points.map((p,i)=>i===0?first:i===points.length-1?last:
+      normalizeVector(points[i+1].x-points[i-1].x,points[i+1].y-points[i-1].y));
     const raw=[];
-    for(const [a,b,head,tail] of [[first,mid,first,direction],[mid,last,direction,last]]) {
-      const reach=dist(a,b)*.37;
-      for(let i=0;i<40;i++) {
-        const t=i/40,u=1-t;
+    for(let j=0;j<points.length-1;j++) {
+      const a=points[j],b=points[j+1],head=normals[j],tail=normals[j+1],reach=dist(a,b)*.37;
+      for(let i=0;i<36;i++) {
+        const t=i/36,u=1-t;
         raw.push({x:u*u*(u*a.x+3*t*(a.x+head.tx*reach))+t*t*(3*u*(b.x-tail.tx*reach)+t*b.x),
-          y:u*u*(u*a.y+3*t*(a.y+head.ty*reach))+t*t*(3*u*(b.y-tail.ty*reach)+t*b.y),u:0});
+          y:u*u*(u*a.y+3*t*(a.y+head.ty*reach))+t*t*(3*u*(b.y-tail.ty*reach)+t*b.y),u:j+t});
       }
     }
-    raw.push({...last,u:0});
-    const dense=resampleTrack(raw,3).samples.concat(last),count=end-start;
+    raw.push({...last,u:points.length-1});
+    const dense=resampleTrack(raw,3).samples.concat(raw.at(-1)),count=end-start;
     const samples=Array.from({length:count+1},(_,i)=>{
-      const pos=i*(dense.length-1)/count,k=Math.floor(pos),a=dense[k],b=dense[k+1]||a;
-      const t=pos-k;
-      const width=i<=count/2?mix(course.widthAt[start],mid.width/2,i*2/count):
-        mix(mid.width/2,course.widthAt[end],i*2/count-1);
-      return {x:mix(a.x,b.x,t),y:mix(a.y,b.y,t),width};
+      const pos=i*(dense.length-1)/count,k=Math.floor(pos),a=dense[k],b=dense[k+1]||a,t=pos-k;
+      const u=mix(a.u,b.u,t),leg=Math.min(points.length-2,Math.floor(u));
+      const width=mix(points[leg].width,points[leg+1].width,u-leg)*.5;
+      return {x:mix(a.x,b.x,t),y:mix(a.y,b.y,t),width,style:controls[clamp(leg-1,0,controls.length-1)]};
     });
     for(const [i,p] of samples.entries()) {
       const a=samples[Math.max(0,i-1)],b=samples[Math.min(count,i+1)];
@@ -871,7 +928,7 @@ function buildRouteForks(course) {
       p.nx=-p.ty;p.ny=p.tx;
     }
     if(!validForkGeometry(course,samples,start,end)) return [];
-    return [{id:mid.id,start,end,samples,point:mid}];
+    return [{id:fork.alt.id,start,end,samples,point:fork.alt}];
   });
 }
 function validForkGeometry(course,samples,start,end) {
@@ -905,7 +962,7 @@ function projectFork(course,fork,x,y,cycle,lo,hi) {
     if(best&&best.gap<=gap) continue;
     const nx=-dy/length,ny=dx/length,index=i+cycle*course.samples.length;
     best={index,t,s:(index+t)*course.step,x:cx,y:cy,nx,ny,gap,d:(x-cx)*nx+(y-cy)*ny,
-      branch:fork.id,width:mix(a.width,b.width,t)};
+      branch:fork.id,width:mix(a.width,b.width,t),style:t>.5?b.style:a.style};
   }
   return best;
 }
@@ -925,7 +982,7 @@ function projectRoad(course,x,y,index,radius=11,branch=null) {
   return best;
 }
 function forkEdgeInfo(course,fork,p,side) {
-  const edge=side===1?fork.point.left:fork.point.right;
+  const style=p.style||fork.point,edge=side===1?style.left:style.right;
   if(edge==='inherit') {
     const i=mod(p.index,course.samples.length),info=course.widths[i][side===1?1:0];
     return {...info,width:p.width+(info.type?Math.max(0,info.width-course.widthAt[i]):0)};
@@ -943,27 +1000,42 @@ function routeArrow(ctx,p,colour='#f6e8ba94') {
   polygon(ctx,[[-8,-6],[2,-6],[10,0],[2,6],[-8,6],[1,0]],colour);
   ctx.restore();
 }
+function forkWallOpening(course,i,x,y) {
+  for(const fork of course.routeForks||[]) {
+    if(i<fork.start-12||i>fork.end+12) continue;
+    const p=projectFork(course,fork,x,y,0,fork.start,fork.end);
+    if(p&&p.gap<forkEdgeInfo(course,fork,p,p.d>=0?1:-1).width+3) return true;
+  }
+  return false;
+}
 function paintForkRoads(ctx,course) {
   for(const fork of course.routeForks||[]) {
-    const pts=fork.samples, base=course.samples.slice(fork.start,fork.end+1);
-    const edgeWidth=(p,side,index)=>forkEdgeInfo(course,fork,{width:p.width,index:fork.start+index},side).width;
-    const drawLane=(points,radius,colour)=>strip(ctx,points,(p,i)=>-radius(p,-1,i),(p,i)=>radius(p,1,i),colour);
-    drawLane(pts,(p,side,i)=>edgeWidth(p,side,i)+7,course.colors.rail);
-    drawLane(pts,edgeWidth,course.roadAt[fork.start]==='dirt'?course.colors.dust:course.colors.road);
-    const overlay=Math.min(14,Math.floor(base.length*.25));
-    for(const [part,at] of [[base.slice(0,overlay),fork.start],[base.slice(-overlay),fork.end-overlay+1]]) {
-      drawLane(part,(_,side,i)=>course.widths[at+i][side===1?1:0].width,course.dirt?course.colors.dust:course.colors.road);
-    }
-    const altRoad=fork.point.road;
-    if(altRoad) drawLane(pts,(p,side,i)=>p.width*Math.min(1,i/5,(pts.length-1-i)/5),
-      {grass:course.colors.turf,dirt:course.colors.dust,asphalt:course.colors.road}[altRoad]);
-    for(let i=2;i<pts.length-3;i++) for(const side of [-1,1]) {
+    const pts=fork.samples;
+    const edgeWidth=(p,side,i)=>forkEdgeInfo(course,fork,{...p,index:fork.start+i},side).width;
+    const material={grass:course.colors.turf,dirt:course.colors.dust,asphalt:course.colors.road};
+    const onPrimary=(x,y,i)=>{
+      const p=project(course,x,y,fork.start+i,24);
+      return Math.hypot(x-p.x,y-p.y)<routeRoadWidth(course,p,p.d>=0?1:-1)+3;
+    };
+    for(let i=0;i<pts.length-1;i++) {
       const part=pts.slice(i,i+2);
-      const edge=(p,k)=>forkEdgeInfo(course,fork,{width:p.width,index:fork.start+i+k},side);
-      const info=edge(part[0],0);
-      if(!info.type) continue;
-      strip(ctx,part,p=>side*p.width,(p,k)=>side*edge(p,k).width,info.type==='grass'?course.colors.grass:course.colors.dust);
-      if(info.curb) strip(ctx,part,p=>side*(p.width-4),p=>side*(p.width+4),i%4<2?'#f6e2b8':'#dc7162');
+      const style=part[0].style.road||course.roadAt[fork.start+i];
+      for(const side of [-1,1]) {
+        const [x,y]=offset(part[0],side*(edgeWidth(part[0],side,i)+3));
+        const [nextX,nextY]=offset(part[1],side*(edgeWidth(part[1],side,i+1)+3));
+        if(onPrimary(x,y,i)||onPrimary(nextX,nextY,i+1)) continue;
+        strip(ctx,part,(p,k)=>side*edgeWidth(p,side,i+k),(p,k)=>side*(edgeWidth(p,side,i+k)+6),course.colors.rail);
+      }
+      strip(ctx,part,(p,k)=>-edgeWidth(p,-1,i+k),(p,k)=>edgeWidth(p,1,i+k),material[style]||course.colors.road);
+      for(const side of [-1,1]) {
+        const edge=(p,k)=>forkEdgeInfo(course,fork,{...p,index:fork.start+i+k},side);
+        const info=edge(part[0],0);
+        if(!info.type) continue;
+        strip(ctx,part,p=>side*p.width,(p,k)=>side*edge(p,k).width,info.type==='grass'?course.colors.grass:course.colors.dust);
+        if(info.curb&&!onPrimary(...offset(part[0],side*part[0].width),i)) {
+          strip(ctx,part,p=>side*(p.width-4),p=>side*(p.width+4),i%4<2?'#f6e2b8':'#dc7162');
+        }
+      }
     }
     for(let i=9;i<pts.length-7;i+=19) routeArrow(ctx,pts[i]);
   }
@@ -1195,7 +1267,7 @@ function surfaceAt(course,x,y,index,branch=null) {
       const info=forkEdgeInfo(course,fork,p,p.d>=0?1:-1),gap=Math.abs(p.d);
       if(info.curb&&gap>=p.width-5&&gap<=p.width+5) return 'curb';
       if(info.type&&gap>p.width) return info.type;
-      return fork.point.road||course.roadAt[local];
+      return p.style?.road||course.roadAt[local];
     }
   }
   if(course.arena) return course.patches?.findLast(p=>onPatch(x,y,p))?.type||'asphalt';
@@ -1380,7 +1452,7 @@ function renderMap(ctx,course) {
       } else {
         const [x,y]=offset(pts[i],side*(r(i,si)+1));
         const p=project(course,x,y,i,12);
-        if(Math.hypot(x-p.x,y-p.y)>=r(i,si)-2) {
+        if(!forkWallOpening(course,i,x,y)&&Math.hypot(x-p.x,y-p.y)>=r(i,si)-2) {
           if(i%5!==4) strip(ctx,slice,(_,k) => side*(r(i+k,si)+1),(_,k) => side*(r(i+k,si)+4),i%4===0?c.edge:c.rail);
           if(!course.dirt) strip(ctx,slice,(_,k) => side*(w(i+k)-6),(_,k) => side*(w(i+k)-4),'#aeb49a');
         }
@@ -2710,7 +2782,7 @@ function tuningText() {
   return JSON.stringify({format:'Track’n’Trace’n settings',version:3,tuning,
     setup:{course:courses[options.course].id,vehicle:options.type,paint:options.paint,laps:options.laps,
       event:options.mode,drag:options.drag,damage:options.damage,ghost:options.ghost,audio:audio.mode,
-      hazards:options.hazards,music:options.music}},null,2);
+      hazards:options.hazards,music:options.music,pickups:options.pickups}},null,2);
 }
 function applyTuningText(text) {
   const data=JSON.parse(text);
@@ -2739,6 +2811,7 @@ function applyTuningText(text) {
     }
     if(Object.hasOwn(s,'hazards')) options.hazards=normalizeHazardSettings(s.hazards);
     if(Object.hasOwn(s,'music')) options.music=musicChoice(s.music);
+    if(Object.hasOwn(s,'pickups')) options.pickups=normalizePickupRules(s.pickups);
     if(Number.isInteger(s.laps)) options.laps=clamp(s.laps,1,10);
     if(['race','one-hit','damage'].includes(s.event)) options.mode=s.event;
     if(Object.hasOwn(steeringNames,s.drag)) options.drag=s.drag;
@@ -2777,6 +2850,9 @@ function makeProp(object,id) {
 }
 function runSurface(game,x,y,index,branch=game.car.branch) {
   if(game.spec.hover) return 'asphalt';
+  const elapsed=game.networkRound?.elapsed??game.elapsed;
+  if(game.pickupField?.oils.some(o=>o.level===routeLevelAt(game.course,index)&&
+    (o.by!==(game.networkId||'solo')||elapsed>=o.safe)&&onPatch(x,y,o))) return 'oil';
   if(game.oil.length) {
     const level=routeLevelAt(game.course,index);
     if(game.oil.some(o=>o.level===level&&onPatch(x,y,o))) return 'oil';
@@ -2892,7 +2968,7 @@ function touchProp(game,x,y,angle,velocity,dx,dy,body=game.spec,trailer=false,ro
       }
       const amount=blade||damageMode(game.config)==='off'?0:(1.4+force*.016)*damageFactor(game,'props')*game.spec.resistance;
       const section=trailer?hitSection(game.car.a,-Math.cos(angle),-Math.sin(angle)):hitSection(angle,nx,ny);
-      const actual=applySectionDamage(game.car,section,amount);
+      const actual=applySectionDamage(game.car,section,effectiveDamage(game,amount));
       if(!blade) {
         game.car.speed*=trailer?.79:.88;
         recoverFromHit(game);
@@ -3021,7 +3097,7 @@ function logHit(game,hit) {
   if(!game.network&&!game.course.training) saveFrame(game,true);
   raceEffect(game,hit.prop?'prop':'impact',clamp(hit.strength,.18,1.25));
   spark(game,hit.x,hit.y,'impact',hit.strength,Math.atan2(-hit.ny,-hit.nx),hit.burst||1);
-  if(game.config.mode==='one-hit') {
+  if(game.config.mode==='one-hit'&&!effectActive(game,'invulnerable')) {
     game.lossHit=hit;
     finish(game,'One Hit Loss');
   }
@@ -3047,6 +3123,209 @@ const hitVisuals = {impact:'#ffd586',dust:'#ead3a3',water:'#b9ece4',curb:'#f2cea
 let run = null;
 const mainCtx = $('track').getContext('2d', {alpha:false});
 
+// Bonus items: rules, authoritative spawn and collection, and canvas presentation.
+const pickupTypes={
+  boost:{name:'Speed boost',color:'#ebbb5d',symbol:'boost',effect:'35% more top speed for 3 seconds.'},
+  repair:{name:'Repair kit',color:'#a6d494',symbol:'cross',effect:'Repairs 9 damage points.'},
+  overhaul:{name:'Full repair',color:'#70c6b5',symbol:'tool',effect:'Repairs all damage. Top speed halves for 2 seconds.'},
+  oil:{name:'Oil drop',color:'#b09bbf',symbol:'drop',effect:'Drops oil behind your car for 9 seconds.'},
+  crate:{name:'Points crate · 100',color:'#d6a976',symbol:'crate',effect:'Adds 100 bonus points.'},
+  jackpot:{name:'Points crate · 300',color:'#eac56c',symbol:'crate',effect:'Adds 300 bonus points.'},
+  armour:{name:'Damage resistance',color:'#8abdd1',symbol:'shield',effect:'Takes 55% less damage for 6 seconds.'},
+  invulnerable:{name:'Invulnerability',color:'#efdb88',symbol:'star',effect:'Prevents new damage for 3 seconds.'},
+  phase:{name:'Pass-through',color:'#baa6e3',symbol:'cars',effect:'Ignores car-to-car contact for 6 seconds.'},
+  cloak:{name:'Invisibility cloak',color:'#9ac8be',symbol:'eye',effect:'Hides you from other drivers for 5 seconds. Your tracks stay visible.'}
+};
+const pickupSchedules={once:'Initial only',fixed:'Fixed interval',random:'Random interval',after:'After collection'};
+function normalizePickupRules(source) {
+  const rules={};
+  for(const id of Object.keys(pickupTypes)) {
+    const config=source?.[id];
+    if(!config||config.enabled!==true) continue;
+    const schedule=Object.hasOwn(pickupSchedules,config.schedule)?config.schedule:'after';
+    rules[id]={enabled:true,initial:schedule==='once'||config.initial!==false,schedule,
+      interval:Number.isFinite(config.interval)?clamp(Math.round(config.interval),3,120):12,
+      randomPosition:config.randomPosition!==false};
+  }
+  return rules;
+}
+function pickupRuleSignature(rules) {
+  return Object.entries(normalizePickupRules(rules)).map(([id,r])=>
+    [id,r.schedule,r.initial?'1':'0',r.interval,r.randomPosition?'r':'m'].join('.')).join('+');
+}
+const effectClock=game=>game.networkRound?.elapsed??game.raceClock??game.elapsed;
+const effectActive=(game,key)=>!!game.power&&game.power[key]>effectClock(game);
+const effectiveDamage=(game,amount)=>effectActive(game,'invulnerable')?0:amount*(effectActive(game,'armour')?.45:1);
+function updateSpeedLimits(game,ratings) {
+  const boost=effectActive(game,'boost')?1.35:1;
+  const speedScale=effectActive(game,'slow')?.5:boost;
+  return {max:ratings.max*speedScale,accel:ratings.accel*boost};
+}
+function createPickupField(rules) {
+  return {slots:Object.entries(normalizePickupRules(rules)).map(([id,rule])=>({
+    id,rule,position:null,next:rule.initial?0:pickupDelay(rule),visits:0
+  })),oils:[]};
+}
+function pickupDelay(rule) {
+  return rule.schedule==='random'?rule.interval*(.55+Math.random()*.9):rule.interval;
+}
+function pickupPoint(course,slot,attempt) {
+  const rand=slot.rule.randomPosition;
+  if(course.openYard) {
+    const x=rand?yard.left+40+Math.random()*(yard.right-yard.left-80):yard.left+70+mod(slot.visits*197+attempt*137,840);
+    const y=rand?yard.top+40+Math.random()*(yard.bottom-yard.top-80):yard.top+50+mod(slot.visits*117+attempt*73,410);
+    if(course.arenaEdges&&!arenaClear(course.arenaEdges,x,y,22)||course.park&&obstacles.some(o=>dist(o,{x,y})<Math.max(o.w,o.h)*.5+14)) return null;
+    return {x,y,index:0,level:0};
+  }
+  const n=course.samples.length;
+  const index=rand?Math.floor(Math.random()*n):Math.round(mod(.11+(slot.visits+attempt)*.173,1)*n)%n;
+  if(index<10||index>n-8) return null;
+  const branch=rand&&attempt%4===2?course.routeForks?.find(f=>index>f.start+3&&index<f.end-3):null;
+  const p=branch?branch.samples[index-branch.start]:course.samples[index];
+  const offset=(rand?Math.random()-.5:attempt%2?.28:-.24)*Math.min(42,course.widthAt[index]);
+  return {x:p.x+p.nx*offset,y:p.y+p.ny*offset,index,level:routeLevelAt(course,index),branch:branch?.id};
+}
+function spawnPickup(field,slot,drivers) {
+  const base=drivers[0];
+  for(let i=0;i<38;i++) {
+    const p=pickupPoint(base.course,slot,i);
+    if(!p||drivers.some(g=>!g.finished&&dist(p,g.car)<43)||
+      field.slots.some(item=>item.position&&item.position.level===p.level&&dist(p,item.position)<32)||
+      base.props.some(o=>(o.level||0)===p.level&&dist(p,o)<propTypes[o.type].r+17)) continue;
+    slot.position=p;slot.visits++;return true;
+  }
+  return false;
+}
+function repairDamage(car,quantity) {
+  if(quantity===Infinity) {car.damage.fill(0);return;}
+  const highest=car.damage.map((v,i)=>({v,i})).sort((a,b)=>b.v-a.v);
+  let left=quantity;
+  for(const {i} of highest) {
+    const amount=Math.min(left,car.damage[i]);
+    car.damage[i]-=amount;left-=amount;
+    if(left<=0) break;
+  }
+}
+function releaseOil(game,field,now) {
+  const {car,spec,course}=game,behind=rigVisualLength(spec)-spec.length/2+21;
+  const nx=Math.cos(car.a),ny=Math.sin(car.a);
+  for(const radius of [behind,behind*.72,25,13]) {
+    const x=car.x-nx*radius,y=car.y-ny*radius,level=routeLevelAt(course,car.index);
+    if(course.arenaEdges&&!arenaClear(course.arenaEdges,x,y,9)) continue;
+    if(course.openYard&&!course.arenaEdges&&(x<yard.left+9||x>yard.right-9||y<yard.top+9||y>yard.bottom-9)) continue;
+    const p=course.openYard?null:projectRoad(course,x,y,car.index,Math.max(13,Math.ceil(behind/course.step)+4),car.branch);
+    if(p&&(routeLevelAt(course,p.index)!==level||dist(p,{x,y})>routeRoadWidth(course,p,p.d>=0?1:-1)-7)) continue;
+    field.oils.push({x,y,index:p?.index??0,level,a:car.a,rx:25,ry:12,until:now+9,by:game.networkId||'solo',safe:now+.65});
+    if(field.oils.length>12) field.oils.shift();
+    break;
+  }
+}
+function collectPickup(game,id,field,now) {
+  const set=(key,seconds)=>{game.power[key]=now+seconds;};
+  switch(id) {
+    case 'boost':
+      set('boost',3);
+      if(game.flick) game.flick.speed*=1.35;
+      break;
+    case 'repair': repairDamage(game.car,9);break;
+    case 'overhaul':
+      repairDamage(game.car,Infinity);set('slow',2);
+      game.car.speed=Math.min(game.car.speed,driveRatings(game).max);
+      break;
+    case 'oil': releaseOil(game,field,now);break;
+    case 'crate': game.bonusPoints+=100;break;
+    case 'jackpot': game.bonusPoints+=300;break;
+    case 'armour': set('armour',6);break;
+    case 'invulnerable': set('invulnerable',3);break;
+    case 'phase': set('phase',6);break;
+    case 'cloak': set('cloak',5);break;
+  }
+  game.pickupNotice={id,until:now+2.1};
+}
+function tickPickups(field,drivers,now) {
+  if(!field.slots.length&&!field.oils.length) return;
+  field.oils=field.oils.filter(o=>o.until>now);
+  for(const slot of field.slots) {
+    const periodic=slot.rule.schedule==='fixed'||slot.rule.schedule==='random';
+    if(now>=slot.next) {
+      if(slot.position||spawnPickup(field,slot,drivers)) slot.next=periodic?now+pickupDelay(slot.rule):Infinity;
+      else slot.next=now+.8;
+    }
+    const p=slot.position;
+    if(!p) continue;
+    let game=null,nearest=Infinity;
+    for(const driver of drivers) {
+      if(driver.finished) continue;
+      const reach=Math.min(32,driver.spec.length*.42+8);
+      for(const sample of [driver.car,...driver.pickupPasses]) {
+        if(routeLevelAt(driver.course,sample.index)!==p.level) continue;
+        const distance=dist(p,sample);
+        if(distance<reach&&distance<nearest) {nearest=distance;game=driver;}
+      }
+    }
+    if(!game) continue;
+    collectPickup(game,slot.id,field,now);
+    slot.position=null;
+    if(slot.rule.schedule==='after') slot.next=now+pickupDelay(slot.rule);
+  }
+  for(const driver of drivers) driver.pickupPasses.length=0;
+}
+function pickupIcons(field) {
+  return field.slots.filter(slot=>slot.position).map(slot=>({id:slot.id,...slot.position}));
+}
+function pickupSnapshot(field) {
+  return {icons:pickupIcons(field),oils:field.oils};
+}
+function drawPickup(ctx,id,x,y,scale=1) {
+  const item=pickupTypes[id];if(!item) return;
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+  oval(ctx,1.8,3.5,13,10,'#20332e92');
+  rounded(ctx,-12,-11,24,22,5,'#253e36');
+  rounded(ctx,-11,-10,22,19,4,item.color);
+  rounded(ctx,-9,-8,18,2,1,'#f5edc575');
+  ctx.fillStyle='#20362e';ctx.strokeStyle='#20362e';ctx.lineWidth=1.8;ctx.lineJoin='round';
+  switch(item.symbol) {
+    case 'boost':
+      polygon(ctx,[[2,-7],[-6,1],[-1,1],[-3,7],[7,-2],[2,-2]],'#283930');break;
+    case 'cross':
+      ctx.fillRect(-2.2,-6,4.4,12);ctx.fillRect(-6,-2.2,12,4.4);break;
+    case 'tool':
+      polygon(ctx,[[-6,5],[-4,7],[4,-1],[7,-2],[7,-6],[4,-3],[2,-5],[5,-8],[1,-7],[-1,-4],[-1,0]],'#263c34');break;
+    case 'drop':
+      ctx.beginPath();ctx.moveTo(0,-7);ctx.bezierCurveTo(3,-2,6,0,6,3);ctx.bezierCurveTo(6,8,-6,8,-6,3);
+      ctx.bezierCurveTo(-6,0,-3,-2,0,-7);ctx.fill();break;
+    case 'crate':
+      ctx.strokeRect(-6,-5,12,10);ctx.beginPath();ctx.moveTo(-5,4);ctx.lineTo(5,-4);ctx.stroke();
+      if(id==='jackpot') {ctx.fillRect(-8,-7,3,2);ctx.fillRect(5,6,3,2);}break;
+    case 'shield':
+      polygon(ctx,[[-6,-5],[0,-7],[6,-5],[5,2],[0,7],[-5,2]],'#253d35');
+      polygon(ctx,[[0,-4],[4,-3],[3,1],[0,4]],'#d3e7b3');break;
+    case 'star': {
+      const points=Array.from({length:10},(_,i)=>{
+        const a=i*Math.PI/5-Math.PI/2,r=i%2?3:7;
+        return [Math.cos(a)*r,Math.sin(a)*r];
+      });
+      polygon(ctx,points,'#293e32');break;
+    }
+    case 'cars':
+      ctx.strokeRect(-7,-5,9,6);ctx.strokeRect(-2,0,9,6);break;
+    case 'eye':
+      ctx.beginPath();ctx.ellipse(0,0,7,4,0,0,TAU);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-7,6);ctx.lineTo(7,-6);ctx.stroke();break;
+  }
+  ctx.restore();
+}
+function drawRacePickups(ctx,game,accept) {
+  const state=game.replay?game.car.pickupState:game.pickupView||pickupSnapshot(game.pickupField);
+  if(!state) return;
+  for(const oil of state.oils||[]) if(accept(oil.index)) {
+    ctx.save();ctx.translate(oil.x,oil.y);ctx.rotate(oil.a);
+    oval(ctx,0,0,oil.rx,oil.ry,'#343245e2');
+    oval(ctx,-3,-2,oil.rx*.69,oil.ry*.56,'#635574ad');ctx.restore();
+  }
+  for(const item of state.icons||[]) if(accept(item.index)) drawPickup(ctx,item.id,item.x,item.y);
+}
+
 function makeRun(config,ghost=null,recordedCourse=null) {
   const course=recordedCourse||prepare(config.course), spec=vehicles[config.type], color=spec.palette[config.color];
   const rearClearance=rigVisualLength(spec)-spec.length*.5+12;
@@ -3062,10 +3341,11 @@ function makeRun(config,ghost=null,recordedCourse=null) {
     started:false, elapsed:0, paused:false, finished:false, orientation:null, inspect:false,
     route:[], fingers:[], pointer:null, tip:null, totalDistance:0, trail:[], moving:false,
     wallTime:-5, bumpTime:-5, materialTime:-5, emissionTime:-5, boost:1,
-    hits:0, objectScore:0, chainScore:0, chainCount:0, lastChain:null, impacts:[], particles:[], frames:[], lastFrame:-10,
+    hits:0, objectScore:0, bonusPoints:0,power:{},pickupField:createPickupField(config.pickups),pickupPasses:[],chainScore:0, chainCount:0, lastChain:null, impacts:[], particles:[], frames:[], lastFrame:-10,
     nextGate:1, splits:[], progress:0, touchWall:false, curbTime:-5, workTime:performance.now()
   };
   car.surface=runSurface(game,car.x,car.y,car.index);
+  tickPickups(game.pickupField,[game],0);
   return game;
 }
 function timedIntensity(game,car=game.car) {
@@ -3221,11 +3501,11 @@ function damageScore(car) {
   return Math.round(car.damage.reduce((score,value) => score+(value>0 ? 18+sectionStage(value)*7+value*.11 : 0),0));
 }
 function damagePoints(game) {
-  const [movement,chain,body]=game.car.score||[
+  const [movement,chain,body,bonus=game.bonusPoints||0]=game.car.score||[
     Math.round(game.objectScore),game.chainScore,
     Math.round(damageScore(game.car)*(game.course.damageEvent?.35:1))
   ];
-  return {movement,chain,body,total:movement+chain+body};
+  return {movement,chain,body,bonus,total:movement+chain+body+bonus};
 }
 function wallImpact(game,wall,velocity,naturalX,naturalY,moved,trailer=null,routeIndex=game.car.index) {
   const car=game.car,nx=wall.nx,ny=wall.ny;
@@ -3245,11 +3525,11 @@ function wallImpact(game,wall,velocity,naturalX,naturalY,moved,trailer=null,rout
     return;
   }
   const blade=!trailer&&isBladeHit(game.spec,car.a,nx,ny);
-  if(!blade) {game.hits++;recoverFromHit(game);}
+  if(!blade&&!effectActive(game,'invulnerable')) {game.hits++;recoverFromHit(game);}
   const force=clamp(velocity*inward,0,720);
   const base=4.1*damageFactor(game,'contact')+force*.074*damageFactor(game,'normal')+
     Math.min(wall.over,4)*.32*damageFactor(game,'overlap');
-  const resistance=game.spec.resistance*(shallow?.32:1);
+  const resistance=effectiveDamage(game,game.spec.resistance*(shallow?.32:1));
   const amount=base*resistance;
   const spreadLimit=3*(4.1+force*.074+Math.min(wall.over,4)*.32)*resistance;
   const spread=(factor,share)=>Math.min(amount*damageFactor(game,factor),spreadLimit)*share;
@@ -3313,7 +3593,7 @@ function curbWear(game) {
   const side=p.d>0?1:-1, affected=hitSection(car.a,p.nx*side,p.ny*side);
   if(isBladeHit(game.spec,car.a,p.nx*side,p.ny*side)) return;
   const amount=clamp(car.speed/game.spec.max-.68,0,.78)*7.5*game.spec.resistance*damageFactor(game,'curb');
-  car.damage[affected]=Math.min(100,car.damage[affected]+amount);
+  car.damage[affected]=Math.min(100,car.damage[affected]+effectiveDamage(game,amount));
   if(damageMode(game.config)==='total') checkDamageEnd(game);
 }
 function checkDamageEnd(game) {
@@ -3328,11 +3608,12 @@ function saveFrame(game,force=false) {
   const objects=game.props.map(o=>[Math.round(o.x*2),Math.round(o.y*2),Math.round(o.a*1000),o.level||0,o.routeIndex??null]);
   const frame=[t,Math.round(car.x*2),Math.round(car.y*2),Math.round(mod(car.a,TAU)*1000),car.index,packDamage(car.damage),objects];
   if(game.config.mode==='damage') {
-    const {movement,chain,body}=damagePoints(game);
-    frame.push([movement,chain,body]);
+    const {movement,chain,body,bonus}=damagePoints(game);
+    frame.push([movement,chain,body,bonus]);
   }
   if(car.trailerAngles?.length) frame[8]=car.trailerAngles.map(a=>Math.round(mod(a,TAU)*1000));
   if(car.branch) frame[9]=car.branch;
+  if(game.pickupField.slots.length) frame[10]=pickupSnapshot(game.pickupField);
   if(game.frames.at(-1)?.[0]===t) game.frames[game.frames.length-1]=frame;
   else game.frames.push(frame);
   game.lastFrame=game.elapsed;
@@ -3394,6 +3675,7 @@ function sweep(game,x,y,angle,velocity) {
     const moved=Math.hypot(q.x-car.x,q.y-car.y);
     car.x=q.x;car.y=q.y;car.branch=q.branch;car.index=game.course.practice?practiceRoute(game.course,q.x,q.y,car.index):q.index;car.a=angle;
     total+=moved;game.totalDistance+=moved;
+    if(moved>.1&&game.pickupField.slots.length) game.pickupPasses.push({x:car.x,y:car.y,index:car.index});
     car.surface=runSurface(game,car.x,car.y,car.index);
     if(car.surface==='oil'&&velocity>36) game.slipUntil=game.elapsed+.43;
     if(prior) checkTrailerContacts(game,prior,velocity);
@@ -3514,7 +3796,7 @@ function traceMove(game,dt) {
 }
 function driveRatings(game) {
   const {spec,cargo}=game, unloaded=spec.cargo?spec.cargo-cargo:0;
-  return {max:spec.max+unloaded*8,accel:spec.accel+unloaded*13};
+  return updateSpeedLimits(game,{max:spec.max+unloaded*8,accel:spec.accel+unloaded*13});
 }
 function recoveryRate(game) {
   return game.elapsed<game.recoveryUntil?game.spec.recovery:1;
@@ -3553,9 +3835,10 @@ function freeMove(game,dt) {
   if(game.pointer==null&&!targets.length) {
     if(game.releasePending) {game.flick=game.releasePending;game.releasePending=null;}
     if(!game.flick) {car.speed=0;return 0;}
-    const {speed,a}=game.flick;
+    const {a}=game.flick;
+    const speed=effectActive(game,'slow')?Math.min(game.flick.speed,driveRatings(game).max):game.flick.speed;
     const moved=sweep(game,car.x+Math.cos(a)*speed*dt,car.y+Math.sin(a)*speed*dt,a,speed);
-    game.flick.speed*=Math.exp(-(car.surface==='asphalt'?.82:1.77)*dt);
+    game.flick.speed=speed*Math.exp(-(car.surface==='asphalt'?.82:1.77)*dt);
     car.speed=game.flick.speed;
     if(car.speed<18 || (game.wallThisStep&&moved<speed*dt*.18)) {game.flick=null;car.speed=0;}
     return moved;
@@ -3563,24 +3846,30 @@ function freeMove(game,dt) {
   game.boost=Math.min(1,game.boost+dt*4.5*recoveryRate(game));
   if(!targets.length&&game.tip) targets.push(game.tip);
   const length=targets.reduce((sum,p,i)=>sum+dist(p,targets[i-1]||car),0);
-  const estimated=Math.min(780,length/Math.max(dt,.009));
+  const rate=driveRatings(game),boost=effectActive(game,'boost');
+  const limited=effectActive(game,'slow');
+  const estimated=Math.min(limited?rate.max:boost?1053:780,length/Math.max(dt,.009));
+  let budget=limited?rate.max*dt:Infinity;
   car.speed=estimated;
   let moved=0;
   for(const target of targets) {
     const gap=dist(target,car);
     if(gap<.65) continue;
-    const flow=driveOptions[car.surface], factor=game.boost*(flow===1?1:mix(flow,1,.23));
+    const flow=driveOptions[car.surface];
+    const factor=Math.min(1,budget/gap,game.boost*(boost?1.35:1)*(flow===1?1:mix(flow,1,.23)));
     const end={x:mix(car.x,target.x,factor),y:mix(car.y,target.y,factor)};
     const points=game.newStroke&&gap>5?entryCurve(car,end):[end];
     if(gap>5) game.newStroke=false;
     for(const point of points) {
       const a=Math.atan2(point.y-car.y,point.x-car.x);
-      moved+=sweep(game,point.x,point.y,a,estimated);
+      const step=Math.min(dist(car,point),budget);
+      const move=sweep(game,car.x+Math.cos(a)*step,car.y+Math.sin(a)*step,a,estimated);
+      moved+=move;budget=Math.max(0,budget-move);
       if(game.finished) break;
     }
     if(game.finished) break;
   }
-  car.speed=moved>1?Math.min(780,moved/Math.max(dt,.012)):0;
+  car.speed=moved>1?Math.min(limited?rate.max:boost?1053:780,moved/Math.max(dt,.012)):0;
   return moved;
 }
 const steeringMove={trace:traceMove,drive:driveToFinger,free:freeMove};
@@ -3659,7 +3948,7 @@ function tickRace(game,dt) {
     if(car.surface!=='water'&&game.spec.style!=='electric') raceEffect(game,'rough');
     game.materialTime=game.elapsed;
   }
-  if(!game.network) tickProps(game,dt);
+  if(!game.network) {tickProps(game,dt);tickPickups(game.pickupField,[game],game.elapsed);}
   engineWear(game);updateEffects(game,dt);
   if(game.course.arena&&game.elapsed>=game.course.arena) finish(game,'Finished');
   else if(!game.network&&!game.course.training) saveFrame(game);
@@ -3673,7 +3962,7 @@ function poseAt(record,ms) {
   }
   const a=frames[lo], b=frames[lo+1]||a, t=b[0]===a[0]?0:clamp((ms-a[0])/(b[0]-a[0]),0,1);
   return {x:mix(a[1],b[1],t)/2,y:mix(a[2],b[2],t)/2,a:a[3]/1000+deltaAngle(a[3]/1000,b[3]/1000)*t,
-    speed:b===a?0:Math.hypot(a[1]-b[1],a[2]-b[2])*500/(b[0]-a[0]),
+    pickupState:a[10],speed:b===a?0:Math.hypot(a[1]-b[1],a[2]-b[2])*500/(b[0]-a[0]),
     index:t<.5?a[4]:b[4],branch:t<.5?a[9]:b[9],damage:unpackDamage(a[5]),score:a[7],props:a[6]?.map((p,i)=>{
       const next=b[6]?.[i]||p;
       return {x:mix(p[0],next[0],t)/2,y:mix(p[1],next[1],t)/2,a:mix(p[2],next[2],t)/1000,
@@ -3840,19 +4129,19 @@ function drawScene(game) {
     const drawObjects=(layer,filter=()=>true)=>{
       for(const {prop,index} of sectionByLayer.get(layer)||[]) if(filter(index)) drawProp(ctx,prop);
     };
-    paintTrail(ctx,game,index=>heightAt(course,index)===0);drawScars(ctx,game);drawObjects(null);
+    paintTrail(ctx,game,index=>heightAt(course,index)===0);drawScars(ctx,game);drawRacePickups(ctx,game,index=>heightAt(course,index)===0);drawObjects(null);
     const revealed=drawDecks(ctx,course,game.car,section=>{
       const owns=index=>elevationSectionAt(course,index)===section;
       paintTrail(ctx,game,owns);
-      drawScars(ctx,game,undefined,owns);drawObjects(section);
+      drawScars(ctx,game,undefined,owns);drawRacePickups(ctx,game,owns);drawObjects(section);
     });
     if(revealed?.size) {
       const visible=index=>revealed.has(mod(index,course.samples.length));
-      paintTrail(ctx,game,visible);drawScars(ctx,game,undefined,visible);
+      paintTrail(ctx,game,visible);drawScars(ctx,game,undefined,visible);drawRacePickups(ctx,game,visible);
       for(const section of course.elevationData.sections) if(section.negative) drawObjects(section,visible);
     }
   } else {
-    paintTrail(ctx,game);drawScars(ctx,game);
+    paintTrail(ctx,game);drawScars(ctx,game);drawRacePickups(ctx,game,()=>true);
     const objects=level=>props.forEach(prop=>{
       if((prop.level||0)===level) drawProp(ctx,prop);
     });
@@ -3887,9 +4176,12 @@ function drawScene(game) {
     ctx.strokeStyle='#fff3bf94';ctx.stroke();
   }
   if(game.network) drawNetworkOpponents(ctx,game);
+  ctx.save();
+  if(effectActive(game,'cloak')) ctx.globalAlpha=.29;
   drawVehicle(ctx,car.x,car.y,car.a,game.config.type,game.color,car.damage,{
     lights:car.speed<26&&game.started,time:game.started?game.elapsed:performance.now()/1000,trailerAngles:car.trailerAngles,cargo:visibleCargo(game)
   });
+  ctx.restore();
   if(game.network) drawNetworkLabel(ctx,game,car,game.networkId);
 }
 
@@ -3933,7 +4225,7 @@ function courseFromFile(file,asReplay=false) {
     elevation:file.points.map(p=>p.elevation||'auto'),elevationOrders:file.elevationOrders,forks:file.forks};
 }
 function normalizeCourseFile(source) {
-  if(source?.format!=='Track’n’Trace’n course'||![1,2,3].includes(source.version)) throw Error('Choose a Track’n’Trace’n course file.');
+  if(source?.format!=='Track’n’Trace’n course'||![1,2,3,4].includes(source.version)) throw Error('Choose a Track’n’Trace’n course file.');
   const open=source.layout==='yard';
   const anchors=open?[]:source.points;
   if(!Array.isArray(anchors)||!open&&(anchors.length<4||anchors.length>62)) throw Error('A course needs 4–62 track points.');
@@ -3974,20 +4266,27 @@ function normalizeCourseFile(source) {
     if(!Array.isArray(source.forks)||source.forks.length>6) throw Error('A route can have up to six separate splits.');
     const occupied=new Set();
     for(const fork of source.forks) {
-      const ref=fork&&forkReference(points,fork),alt=fork?.alt;
-      if(!ref||!ref.start||!Number.isFinite(alt?.x)||!Number.isFinite(alt?.y)||
-        [ref.start,ref.via,ref.end].some(i=>occupied.has(i))||
-        [ref.start,ref.via,ref.end].some(i=>!['auto','same'].includes(points[i].elevation))) {
-        throw Error('Create each split on a separate ground section away from the start line.');
+      const ref=fork&&forkReference(points,fork);
+      const range=ref&&Array.from({length:ref.end-ref.start+1},(_,i)=>ref.start+i);
+      if(!ref||!ref.start||range.some(i=>occupied.has(i)||!['auto','same'].includes(points[i].elevation))) {
+        throw Error('Create each split on a separate ground section away from the start line and elevation changes.');
       }
-      const id=typeof alt.id==='string'&&/^[\w-]{1,80}$/.test(alt.id)&&!pointIds.has(alt.id)?alt.id:newCourseId();
-      pointIds.add(id);
-      const point={id,x:clamp(alt.x,55,W-55),y:clamp(alt.y,53,H-53),width:finite(alt.width,49,152,80),
-        road:['asphalt','grass','dirt'].includes(alt.road)?alt.road:'',left:Object.hasOwn(edges,alt.left)?alt.left:'wall',
-        right:Object.hasOwn(edges,alt.right)?alt.right:'wall',elevation:'same'};
-      if([ref.start,ref.via,ref.end].some(i=>dist(point,points[i])<32)) throw Error('Move the branch points farther apart.');
-      [ref.start,ref.via,ref.end].forEach(i=>occupied.add(i));
-      forks.push({from:fork.from,via:fork.via,alt:point});
+      if(fork.altPoints!=null&&(!Array.isArray(fork.altPoints)||fork.altPoints.length>7)) throw Error('A branch supports up to eight points.');
+      const controls=forkAltPoints(fork).map(alt=>{
+        if(!Number.isFinite(alt?.x)||!Number.isFinite(alt?.y)) throw Error('Each branch point needs a valid position.');
+        if(alt.elevation&&!['auto','same'].includes(alt.elevation)) {
+          throw Error('Put bridges and tunnels on shared track before or after the split.');
+        }
+        const id=typeof alt.id==='string'&&/^[\w-]{1,80}$/.test(alt.id)&&!pointIds.has(alt.id)?alt.id:newCourseId();
+        pointIds.add(id);
+        return {id,x:clamp(alt.x,55,W-55),y:clamp(alt.y,53,H-53),width:finite(alt.width,49,152,80),
+          road:['asphalt','dirt','grass'].includes(alt.road)?alt.road:'',left:Object.hasOwn(edges,alt.left)?alt.left:'wall',
+          right:Object.hasOwn(edges,alt.right)?alt.right:'wall',elevation:'same'};
+      });
+      const route=[points[ref.start],...controls,points[ref.end]];
+      if(route.slice(1).some((p,i)=>dist(p,route[i])<20)) throw Error('Move neighbouring branch points farther apart.');
+      range.forEach(i=>occupied.add(i));
+      forks.push({from:fork.from,via:fork.via,to:points[ref.end].id,alt:controls[0],altPoints:controls.slice(1)});
     }
   }
   const floor=typeof source.floor==='string'&&/^#[0-9a-f]{6}$/i.test(source.floor)?source.floor:undefined;
@@ -4023,7 +4322,7 @@ function copyTemplate(index,duplicate=false,withHazards=false) {
     const file=jsonCopy(c.courseFile);
     return duplicate?{...file,id:newCourseId(),name:(c.name+' copy').slice(0,55),revision:0}:file;
   }
-  const common={format:'Track’n’Trace’n course',version:3,id:newCourseId(),name:c.name+' copy',
+  const common={format:'Track’n’Trace’n course',version:4,id:newCourseId(),name:c.name+' copy',
     theme:c.theme,damageEvent:!!c.damageEvent,crossings:jsonCopy(c.crossings||[]),elevationOrders:jsonCopy(c.elevationOrders||[]),
     props:[...(c.props||[]),...(withHazards?c.hazards||[]:[])].map(p=>({x:p.x,y:p.y,a:p.a,type:p.type,level:p.level||0})),
     curve:c.smoothing??50,revision:0,scenerySeed:c.scenerySeed??(673+c.index*87)};
@@ -4111,7 +4410,7 @@ function resizeArena(axis,span) {
 function draftForkAt(index=designer.point) {
   return designer.file.forks?.find(fork=>{
     const ref=forkReference(designer.file.points,fork);
-    return ref&&[ref.start,ref.via,ref.end].includes(index);
+    return ref&&index>=ref.start&&index<=ref.end;
   });
 }
 function selectedDraftPoint() {
@@ -4138,18 +4437,56 @@ function addDraftFork() {
   if(!pair) {editorStatus('The two new branch points need room inside the map.');return;}
   const [via,alt]=pair;via.id=newCourseId();alt.id=newCourseId();
   file.points.splice(i+1,0,via);
-  (file.forks??=[]).push({from:a.id,via:via.id,alt});
+  (file.forks??=[]).push({from:a.id,via:via.id,to:b.id,alt,altPoints:[]});
   designer.point=i+1;designer.forkHandle=null;designer.tool='';
   editorRender(true);editorStatus('Drag either branch point to shape the split.');
 }
 function removeDraftFork() {
   const file=designer.file,fork=designer.forkHandle
-    ?file.forks.find(f=>f.alt===designer.forkHandle):draftForkAt();
+    ?file.forks.find(f=>forkAltPoints(f).includes(designer.forkHandle)):draftForkAt();
   if(!fork) return;
   const ref=forkReference(file.points,fork);
   file.forks=file.forks.filter(f=>f!==fork);
-  if(ref) {file.points.splice(ref.via,1);designer.point=ref.start;}
+  if(ref) {file.points.splice(ref.via,ref.end-ref.via);designer.point=ref.start;}
   designer.forkHandle=null;editorRender(true);editorStatus('Split removed.');
+}
+function activeDraftFork() {
+  return designer.forkHandle
+    ?designer.file.forks.find(f=>forkAltPoints(f).includes(designer.forkHandle)):draftForkAt();
+}
+function changeBranchPoints(remove=false) {
+  const file=designer.file,fork=activeDraftFork(),ref=fork&&forkReference(file.points,fork);
+  if(!ref) return;
+  const splitEnd=file.points[ref.end];
+  const method=(a,b)=>({...a,id:newCourseId(),x:(a.x+b.x)/2,y:(a.y+b.y)/2,elevation:'same'});
+  if(designer.forkHandle) {
+    const route=forkAltPoints(fork),index=route.indexOf(designer.forkHandle);
+    if(remove) {
+      if(route.length<=1) return;
+      route.splice(index,1);designer.forkHandle=route[Math.min(index,route.length-1)];
+    } else {
+      if(route.length>=8) return;
+      const next=route[index+1]||splitEnd;
+      if(dist(route[index],next)<42) {editorStatus('Choose a longer segment for a branch point.');return;}
+      designer.forkHandle=method(route[index],next);route.splice(index+1,0,designer.forkHandle);
+    }
+    [fork.alt,...fork.altPoints]=route;
+  } else {
+    const i=designer.point;
+    if(i===ref.end) return;
+    if(remove) {
+      if(i===ref.start||ref.end-ref.via<=1) return;
+      file.points.splice(i,1);
+      designer.point=Math.min(i,ref.end-2);
+    } else {
+      if(file.points.length>=62||ref.end-ref.via>=8) return;
+      if(dist(file.points[i],file.points[i+1])<26) {editorStatus('Choose a longer segment for a branch point.');return;}
+      file.points.splice(i+1,0,method(file.points[i],file.points[i+1]));designer.point=i+1;
+    }
+    fork.via=file.points[ref.via].id;fork.to=splitEnd.id;
+  }
+  designer.tool='';
+  editorRender(true);editorStatus(remove?'Branch point removed.':'Drag the new branch point to shape the route.');
 }
 async function testDraft() {
   if(opening) return;
@@ -4173,7 +4510,7 @@ function editMode(mode) {
   editorRender(false);
 }
 function editorPickCourse() {
-  const selected=normalizeCourseFile({...designer.file,version:3,name:$('creator-name').value});
+  const selected=normalizeCourseFile({...designer.file,version:4,name:$('creator-name').value});
   return selected;
 }
 function validatedCoursePreview(file) {
@@ -4253,9 +4590,9 @@ function paintEditor() {
         ctx.fillText(heightText(level),p.x+11,p.y+13);
       }
     }
-    for(const fork of file.forks||[]) {
-      paintHandle(ctx,fork.alt,designer.forkHandle===fork.alt);
-      ctx.font='bold 12px system-ui';ctx.fillStyle='#fff3d1';ctx.fillText('B',fork.alt.x+11,fork.alt.y-8);
+    for(const fork of file.forks||[]) for(const [i,point] of forkAltPoints(fork).entries()) {
+      paintHandle(ctx,point,designer.forkHandle===point);
+      ctx.font='bold 12px system-ui';ctx.fillStyle='#fff3d1';ctx.fillText('B'+(i+1),point.x+11,point.y-8);
     }
     for(const group of data.groups) {
       const p=crossingHandle(group), selected=designer.deck===group.id;
@@ -4316,13 +4653,22 @@ function editorRender(rebuild) {
     const active=designer.mode===(mode==='object'?'objects':mode);
     $('creator-'+mode+'-tools').hidden=!active;
   }
-  const point=selectedDraftPoint(),object=file.props[designer.prop],fork=draftForkAt(),alt=!!designer.forkHandle;
+  const point=selectedDraftPoint(),object=file.props[designer.prop],fork=activeDraftFork(),alt=!!designer.forkHandle;
   for(const id of ['creator-width','creator-road','creator-left','creator-right','creator-startline']) $(id).disabled=!point;
   $('creator-remove').disabled=!point||!!fork||alt||file.points.length<=4;
   $('creator-add').disabled=alt||file.points.length>=62;
   $('creator-startline').disabled=!point||!!fork||alt;
   $('creator-split').disabled=alt||!!fork||!designer.point||designer.point>=file.points.length-1||file.points.length>=62||file.forks?.length>=6;
-  $('creator-merge').hidden=!fork&&!alt;
+  $('creator-merge').hidden=!fork;
+  $('creator-fork-hint').hidden=!fork;
+  $('creator-fork-add').hidden=!fork;$('creator-fork-remove').hidden=!fork;
+  if(fork) {
+    const ref=forkReference(file.points,fork),count=ref.end-ref.via;
+    $('creator-fork-add').disabled=alt?forkAltPoints(fork).length>=8:
+      designer.point===ref.end||count>=8||file.points.length>=62;
+    $('creator-fork-remove').disabled=alt?forkAltPoints(fork).length<=1:
+      designer.point<=ref.start||designer.point>=ref.end||count<=1;
+  }
   $('creator-add').textContent=designer.tool==='add'?'Tap to add':'Add point';
   if(point) {
     $('creator-width').value=point.width;$('creator-width-value').textContent=Math.round(point.width);
@@ -4396,7 +4742,7 @@ function editorDown(e) {
       const i=prior+1, base=file.points[prior];
       if(file.forks?.some(f=>{
         const ref=forkReference(file.points,f);
-        return ref&&[ref.start,ref.via].includes(prior);
+        return ref&&prior>=ref.start&&prior<ref.end;
       })) {editorStatus('Move the existing branch points to reshape a split.');return;}
       designer.forkHandle=null;
       file.points.splice(i,0,{...base,id:newCourseId(),elevation:'auto',x:clamp(position.x,55,W-55),y:clamp(position.y,53,H-53)});
@@ -4407,7 +4753,7 @@ function editorDown(e) {
     if(crossing!=null) {
       designer.deck=crossing;designer.selectedPasses=[];
     } else {
-      const alternates=(file.forks||[]).map(f=>f.alt);
+      const alternates=(file.forks||[]).flatMap(forkAltPoints);
       const alternate=selectNearby(alternates,position,radius), i=selectNearby(file.points,position,radius);
       if(alternate!=null) {designer.forkHandle=alternates[alternate];designer.drag=designer.forkHandle;designer.deck=null;}
       else if(i!=null) {designer.forkHandle=null;designer.point=i;designer.drag=file.points[i];}
@@ -4472,6 +4818,8 @@ function initializeEditor() {
   action('creator-test',testDraft);
   action('creator-split',addDraftFork);
   action('creator-merge',removeDraftFork);
+  action('creator-fork-add',()=>changeBranchPoints());
+  action('creator-fork-remove',()=>changeBranchPoints(true));
   listen('arena-shape','change',value=>{if(value) {designer.file.arenaBorder=arenaPreset(value);designer.borderPoint=0;editorRender(true);}});
   listen('arena-time','change',value=>{designer.file.arena=clamp(Number(value)||60,15,300);editorRender(true);});
   for(const [id,axis] of [['arena-width','x'],['arena-height','y']]) {
@@ -4637,7 +4985,40 @@ function choosePickerCategory(category) {
     if(list.length) choosePickerCourse(list.find(course=>course.id===previous)||list[0]);
   } else setCourse(category==='damage'?damageCourse:category?trainingCourse:raceCourse);
 }
-let courseTileObserver=null;
+function carouselNeighbours(list,index) {
+  return [...new Set([-1,1,2].filter(offset=>list.length>1).map(offset=>list[mod(index+offset,list.length)]))]
+    .filter(candidate=>candidate!==list[index]);
+}
+function animatePicker(canvas,backwards=false) {
+  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  canvas.getAnimations?.().forEach(animation=>animation.cancel());
+  canvas.animate?.([
+    {transform:'translateY('+(backwards?-13:13)+'px) scale(.97)',opacity:.64},
+    {transform:'translateY(0) scale(1)',opacity:1}
+  ],{duration:170,easing:'ease-out'});
+}
+function pickerCourseGroup(course) {
+  if(course.arena) return 'Open arenas';
+  if(course.training) return 'Practice grounds';
+  const count=(course.points?.length||0)+(course.forks||[]).reduce((n,f)=>n+(f.altPoints?.length||1),0);
+  return count<=12?'Club circuits':count<=24?'Touring circuits':'Grand Prix circuits';
+}
+function renderCourseSelect(definition) {
+  const select=$('course-select');
+  const available=lobbyPicker?.courses||courses,groups=new Map();
+  for(const course of available) {
+    const label=pickerCourseGroup(course);
+    if(!groups.has(label)) groups.set(label,[]);
+    groups.get(label).push(course);
+  }
+  const labels=['Club circuits','Touring circuits','Grand Prix circuits','Open arenas','Practice grounds'];
+  select.replaceChildren(...labels.filter(label=>groups.has(label)).map(label=>{
+    const group=document.createElement('optgroup');group.label=label;
+    for(const course of groups.get(label)) group.append(new Option(course.name,course.id));
+    return group;
+  }));
+  select.value=definition.id;
+}
 function drawCourseTile(canvas,definition) {
   const withHazards=lobbyPicker?definition===lobbyPicker.course&&lobbyPicker.hazards:hazardsEnabled(definition);
   const key=definition.id+':'+(definition.revision||0)+':'+withHazards;
@@ -4665,59 +5046,57 @@ function renderCoursePicker(course) {
   $('damage-tab').setAttribute('aria-pressed',category==='damage');
   $('training-tab').hidden=!!lobbyPicker;
   $('records').hidden=!!lobbyPicker||category===true;
-  for(const id of ['course-tabs','course-pager','course-position']) $(id).hidden=readOnly;
+  for(const id of ['course-tabs','course-pager','course-position','course-select']) $(id).hidden=readOnly;
   if(drawnCourse?.definition===definition&&drawnCourse.withHazards===withHazards&&
     drawnCourse.readOnly===readOnly&&drawnCourse.inLobby===!!lobbyPicker) return;
+  const previous=drawnCourse?.definition;
   drawnCourse={definition,withHazards,readOnly,inLobby:!!lobbyPicker};
-  const ctx=$('preview').getContext('2d');
+  const canvas=$('preview'),ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.save();ctx.scale(.8,.8);drawCoursePreview(ctx,course,true,withHazards);ctx.restore();
+  if(previous&&previous!==definition) animatePicker(canvas,list.indexOf(previous)===mod(index+1,list.length));
   const mount=$('courses'),focused=document.activeElement?.dataset?.courseTile!=null;
-  courseTileObserver?.disconnect();mount.replaceChildren();
+  mount.replaceChildren();
   if(readOnly) return;
-  if(typeof IntersectionObserver==='function') {
-    courseTileObserver=new IntersectionObserver((entries,observer)=>{
-      for(const entry of entries) if(entry.isIntersecting&&entry.target.isConnected) {
-        entry.target.paintTile();observer.unobserve(entry.target);
-      }
-    },{root:mount,rootMargin:'0px 130px'});
-  }
-  let selected;
-  for(const candidate of list) {
+  renderCourseSelect(definition);
+  for(const candidate of carouselNeighbours(list,index)) {
     const item=button('',()=>choosePickerCourse(candidate));
-    item.dataset.courseTile=candidate.id;
-    item.setAttribute('aria-pressed',candidate===definition);item.title=candidate.name;
+    item.dataset.courseTile=candidate.id;item.title=candidate.name;
     const art=document.createElement('canvas'),name=document.createElement('span');
     art.width=180;art.height=84;art.setAttribute('aria-hidden','true');
-    item.paintTile=()=>drawCourseTile(art,candidate);
+    drawCourseTile(art,candidate);
     name.className='course-tile-name';name.textContent=candidate.name;
     item.append(art,name);mount.append(item);
-    if(courseTileObserver) courseTileObserver.observe(item);
-    else if(Math.abs(list.indexOf(candidate)-index)<4) item.paintTile();
-    if(candidate===definition) selected=item;
   }
-  if(selected) {
-    mount.scrollLeft=selected.offsetLeft-mount.offsetLeft-(mount.clientWidth-selected.clientWidth)/2;
-    if(focused) selected.focus({preventScroll:true});
-  }
+  $('prev-course').disabled=list.length<2;$('next-course').disabled=list.length<2;
+  if(focused) mount.focus({preventScroll:true});
 }
-function drawPickerVehicle(canvas,type,scale) {
+function drawPickerVehicle(canvas,type,scale,paint=options.paint) {
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const spec=vehicles[type], length=rigVisualLength(spec);
   const zoom=Math.min(scale,canvas.width/(length+12),canvas.height/(spec.width+4));
   const offset=(length-spec.length)*.50*zoom;
-  drawVehicle(ctx,canvas.width/2+offset,canvas.height/2-offset*.18,-.18,type,options.paint,zeroDamage(),{scale:zoom});
+  drawVehicle(ctx,canvas.width/2+offset,canvas.height/2-offset*.18,-.18,type,paint,zeroDamage(),{scale:zoom});
 }
 function renderVehiclePicker() {
   const current=options.type, selected=options.paint, key=current+'/'+selected;
   if(key===drawnVehicle) return;
+  const previousType=drawnVehicle&&Number(drawnVehicle.split('/')[0]);
   drawnVehicle=key;
-  const left=mod(current-1,vehicles.length),right=mod(current+1,vehicles.length);
+  const list=vehicles.map((_,i)=>i);
   drawPickerVehicle($('vehicle'),current,3.02);
-  drawPickerVehicle($('vehicle-prev-art'),left,1.45);
-  drawPickerVehicle($('vehicle-next-art'),right,1.45);
-  $('prev-vehicle').setAttribute('aria-label','Previous vehicle · '+vehicles[left].name);
-  $('next-vehicle').setAttribute('aria-label','Next vehicle · '+vehicles[right].name);
+  if(Number.isInteger(previousType)&&previousType!==current) animatePicker($('vehicle'),current===mod(previousType-1,vehicles.length));
+  const tiles=$('vehicle-tiles'),focused=document.activeElement?.dataset?.vehicleTile;
+  tiles.replaceChildren(...carouselNeighbours(list,current).map(type=>{
+    const tile=button('',()=>choosePickerVehicle(type));
+    const art=document.createElement('canvas');art.width=120;art.height=66;
+    art.setAttribute('aria-hidden','true');drawPickerVehicle(art,type,1.8);
+    tile.dataset.vehicleTile=String(type);tile.title=vehicles[type].name;
+    tile.setAttribute('aria-label',vehicles[type].name);tile.append(art);
+    return tile;
+  }));
+  if(focused) $('vehicle-carousel').focus({preventScroll:true});
   $('vehicle-name').value=String(current);
   $('vehicle-detail').textContent=vehicles[current].description||'';
   $('vehicle-detail').hidden=!vehicles[current].description;
@@ -4829,15 +5208,16 @@ function renderRuleCopy(config,course) {
   const hazards=course.hazards||[];
   $('hazards-copy').textContent=hazards.length+' placements'+(hazards.some(p=>p.type==='oil')?' including an oil spill.':'.');
   $('music-select').value=config.music==null?'shuffle':String(config.music);
+  const items=Object.keys(config.pickups||{}).length;
+  $('pickup-rules-open').textContent=items?items+' enabled':'Set up bonus items';syncPickupControls();
   $('rules-open').setAttribute('aria-expanded',String(modalType==='rules'));
   if(modalType==='rules'&&$('rules-start')) $('rules-start').textContent=$('start').textContent;
-  if(modalType==='rules'&&$('rules-preview')) {
-    $('rules-preview').textContent=pickerRulesSummary(config,course)+' · '+(tunes[config.music]?.name||'Shuffle soundtrack');
-  }
+  $('rule-fields').dataset.suggest=String(lobbyPicker?.canChoose===false);
 }
 function changePickerRules(changes) {
   if(lobbyPicker) {
     if(lobbyPicker.canChoose) lobbyPicker.changeRules(changes);
+    else if(networkRoom?.phase==='lobby') requestRuleSuggestion(changes);
     return;
   }
   const {hazards,...rules}=changes;
@@ -4846,25 +5226,106 @@ function changePickerRules(changes) {
   if(options.damage==='off'&&options.mode==='damage') options.mode='race';
   renderSetup();
 }
+function pickupRulesNow() {
+  return lobbyPicker?(networkRoom?.pickupDraft||lobbyPicker.ruleConfig.pickups):options.pickups;
+}
+function describePickupChange(key,value) {
+  if(key==='schedule') return pickupSchedules[value];
+  if(key==='interval') return value+' seconds';
+  if(key==='randomPosition') return value?'Random position':'Rotating positions';
+  if(key==='initial') return value?'Start on course':'Start after delay';
+  return value?'On':'Off';
+}
+function changePickupRule(id,key,value) {
+  if(lobbyPicker?.canChoose===false) {
+    requestRuleSuggestion({pickups:id+':'+describePickupChange(key,value)});
+    syncPickupControls();
+    return;
+  }
+  const rules={...pickupRulesNow()},current=rules[id]||{enabled:false,initial:true,schedule:'after',interval:12,randomPosition:true};
+  rules[id]={...current,[key]:value};
+  const next=normalizePickupRules(rules);
+  if(lobbyPicker&&networkRoom&&!networkRoom.host) networkRoom.pickupDraft=next;
+  changePickerRules({pickups:next});syncPickupControls();
+}
+function syncPickupControls() {
+  if(modalType!=='pickups') return;
+  const rules=pickupRulesNow(),readOnly=lobbyPicker?.canChoose===false;
+  for(const row of $('pickup-rule-grid').children) {
+    const id=row.dataset.pickupRow,current=rules[id]||{enabled:false,initial:true,schedule:'after',interval:12,randomPosition:true};
+    for(const control of row.querySelectorAll('[data-pickup-key]')) {
+      const key=control.dataset.pickupKey;
+      if(control.type==='checkbox') control.checked=current[key];
+      else control.value=String(current[key]);
+      // Read-only rows accept suggestions, while the committed values stay visible.
+      control.setAttribute('aria-disabled',String(readOnly));
+      control.disabled=id==='phase'&&(!lobbyPicker||lobbyPicker.ruleConfig.carsHit===false)||
+        key==='interval'&&current.schedule==='once'||key==='initial'&&current.schedule==='once';
+    }
+  }
+}
+function openPickupRules() {
+  openModal('pickups','Bonus items',body=>{
+    if(lobbyPicker?.canChoose===false) body.append(paragraph('Choose a setting to suggest it to the Race Director.'));
+    const grid=document.createElement('div');grid.id='pickup-rule-grid';grid.className='pickup-grid';
+    const toggle=()=>Object.assign(document.createElement('input'),{type:'checkbox'});
+    const select=entries=>{
+      const node=document.createElement('select');
+      for(const [value,label] of entries) node.add(new Option(label,value));
+      return node;
+    };
+    for(const [id,item] of Object.entries(pickupTypes)) {
+      const row=document.createElement('div');row.className='pickup-row';row.dataset.pickupRow=id;
+      const icon=document.createElement('canvas');icon.width=40;icon.height=38;
+      icon.setAttribute('aria-hidden','true');drawPickup(icon.getContext('2d'),id,20,18,1.35);
+      const input=Object.assign(document.createElement('input'),{type:'number',min:3,max:120,step:1});
+      const choices=[
+        ['enabled',item.name,toggle(),icon],
+        ['initial','Start on course',toggle()],
+        ['schedule','Spawn timing',select(Object.entries(pickupSchedules))],
+        ['randomPosition','Position',select([[true,'Random position'],[false,'Rotating positions']])],
+        ['interval','Interval (s)',input]
+      ];
+      for(const [key,name,control,art] of choices) {
+        const label=document.createElement('label');
+        if(art) label.append(art);
+        label.append(document.createTextNode(name),control);
+        control.setAttribute('aria-label',(key==='enabled'?'Enable ':name+' for ')+item.name);
+        control.dataset.pickupKey=key;
+        control.addEventListener('change',()=>{
+          const value=control.type==='checkbox'?control.checked:
+            key==='randomPosition'?control.value==='true':key==='interval'?clamp(Number(control.value)||12,3,120):control.value;
+          changePickupRule(id,key,value);
+        });
+        row.append(label);
+      }
+      const legend=document.createElement('small');
+      legend.textContent=item.effect+(id==='phase'?' Available when Cars hit Cars is on.':'');
+      row.append(legend);grid.append(row);
+    }
+    body.append(grid);setModalActions(button('Back to race rules',openRaceRules,'primary'));
+  },openRaceRules);
+  syncPickupControls();
+  if(networkRoom?.lastSuggestion) highlightRule(networkRoom.lastSuggestion,false);
+}
+
 function openRaceRules() {
   openModal('rules','Race rules',body=>{
     const done=button('Done',closeModal);
-    if(lobbyPicker?.canChoose===false) {
-      const preview=paragraph('');preview.id='rules-preview';
-      body.append(paragraph(lobbyPicker.course.name),preview);
-      setModalActions(done);
-    } else {
-      body.append($('rule-fields'));
-      if(lobbyPicker) setModalActions(done);
-      else {
-        const start=button($('start').textContent,startSelectedRun,'primary');start.id='rules-start';
-        setModalActions(done,start);
-      }
+    const fields=$('rule-fields');
+    fields.dataset.suggest=String(lobbyPicker?.canChoose===false);
+    if(lobbyPicker?.canChoose===false) body.append(paragraph('Tap a rule to suggest it to the Race Director.'));
+    body.append(fields);
+    if(lobbyPicker) setModalActions(done);
+    else {
+      const start=button($('start').textContent,startSelectedRun,'primary');start.id='rules-start';
+      setModalActions(done,start);
     }
     const course=preparePickerCourse(pickerCourseDefinition());
     renderRuleCopy(lobbyPicker?.ruleConfig||configNow(),course);
   });
   $('rules-open').setAttribute('aria-expanded','true');
+  if(networkRoom?.lastSuggestion) highlightRule(networkRoom.lastSuggestion,false);
 }
 function startSelectedRun() {
   const config=configNow(), ghost=records.matching(config,$('ghost-select').value);
@@ -17284,7 +17745,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: protocol version, offline pairing and LAN transport.
-const multiplayerVersion='0.11';
+const multiplayerVersion='0.12';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -17504,7 +17965,7 @@ function networkSettings(value) {
   const event=course.damageEvent?'damage':
     value.event==='one-hit'?'one-hit':value.event==='damage'&&damage!=='off'?'damage':'race';
   return {course:course.id,courseFile:imported||undefined,laps:clamp(Math.round(finite(value.laps,1,10,3)),1,10),
-    event,drag:value.drag==='free'?'free':'trace',lastCar:value.lastCar===true,damage:course.damageEvent&&damage==='off'?'open':damage,
+    event,drag:value.drag==='free'?'free':'trace',lastCar:value.lastCar===true,carsHit:value.carsHit!==false,pickups:normalizePickupRules(value.pickups),damage:course.damageEvent&&damage==='off'?'open':damage,
     hazards:!!course.hazards?.length&&value.hazards===true,music:musicChoice(value.music)};
 }
 function networkCourse(settings) {
@@ -17514,7 +17975,7 @@ function networkCourse(settings) {
 function networkSeedSettings() {
   const course=courses[options.course].training?networkCourseOptions()[0]:courses[options.course];
   return networkSettings({course:course.id,courseFile:course.courseFile,laps:options.laps,event:options.mode,
-    drag:options.drag,damage:options.damage,hazards:hazardsEnabled(course),music:options.music});
+    drag:options.drag,damage:options.damage,hazards:hazardsEnabled(course),music:options.music,pickups:options.pickups});
 }
 function networkStartGrid(game,slot) {
   const course=game.course, car=game.car;
@@ -17556,11 +18017,11 @@ function networkDriverInput(game,input) {
   }
 }
 function collideNetworkCars(race) {
-  if(race.elapsed<2.1) return;
+  if(race.settings.carsHit===false||race.elapsed<2.1) return;
   const drivers=[...race.drivers.values()];
   for(let i=0;i<drivers.length;i++) for(let j=i+1;j<drivers.length;j++) {
     const a=drivers[i],b=drivers[j];
-    if(a.finished||b.finished||a.spec.hover||b.spec.hover||
+    if(a.finished||b.finished||a.spec.hover||b.spec.hover||effectActive(a,'phase')||effectActive(b,'phase')||
       routeLevelAt(race.course,a.car.index)!==routeLevelAt(race.course,b.car.index)) continue;
     const dx=b.car.x-a.car.x,dy=b.car.y-a.car.y,distance=Math.hypot(dx,dy);
     if(distance<.01||distance>63) continue;
@@ -17575,9 +18036,10 @@ function collideNetworkCars(race) {
       for(const [game,direction] of [[a,1],[b,-1]]) {
         const x=nx*direction,y=ny*direction;
         if(isBladeHit(game.spec,game.car.a,x,y)) continue;
-        game.hits++;game.car.speed*=.79;recoverFromHit(game);dropTimber(game,closing,x,y);
+        if(!effectActive(game,'invulnerable')) game.hits++;
+        game.car.speed*=.79;recoverFromHit(game);dropTimber(game,closing,x,y);
         const amount=damageMode(game.config)==='off'?0:applySectionDamage(game.car,hitSection(game.car.a,x,y),
-          (1+closing*.036)*game.spec.resistance);
+          effectiveDamage(game,(1+closing*.036)*game.spec.resistance));
         logHit(game,{t:Math.round(game.elapsed*1000),x:game.car.x+x*11,y:game.car.y+y*11,amount,
           strength:clamp(closing/280,.22,.9),index:game.car.index,nx:x,ny:y,prop:true});
       }
@@ -17595,6 +18057,7 @@ function networkCarState(game) {
   const c=game.car;
   return {id:game.networkId,x:Math.round(c.x*4)/4,y:Math.round(c.y*4)/4,a:Math.round(c.a*1000)/1000,
     index:c.index,branch:c.branch??null,speed:Math.round(c.speed),damage:c.damage.map(Math.round),trailerAngles:c.trailerAngles?.map(a=>Math.round(a*1000)/1000),
+    power:game.power,cloak:effectActive(game,'cloak'),bonus:game.bonusPoints,notice:game.pickupNotice,
     cargo:game.cargo,splits:game.splits,progress:Math.round(game.progress),surface:c.surface,
     score:game.config.mode==='damage'?damagePoints(game).total:0,result:game.networkResult,finishTime:game.finished?game.elapsed:undefined,
     impact:game.impacts.at(-1)};
@@ -17604,7 +18067,7 @@ class NetworkRound {
   constructor(settings,players,id,localId) {
     this.id=id;this.settings=settings;this.players=players;this.course=networkCourse(settings);
     this.drivers=new Map();this.carContacts=new Map();this.elapsed=0;this.countdown=networkCountdown;
-    this.accumulator=0;this.sendIn=0;this.tune=chooseTune(settings.music);this.pauseReasons=new Map();
+    this.accumulator=0;this.sendIn=0;this.tune=chooseTune(settings.music);this.pauseReasons=new Map();this.pauseReady=new Set();this.waitingToResume=false;this.pausedBy=null;
     for(const [slot,player] of players.entries()) {
       const game=this.createDriver(player,slot);
       game.networkRemote=player.id!==localId;
@@ -17612,7 +18075,11 @@ class NetworkRound {
     }
     this.local=this.drivers.get(localId);
     this.props=this.local.props;
-    for(const game of this.drivers.values()) game.props=this.props;
+    const rules={...settings.pickups};
+    if(settings.carsHit===false) delete rules.phase;
+    this.pickupField=createPickupField(rules);
+    for(const game of this.drivers.values()) {game.props=this.props;game.pickupField=this.pickupField;}
+    tickPickups(this.pickupField,[...this.drivers.values()],0);
   }
   createDriver(player,slot) {
     const settings=this.settings;
@@ -17627,17 +18094,41 @@ class NetworkRound {
   }
   input(id,rows) {
     const driver=this.drivers.get(id);
-    if(driver&&!this.pauseReasons.size&&this.countdown<=0&&Array.isArray(rows)) networkDriverInput(driver,rows.slice(0,70));
+    if(driver&&!this.waitingToResume&&this.countdown<=0&&Array.isArray(rows)) networkDriverInput(driver,rows.slice(0,70));
   }
   pause(id,reason,enabled) {
-    if(this.done||!this.drivers.has(id)||!['menu','rotation','background'].includes(reason)) return;
+    const game=this.drivers.get(id);
+    if(this.done||!game||game.finished||!['menu','rotation','background'].includes(reason)) return;
     const reasons=this.pauseReasons.get(id)||new Set();
     if(enabled) reasons.add(reason);else reasons.delete(reason);
     if(reasons.size) this.pauseReasons.set(id,reasons);else this.pauseReasons.delete(id);
-    if(enabled) for(const game of this.drivers.values()) {
-      game.pointer=null;game.tip=null;game.fingers=[];game.releasePending=null;
+    if(enabled) {
+      if(!this.waitingToResume) {
+        this.waitingToResume=true;this.pauseReady.clear();this.pausedBy=id;
+        for(const driver of this.drivers.values()) {
+          driver.pointer=null;driver.tip=null;driver.fingers=[];driver.releasePending=null;driver.flick=null;
+        }
+      }
+      if(reason!=='menu') this.pauseReady.delete(id);
     }
     this.sendIn=0;
+  }
+  pauseRoster() {
+    return [...this.drivers.values()].map(game=>{
+      const id=game.networkId,reasons=this.pauseReasons.get(id),required=!game.finished;
+      const blocked=required&&!!reasons&&[...reasons].some(reason=>reason!=='menu');
+      return {id,ready:required&&this.pauseReady.has(id)&&!blocked,blocked,required,status:game.networkResult};
+    });
+  }
+  readyToResume(id,ready) {
+    const player=this.pauseRoster().find(p=>p.id===id);
+    if(!this.waitingToResume||!player?.required||player.blocked) return;
+    if(ready) this.pauseReady.add(id);else this.pauseReady.delete(id);
+  }
+  resume() {
+    if(!this.waitingToResume||this.done||!this.pauseRoster().every(p=>!p.required||p.ready)) return;
+    this.waitingToResume=false;this.pausedBy=null;this.pauseReasons.clear();this.pauseReady.clear();
+    this.countdown=3;this.accumulator=0;this.sendIn=0;
   }
   canGiveUp() {
     return !this.course.openYard&&[...this.drivers.values()].some(game=>game.networkResult==='Finished');
@@ -17645,7 +18136,7 @@ class NetworkRound {
   withdraw(id,reason='Disconnected') {
     const game=this.drivers.get(id);
     if(game&&!game.finished) finishNetworkDriver(game,reason);
-    this.pauseReasons.delete(id);
+    this.pauseReasons.delete(id);this.pauseReady.delete(id);
     this.sendIn=0;
   }
   checkOutcome() {
@@ -17657,7 +18148,7 @@ class NetworkRound {
   }
   step(duration) {
     if(this.done) return false;
-    if(this.pauseReasons.size) return false;
+    if(this.waitingToResume) return false;
     const active=Math.max(0,duration-this.countdown);
     this.countdown=Math.max(0,this.countdown-duration);
     if(active>0) {
@@ -17669,7 +18160,7 @@ class NetworkRound {
           if(!game.finished&&game.impacts.length>4) game.impacts.splice(0,game.impacts.length-4);
         }
         collideNetworkCars(this);
-        tickProps(this.local,networkTick);
+        tickProps(this.local,networkTick);tickPickups(this.pickupField,[...this.drivers.values()],this.elapsed);
         if(this.elapsed>=networkRaceLimit) this.end('Time limit');
         this.checkOutcome();
       }
@@ -17684,8 +18175,8 @@ class NetworkRound {
     this.done=true;
   }
   snapshot() {
-    return {kind:'snapshot',id:this.id,countdown:this.countdown,elapsed:this.elapsed,done:!!this.done,paused:[...this.pauseReasons.keys()],
-      cars:[...this.drivers.values()].map(networkCarState),
+    return {kind:'snapshot',id:this.id,countdown:this.countdown,elapsed:this.elapsed,done:!!this.done,paused:this.waitingToResume?[this.pausedBy]:[],pauseRoster:this.waitingToResume?this.pauseRoster():[],
+      cars:[...this.drivers.values()].map(networkCarState),pickups:pickupSnapshot(this.pickupField),
       props:this.props.map(p=>[p.type,Math.round(p.x*4)/4,Math.round(p.y*4)/4,Math.round(p.a*1000)/1000,p.level||0,p.routeIndex??null])};
   }
 }
@@ -17732,7 +18223,7 @@ function closeMultiplayer() {
   $('net-open').focus();
 }
 function leaveNetworkRoom(message='',keepLanSeat=false) {
-  if(lobbyPicker&&modalType==='rules') closeModal();
+  if(lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
   stopNetworkScan();
   const room=networkRoom;networkRoom=null;
   if(!keepLanSeat&&room?.mode==='lan'&&!room.host) storeLanSeat(null);
@@ -17752,7 +18243,7 @@ function localNetworkDriver() {
 function makeNetworkRoom(host,mode) {
   leaveNetworkRoom();
   const room={host,mode,id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
-    readyRevision:0,readyUntil:0,seats:new Map()};
+    readyRevision:0,readyUntil:0,seats:new Map(),suggestions:new Map()};
   if(host) {
     room.phase='lobby';room.players.push({id:'host',...room.draft,name:room.draft.name||'Host',ready:false});
     room.settings=networkSeedSettings();room.turn='host';
@@ -17785,13 +18276,16 @@ function networkDeparture(room,id,reason) {
   }
   room.players=room.players.filter(p=>p.id!==id);
   if(room.controller===id) room.controller='host';
-  if(room.phase==='lobby'&&room.turn===id) room.turn=room.controller;
+  if(room.turn===id) room.turn=room.controller;
   if(room.phase==='lobby') resetNetworkReady(room);
   if(room.round&&!room.round.done) {
     room.round.withdraw(id);room.round.checkOutcome();broadcastNetworkSnapshot(room);
   }
+  const text=player.name+' left multiplayer.';
+  transmitNetwork(room,{kind:'announcement',text});
+  showRaceAnnouncement(text);
   sendNetworkLobby(room);
-  netStatus(player.name+' disconnected.');
+  netStatus(text);
 }
 function networkControls(room) {
   return !!room?.id&&room.id===room.controller;
@@ -17811,8 +18305,9 @@ function openEndMultiplayer() {
 }
 function returnToNetworkMenu() {
   closeModal();
+  if(run?.network&&networkRaceView?.inLobby) return;
   if(run?.network&&networkRaceView?.done) showNetworkResults();
-  else if(run?.network&&networkRaceView?.menuPause) networkExitControls();
+  else if(run?.network&&networkRaceView?.snapshot.paused?.length) networkExitControls(false);
 }
 function transmitNetwork(room,packet) {
   for(const player of room.players) if(player.id!=='host') room.link.send(player.id,packet);
@@ -17872,10 +18367,16 @@ function manageNetworkLobby(room,id,packet) {
   if(!player) return;
   const controls=id===room.controller;
   if(packet.kind==='terminate'&&(controls||id==='host')) {endNetworkRoom(room);return;}
+  if(room.phase==='race'&&packet.kind==='driver'&&room.round.drivers.get(id)?.finished) {
+    const driver=networkDriver(packet.driver);
+    Object.assign(player,{...driver,name:driver.name||player.name,ready:false});sendNetworkLobby(room);return;
+  }
   if(room.phase==='race') {
     if(packet.round!==room.round.id) return;
     if(packet.kind==='input') {room.round.input(id,packet.rows);return;}
     if(packet.kind==='pause') room.round.pause(id,packet.reason,packet.paused===true);
+    else if(packet.kind==='pause-ready') room.round.readyToResume(id,packet.ready===true);
+    else if(packet.kind==='resume-round'&&controls) room.round.resume();
     else if(packet.kind==='give-up'&&room.round.canGiveUp()) room.round.withdraw(id,'Gave up');
     else if(packet.kind==='end-round'&&controls) room.round.end('Round ended');
     else if(packet.kind==='next-round'&&controls&&room.round.done) {networkNextRound();return;}
@@ -17884,6 +18385,7 @@ function manageNetworkLobby(room,id,packet) {
     return;
   }
   if(room.phase!=='lobby') return;
+  if(packet.kind==='suggest-rule'&&id!==room.turn) {sendRuleSuggestion(room,player,packet);return;}
   if(packet.kind==='driver') {
     const driver=networkDriver(packet.driver), name=driver.name||player.name;
     if(player.name===name&&player.type===driver.type&&player.color===driver.color&&player.steering===driver.steering) return;
@@ -17895,16 +18397,14 @@ function manageNetworkLobby(room,id,packet) {
     networkBegin();return;
   } else if(packet.kind==='pass-controls'&&controls&&room.players.some(p=>p.id===packet.player)) {
     room.controller=packet.player;resetNetworkReady(room);
+  } else if(packet.kind==='pass-director'&&id===room.turn&&room.players.some(p=>p.id===packet.player)) {
+    room.turn=packet.player;room.lastSuggestion=null;resetNetworkReady(room);
   } else if(packet.kind==='remove-driver'&&controls&&packet.player!=='host'&&room.players.some(p=>p.id===packet.player)) {
     room.link.send(packet.player,{kind:'removed'});
     setTimeout(()=>room.link.remove(packet.player,'Removed from multiplayer.',true),70);return;
-  } else if(packet.kind==='steering-lock'&&controls) {
-    const drag=packet.locked===true?'free':'trace';
-    if(room.settings.drag===drag) return;
-    room.settings={...room.settings,drag};resetNetworkReady(room);
   } else if(packet.kind==='settings'&&id===room.turn) {
     try {
-      const settings=networkSettings({...packet.settings,drag:room.settings.drag});
+      const settings=networkSettings(packet.settings);
       if(JSON.stringify(settings)===JSON.stringify(room.settings)) return;
       room.settings=settings;resetNetworkReady(room);
     } catch(error) {
@@ -17923,7 +18423,9 @@ function networkMessage(room,id,packet) {
   }
   if(packet.kind==='room-ended') {leaveNetworkRoom('Multiplayer ended.');return;}
   if(packet.kind==='removed') {leaveNetworkRoom('Removed from multiplayer.');return;}
-  if(packet.kind==='notice') {netStatus(packet.text);return;}
+  if(packet.kind==='notice') {room.pickupDraft=null;netStatus(packet.text);syncPickupControls();return;}
+  if(packet.kind==='announcement') {showRaceAnnouncement(packet.text);return;}
+  if(packet.kind==='rule-splash') {showRuleSuggestion(room,packet);return;}
   if(packet.kind==='welcome') {
     if(packet.version!==multiplayerVersion) {leaveNetworkRoom('Both devices must use Track N Trace v'+multiplayerVersion+'.');return;}
     room.id=packet.id;$('net-pair').hidden=true;stopNetworkScan();netStatus('Connected.');
@@ -17932,6 +18434,8 @@ function networkMessage(room,id,packet) {
   if(!room.id) return;
   if(packet.kind==='lobby') {
     room.players=packet.players;room.settings=packet.settings;room.turn=packet.turn;room.phase=packet.phase;room.controller=packet.controller;
+    if(room.pickupDraft&&(room.turn!==room.id||room.phase!=='lobby'||
+      pickupRuleSignature(room.pickupDraft)===pickupRuleSignature(room.settings.pickups))) room.pickupDraft=null;
     room.readyRevision=packet.readyRevision;
     room.readyUntil=performance.now()+packet.readyWait;scheduleNetworkReady(room);
     if(packet.phase==='lobby'&&run?.network) leaveNetworkRace();
@@ -17952,6 +18456,101 @@ function localNetworkAction(packet) {
   if(room.host) manageNetworkLobby(room,'host',message);
   else room.link.send(room.hostId,message);
 }
+const suggestionLabels={
+  mode:'Event',damage:'Damage',laps:'Laps',hazards:'Track hazards',music:'Soundtrack',
+  lastCar:'Last car running wins',drag:'Everyone Free Drag',carsHit:'Cars hit Cars',pickups:'Bonus items'
+};
+function suggestionAllowed(history,now) {
+  if(!history||now-history.last>=10000) return {last:now,count:1};
+  if(now-history.last<(history.count===1?1000:2000)) return null;
+  return {last:now,count:history.count+1};
+}
+function suggestedRule(field,value) {
+  if(!Object.hasOwn(suggestionLabels,field)) return undefined;
+  switch(field) {
+    case 'mode': return Object.hasOwn(eventNames,value)?value:undefined;
+    case 'damage': return Object.hasOwn(damageNames,value)?value:undefined;
+    case 'laps': return Number.isInteger(value)&&value>=1&&value<=10?value:undefined;
+    case 'music': return value==null?null:musicChoice(value)??undefined;
+    case 'drag': return ['trace','free'].includes(value)?value:undefined;
+    case 'pickups':
+      return typeof value==='string'&&Object.hasOwn(pickupTypes,value.split(':')[0])&&value.length<=52?value:undefined;
+    default: return typeof value==='boolean'?value:undefined;
+  }
+}
+function describeRuleSuggestion(field,value) {
+  const label=suggestionLabels[field];
+  if(field==='pickups') {
+    const [id,choice]=value.split(':');
+    return pickupTypes[id].name+(choice?' · '+choice:'');
+  }
+  const detail=field==='mode'?eventNames[value]:
+    field==='damage'?damageNames[value]:
+    field==='music'?tunes[value]?.name||'Shuffle':
+    field==='drag'?value==='free'?'On':'Off':
+    typeof value==='boolean'?value?'On':'Off':String(value);
+  return label+' · '+detail;
+}
+function sendRuleSuggestion(room,player,packet) {
+  const field=packet.field,value=suggestedRule(field,packet.value);
+  if(value===undefined) return;
+  const next=suggestionAllowed(room.suggestions.get(player.id),performance.now());
+  if(!next) return;
+  room.suggestions.set(player.id,next);
+  const splash={kind:'rule-splash',field,value,sender:player.id,colour:vehicles[player.type].palette[player.color]};
+  if(room.turn==='host') showRuleSuggestion(room,splash);
+  else room.link.send(room.turn,splash);
+}
+function requestRuleSuggestion(changes) {
+  const room=networkRoom;
+  if(room?.phase!=='lobby'||room.turn===room.id) return;
+  const [field,value]=Object.entries(changes)[0]||[];
+  if(suggestedRule(field,value)===undefined) return;
+  const next=suggestionAllowed(room.localSuggestion,performance.now());
+  if(!next) return;
+  room.localSuggestion=next;
+  const info={field,value,sender:room.id,colour:options.paint};
+  showRuleSuggestion(room,info);
+  localNetworkAction({kind:'suggest-rule',field,value});
+  if(['rules','pickups'].includes(modalType)) renderRuleCopy(lobbyPicker.ruleConfig,preparePickerCourse(lobbyPicker.course));
+}
+function ruleHighlight(field,value) {
+  switch(field) {
+    case 'drag': return $('net-free-lock');
+    case 'carsHit': return $('net-car-contact');
+    case 'mode': return $('event-select').querySelector('button[data-value="'+value+'"]');
+    case 'damage': return $('damage-select').querySelector('button[data-value="'+value+'"]');
+    case 'hazards': return $('hazards-select').querySelector('button[data-value="'+(value?'on':'off')+'"]');
+    case 'lastCar': return $('last-car-select').querySelector('button[data-value="'+(value?'on':'off')+'"]');
+    case 'laps': return $('laps-value');
+    case 'music': return $('music-select');
+    case 'pickups': return document.querySelector('[data-pickup-row="'+value.split(':')[0]+'"]');
+    default: return null;
+  }
+}
+function highlightRule(request,subtle) {
+  const target=ruleHighlight(request.field,request.value);
+  if(!target?.getClientRects().length) return false;
+  target.style.setProperty('--suggest-colour',request.colour);
+  target.classList.add('rule-splash');
+  const strength=subtle?'52':'bd';
+  target.animate?.([{boxShadow:'0 0 0 0 '+request.colour+strength},
+    {boxShadow:'0 0 0 11px '+request.colour+'04'}],{duration:subtle?430:830,easing:'ease-out'});
+  setTimeout(()=>target.classList.remove('rule-splash'),subtle?420:820);
+  return true;
+}
+function showRuleSuggestion(room,request) {
+  if(suggestedRule(request.field,request.value)===undefined) return;
+  const subtle=request.sender===room.id;
+  room.lastSuggestion=request;
+  renderNetworkLobby();
+  if(!highlightRule(request,subtle)) {
+    const target=$('net-rule-requests');
+    target.animate?.([{backgroundColor:request.colour+(subtle?'40':'8f')},{backgroundColor:'transparent'}],
+      {duration:subtle?480:930});
+  }
+}
+
 function drawNetworkQR(canvas,value) {
   const code=qrcode(0,'M');code.addData(value);code.make();
   const count=code.getModuleCount(),cell=Math.max(3,Math.floor(560/(count+8))),side=(count+8)*cell;
@@ -18088,29 +18687,44 @@ function renderNetworkLobby() {
   $('net-entry').hidden=!!room;
   $('net-rejoin-lan').hidden=!lanGuestSeat;
   $('net-reopen-lan').hidden=!lanOwnerKey;
-  $('net-lobby').hidden=!room?.id||room.phase!=='lobby';
+  const sidelined=room?.phase==='race'&&networkRaceView?.inLobby;
+  $('net-lobby').hidden=!room?.id||room.phase!=='lobby'&&!sidelined;
   $('net-leave').hidden=!room;
-  if($('multiplayer').hidden||!room?.id||room.phase!=='lobby') {
+  if($('multiplayer').hidden||!room?.id||room.phase!=='lobby'&&!sidelined) {
     mountLobbyPickers(null);
     return;
   }
   const own=room.players.find(p=>p.id===room.id);
   const chooser=room.players.find(p=>p.id===room.turn);
   if(!own||!room.settings) return;
-  const canChoose=chooser===own,controls=networkControls(room);
-  netText('net-turn',canChoose?'Your turn to choose the course and rules.':
-    (chooser?.name||'Host')+' is choosing the course and rules.');
+  const canChoose=chooser===own&&!sidelined,controls=networkControls(room);
+  netText('net-turn',sidelined?'Change your vehicle and paint for the next round.':canChoose?'You’re the Race Director. Choose the course and rules.':
+    (chooser?.name||'Host')+' is the Race Director and chooses the course and rules.');
   const rows=$('net-roster');rows.replaceChildren();
   for(const player of room.players) {
     const row=document.createElement('li');
-    const name=document.createElement('strong');name.textContent=player.name+(player===own?' (you)':'')+(player.id===room.controller?' · Host':'');
-    const swatch=document.createElement('span');swatch.className='net-car-colour';
-    swatch.style.background=vehicles[player.type].palette[player.color];
+    const host=player.id===room.controller,director=player.id===room.turn;
+    row.dataset.host=String(host);row.dataset.director=String(director);
+    const name=document.createElement('strong');name.textContent=player.name+(player===own?' (you)':'');
+    const colour=vehicles[player.type].palette[player.color];
+    const swatch=document.createElement('span');swatch.className='net-car-colour';swatch.style.background=colour;
+    const art=document.createElement('canvas');art.width=132;art.height=63;art.className='net-roster-car';
+    art.setAttribute('aria-label',vehicles[player.type].name);drawPickerVehicle(art,player.type,2.1,colour);
     const details=document.createTextNode(vehicles[player.type].name);
     const ready=document.createElement('span');ready.className='net-ready';
-    ready.textContent=player.ready?'Ready':'Choosing';ready.dataset.ready=String(player.ready);
-    row.append(swatch,name,details,ready);
-    if(controls&&player!==own) {
+    const current=networkRaceView?.snapshot.cars.find(car=>car.id===player.id);
+    ready.textContent=sidelined?current?.result||'Racing':player.ready?'Ready':'Choosing';ready.dataset.ready=String(player.ready);
+    row.append(art,swatch,name,details);
+    for(const [active,label] of [[host,'Host'],[director,'Race Director']]) if(active) {
+      const role=document.createElement('span');role.className='net-role'+(label==='Host'?'':' director');
+      role.textContent=label;row.append(role);
+    }
+    row.append(ready);
+    if(canChoose&&player!==own) {
+      const pass=button('Pass course and rules',()=>localNetworkAction({kind:'pass-director',player:player.id}));
+      pass.setAttribute('aria-label','Pass course and rules to '+player.name);row.append(pass);
+    }
+    if(controls&&player!==own&&!sidelined) {
       const pass=button('Pass host controls',()=>localNetworkAction({kind:'pass-controls',player:player.id}));
       pass.setAttribute('aria-label','Pass host controls to '+player.name);row.append(pass);
       if(player.id!=='host') {
@@ -18134,27 +18748,45 @@ function renderNetworkLobby() {
   const preview=preparePickerCourse(definition);
   renderCoursePicker(preview);renderVehiclePicker();renderRuleCopy(ruleConfig,preview);
   renderExpandedRules(room,preview,!canChoose||!controls);
+  $('rules-open').hidden=!!sidelined;
   const locked=settings.drag==='free';
-  $('net-lock-row').hidden=!controls;$('net-free-lock').checked=locked;
-  $('net-steering-locked').hidden=!locked;$('net-steering-row').hidden=locked;
+  $('net-lock-row').hidden=!!sidelined;
+  for(const [id,on] of [['net-free-lock',locked],['net-car-contact',settings.carsHit]]) {
+    $(id).setAttribute('aria-pressed',String(on));$(id).setAttribute('aria-disabled',String(!canChoose));
+    $(id).title=canChoose?'Change race rule':'Suggest a change to the Race Director';
+  }
+  const request=room.lastSuggestion;
+  $('net-rule-requests').hidden=!!sidelined||!request;
+  if(request) {
+    const sender=room.players.find(p=>p.id===request.sender);
+    netText('net-rule-requests',sender?.id===room.id?'Suggested '+describeRuleSuggestion(request.field,request.value):
+      (sender?.name||'Driver')+' suggests '+describeRuleSuggestion(request.field,request.value));
+    $('net-rule-requests').style.setProperty('--suggest-colour',request.colour);
+  }
+  $('net-steering-locked').hidden=!locked||!!sidelined;$('net-steering-row').hidden=locked||!!sidelined;
   segmentation('net-personal-steering',options.networkSteering);
   const settling=room.readyUntil>performance.now();
   netText('net-ready-button',settling?'Settings changed…':own.ready?'Cancel ready':'Ready');
-  $('net-ready-button').disabled=settling;
+  $('net-ready-button').hidden=!!sidelined;$('net-ready-button').disabled=settling;
   netText('net-leave',controls||room.host?'End multiplayer':'Leave multiplayer');
-  $('net-start').hidden=!controls;
-  $('net-start').disabled=settling||room.players.length<2||!room.players.every(p=>p.ready);
-  $('net-invite').hidden=!room.host;
+  $('net-back').disabled=!!sidelined;
+  $('net-watch').hidden=!sidelined;
+  const paused=sidelined&&!!networkRaceView.snapshot.paused?.length&&!networkRaceView.done;
+  $('net-start').hidden=!controls||!!sidelined&&!networkRaceView.done&&!paused;
+  netText('net-start',paused?'▶ Continue race':sidelined?'Next round':'Start race');
+  $('net-start').disabled=paused?!networkRaceView.snapshot.pauseRoster.every(p=>!p.required||p.ready):
+    !sidelined&&(settling||room.players.length<2||!room.players.every(p=>p.ready));
+  $('net-invite').hidden=!room.host||!!sidelined;
   $('net-invite').disabled=room.busy||room.players.length>=maxNetworkPlayers;
 }
 function renderExpandedRules(room,course,visible) {
   $('net-expanded-rules').hidden=!visible;
-  $('rules-open').hidden=visible&&room.turn!==room.id;
   if(!visible) return;
   const s=room.settings,details=[
     ['Course',course.name],['Event',eventNames[s.event]],['Length',course.arena?course.arena+' seconds':s.laps+' laps'],
     ['Steering',s.drag==='free'?'Free drag for everyone':'Draw path or Drag to drive'],['Damage',damageNames[s.damage]],
-    ['Hazards',s.hazards?'On':'Off'],['Soundtrack',tunes[s.music]?.name||'Shuffle'],
+    ['Cars hit Cars',s.carsHit?'On':'Off'],['Hazards',s.hazards?'On':'Off'],['Soundtrack',tunes[s.music]?.name||'Shuffle'],
+    ['Bonus items',Object.keys(s.pickups||{}).length?Object.keys(s.pickups).length+' enabled':'Off'],
     ['Last car running',s.lastCar?'Wins the round':'Off']
   ];
   const mount=$('net-rule-details');
@@ -18263,7 +18895,7 @@ function flushNetworkInput() {
 }
 function networkPointer(kind,event) {
   const view=networkRaceView;
-  if(!view||view.done||view.menuPause||view.snapshot.paused?.length||run.finished||networkCountdownValue()>0||!$('rotation').hidden||!$('modal').hidden) return;
+  if(!view||view.done||view.inLobby||view.menuPause||view.snapshot.paused?.length||run.finished||networkCountdownValue()>0||!$('rotation').hidden||!$('modal').hidden) return;
   const pointer=event.pointerId, time=event.timeStamp??performance.now();
   if(kind==='down') {
     if(networkPointerId!=null||(run.config.drag==='free'&&dist(inputPoint(event),run.car)>60)) return;
@@ -18288,7 +18920,8 @@ function receiveNetworkSnapshot(room,snapshot) {
   const view=networkRaceView;
   if(!view||snapshot.id!==view.id) return;
   if(room.host) view.snapshot=snapshot;
-  else {
+  run.pickupView=snapshot.pickups;recordRemoteTrails(run,view,snapshot,room.id);
+  if(!room.host) {
     view.prev=view.snapshot;view.snapshot=snapshot;view.entered=performance.now();
     const state=snapshot.cars.find(c=>c.id===room.id);
     if(!state) return;
@@ -18301,16 +18934,28 @@ function receiveNetworkSnapshot(room,snapshot) {
     run.props=snapshot.props.map(([type,x,y,a,level,routeIndex])=>({type,x,y,a,level,routeIndex:routeIndex??undefined}));
     run.splits=state.splits;run.elapsed=state.finishTime??snapshot.elapsed;run.progress=state.progress;
     run.cargo=state.cargo;run.finished=!!state.result;run.networkResult=state.result;
-    run.car.score=[state.score,0,0];
+    run.raceClock=snapshot.elapsed;run.power=state.power||{};run.bonusPoints=state.bonus||0;run.pickupNotice=state.notice;
+    run.car.score=[state.score-(state.bonus||0),0,0];
   }
-  if(snapshot.paused?.length) {
+  const wasPaused=!!view.pausedShown;
+  view.pausedShown=!!snapshot.paused?.length;
+  if(view.pausedShown) {
     stopNetworkPointer();view.inputs.length=0;
+    if(!view.inLobby&&!snapshot.done&&(!wasPaused||modalType==='net-race')) {
+      if(modalType==='net-race') refreshNetworkPauseMenu();
+      else if($('modal').hidden) networkExitControls(false);
+    }
+  } else if(wasPaused) {
+    view.menuPause=false;view.localPauses?.delete('menu');
+    if(modalType==='net-race') closeModal();
+    if(run.inspect) {run.inspect=false;$('inspection').hidden=true;}
   }
   renderNetworkRaceHud();
+  if(view.inLobby&&(view.pausedShown||wasPaused)) renderNetworkLobby();
   if(snapshot.done&&!view.done) {
     view.done=true;stopNetworkPointer();
     if(!$('rotation').hidden) $('rotation').hidden=true;
-    showNetworkResults();
+    if(view.inLobby) renderNetworkLobby();else showNetworkResults();
   }
 }
 function updateNetworkRace(dt) {
@@ -18326,7 +18971,7 @@ function updateNetworkRace(dt) {
     const state=shownNetworkCar(room.id);
     if(state) {
       const moved=dist(run.car,state);
-      Object.assign(run.car,state,{score:[state.score,0,0]});run.totalDistance+=moved;
+      Object.assign(run.car,state,{score:[state.score-(state.bonus||0),0,0]});run.totalDistance+=moved;
       if(moved>.15) addTrail(run);
       if(run.route.length) shiftRoute(run);
     }
@@ -18337,7 +18982,7 @@ function shownNetworkCar(id) {
   const view=networkRaceView;
   if(networkRoom?.host) {
     const game=networkRoom.round?.drivers.get(id);
-    return game&&{...game.car,cargo:game.cargo,result:game.networkResult};
+    return game&&{...game.car,cargo:game.cargo,result:game.networkResult,cloak:effectActive(game,'cloak')};
   }
   const now=view?.snapshot.cars.find(car=>car.id===id), before=view?.prev?.cars.find(car=>car.id===id);
   if(!now||!before) return now;
@@ -18346,11 +18991,38 @@ function shownNetworkCar(id) {
   return {...now,x:mix(before.x,now.x,blend),y:mix(before.y,now.y,blend),a:heading(before.a,now.a),
     trailerAngles:now.trailerAngles?.map((a,i)=>heading(before.trailerAngles?.[i]??a,a))};
 }
+function recordRemoteTrails(game,view,snapshot,localId) {
+  if(!view.remoteTrails) view.remoteTrails=new Map();
+  for(const car of snapshot.cars) {
+    if(car.id===localId||car.result==='Disconnected') continue;
+    const player=view.players.find(p=>p.id===car.id);
+    if(!player) continue;
+    let track=view.remoteTrails.get(car.id);
+    if(!track) {
+      track={course:game.course,car,trail:[],totalDistance:0,config:{type:player.type},spec:vehicles[player.type]};
+      view.remoteTrails.set(car.id,track);
+    }
+    track.elapsed=snapshot.elapsed;
+    const moved=dist(car,track.car);
+    track.car=car;track.totalDistance+=moved;
+    if(moved>.5) addTrail(track);
+    const hit=car.impact;
+    if(hit&&hit.t!==track.lastImpact&&!view.inLobby) {
+      track.lastImpact=hit.t;
+      spark(game,hit.x,hit.y,'impact',hit.strength,Math.atan2(-hit.ny,-hit.nx),hit.burst||1);
+    }
+  }
+}
 function drawNetworkOpponents(ctx,game) {
   for(const player of game.networkPlayers) {
     if(player.id===game.networkId) continue;
+    const trail=networkRaceView.remoteTrails?.get(player.id);
+    if(trail) {
+      ctx.save();ctx.globalAlpha=.66;
+      paintTrail(ctx,trail,index=>routeLevelAt(game.course,index)>=0);ctx.restore();
+    }
     const state=shownNetworkCar(player.id);
-    if(!state||state.result==='Disconnected') continue;
+    if(!state||state.result==='Disconnected'||state.cloak) continue;
     ctx.save();
     if(routeLevelAt(game.course,state.index)!==routeLevelAt(game.course,game.car.index)&&dist(state,game.car)<100) ctx.globalAlpha=.33;
     drawVehicle(ctx,state.x,state.y,state.a,player.type,vehicles[player.type].palette[player.color],state.damage,
@@ -18405,11 +19077,27 @@ function renderNetworkRaceHud() {
     const text=result.result==='Finished'?result.name+' finished · P'+(placements.findIndex(c=>c.id===result.id)+1):
       result.result==='Vehicle totalled'?result.name+' totalled their vehicle.':
       result.result==='Survival win'?result.name+' won as the last car running.':'';
-    if(text) {
-      const notice=document.createElement('div');notice.textContent=text;$('net-announcements').append(notice);
-      setTimeout(()=>notice.remove(),4200);
-    }
+    if(text) showRaceAnnouncement(text);
   }
+}
+function showRaceAnnouncement(text) {
+  if(typeof text!=='string') return;
+  const notice=document.createElement('div');notice.textContent=text;$('net-announcements').append(notice);
+  notice.animate?.([{opacity:0},{opacity:1,offset:.12},{opacity:1,offset:.82},{opacity:0}],{duration:4200});
+  setTimeout(()=>notice.remove(),4200);
+}
+function enterPitLobby() {
+  const view=networkRaceView;
+  if(!view||!run?.finished) return;
+  stopNetworkPointer();view.menuPause=false;view.inLobby=true;
+  $('play').hidden=true;$('multiplayer').hidden=false;closeModal();renderNetworkLobby();
+}
+function watchRound() {
+  if(!run?.network||!networkRaceView?.inLobby) return;
+  networkRaceView.inLobby=false;mountLobbyPickers(null);
+  $('multiplayer').hidden=true;$('play').hidden=false;placeStage(run);renderNetworkRaceHud();
+  if(networkRaceView.done) showNetworkResults();
+  else if(networkRaceView.snapshot.paused?.length) networkExitControls(false);
 }
 function leaveNetworkRace() {
   stopNetworkPointer();
@@ -18428,13 +19116,13 @@ function showNetworkResults() {
       const row=document.createElement('li'),name=document.createElement('strong');
       name.textContent=result.name;
       const score=view.settings.event==='damage'?result.score.toLocaleString()+' pts':
-        result.result==='Finished'?clock(result.finishTime):'';
+        result.result==='Finished'?clock(result.finishTime)+(result.bonus?' · +'+result.bonus+' pts':''):result.bonus?'+'+result.bonus+' pts':'';
       const status=result.result==='Finished'?'':result.result||'Did not finish';
       row.append(name,document.createTextNode([score,status].filter(Boolean).join(' · ')));rows.append(row);
     }
     body.append(rows);
     if(!networkControls(room)) body.append(paragraph('The host can return everyone to the lobby.'));
-    setModalActions(button(networkControls(room)||room.host?'×  End multiplayer':'×  Leave multiplayer',openEndMultiplayer,'race-cancel'),
+    setModalActions(button('Return to lobby',enterPitLobby),button(networkControls(room)||room.host?'×  End multiplayer':'×  Leave multiplayer',openEndMultiplayer,'race-cancel'),
       ...(networkControls(room)?[button('Next round',()=>localNetworkAction({kind:'next-round'}),'primary')]:[]));
   });
 }
@@ -18456,32 +19144,57 @@ function setNetworkPause(reason,paused) {
   else view.localPauses.delete(reason);
   localNetworkAction({kind:'pause',reason,paused});
 }
-function continueNetworkRace() {
-  if(networkRaceView) networkRaceView.menuPause=false;
-  closeModal();
-  setNetworkPause('menu',false);
+function refreshNetworkPauseMenu() {
+  if(modalType!=='net-race'||!networkRaceView) return;
+  const room=networkRoom,view=networkRaceView,snapshot=view.snapshot,paused=!!snapshot.paused?.length;
+  const mount=$('pause-ready-list'),status=$('pause-ready-copy');
+  if(!mount) return;
+  status.textContent=paused?'Active drivers must ready up. The host then restarts the countdown.':'Race menu';
+  const roster=snapshot.pauseRoster||[];
+  mount.replaceChildren(...roster.map(entry=>{
+    const player=view.players.find(p=>p.id===entry.id),row=document.createElement('li'),name=document.createElement('strong'),state=document.createElement('span');
+    name.textContent=(player?.name||'Driver')+(entry.id===room.id?' (you)':'');
+    state.textContent=!entry.required?entry.status||'Spectating':entry.blocked?'Away':entry.ready?'Ready':'Waiting';row.dataset.ready=String(entry.ready);
+    row.append(name,state);return row;
+  }));
+  const me=roster.find(p=>p.id===room.id);
+  const ready=$('pause-ready-action'),resume=$('pause-resume-action');
+  ready.hidden=!paused||!me?.required;ready.disabled=!!me?.blocked;
+  ready.textContent=me?.ready?'Cancel ready':'Ready to resume';
+  resume.hidden=!paused||!networkControls(room);resume.disabled=!roster.every(p=>!p.required||p.ready);
 }
-function networkExitControls() {
+function networkExitControls(requestPause=true) {
   const room=networkRoom,view=networkRaceView;
   if(!room||!view) return;
   if(view.done) {showNetworkResults();return;}
   view.menuPause=true;
-  setNetworkPause('menu',true);
+  // Open the menu before sending the host's synchronous pause update.
   openModal('net-race','Race menu',body=>{
-    body.append(paragraph('The round is paused for everyone.'));
-    const keep=button('▶  Continue',continueNetworkRace,'race-continue');
+    const status=paragraph('');status.id='pause-ready-copy';body.append(status);
+    const roster=document.createElement('ul');roster.id='pause-ready-list';body.append(roster);
+    const ready=button('Ready to resume',()=>{
+      const me=view.snapshot.pauseRoster?.find(p=>p.id===room.id);
+      if(me) localNetworkAction({kind:'pause-ready',ready:!me.ready});
+    },'race-continue');ready.id='pause-ready-action';
+    const resume=button('▶ Continue race',()=>localNetworkAction({kind:'resume-round'}),'race-continue');
+    resume.id='pause-resume-action';
     const full=button('⛶',fullscreen,'race-fullscreen');
     full.setAttribute('aria-label','Fullscreen');full.title='Fullscreen';
-    const buttons=[keep,full];
-    if(!run.finished&&!run.course.openYard&&view.snapshot.cars.some(car=>car.result==='Finished')) {
-      buttons.push(button('Give up',()=>{
-        localNetworkAction({kind:'give-up'});continueNetworkRace();
-      },'race-stop'));
-    }
-    if(networkControls(room)) buttons.push(button('■  End round',()=>localNetworkAction({kind:'end-round'}),'race-stop'));
-    buttons.push(button(networkControls(room)||room.host?'×  End multiplayer':'×  Leave multiplayer',openEndMultiplayer,'race-cancel'));
+    const buttons=[ready,resume,full];
+    buttons.push(button('Inspect vehicle',inspectCar));
+    if(run.finished) buttons.push(button('Return to lobby',enterPitLobby));
+    else if(!run.course.openYard&&view.snapshot.cars.some(car=>car.result==='Finished')) buttons.push(button('Give up',()=>{
+      localNetworkAction({kind:'give-up'});view.menuPause=false;closeModal();
+      if(run.finished&&view.snapshot.paused?.length) networkExitControls(false);
+    },'race-stop'));
+    if(networkControls(room)) buttons.push(button('■ End round',()=>localNetworkAction({kind:'end-round'}),'race-stop'));
+    buttons.push(button(networkControls(room)||room.host?'× End multiplayer':'× Leave multiplayer',openEndMultiplayer,'race-cancel'));
     setModalActions(...buttons);
-  },continueNetworkRace);
+  },()=>{
+    view.menuPause=false;closeModal();
+  });
+  if(requestPause&&!run.finished) setNetworkPause('menu',true);
+  refreshNetworkPauseMenu();
 }
 function storeLanSeat(seat) {
   lanGuestSeat=seat;
@@ -18508,7 +19221,9 @@ function initializeMultiplayer() {
   on('net-leave','click',openEndMultiplayer);
   on('net-full','click',fullscreen);
   on('net-rejoin-lan','click',()=>{if(lanGuestSeat) openLanRoom(false,lanGuestSeat.invite,{...lanGuestSeat,attempt:0});});
-  on('net-free-lock','change',e=>localNetworkAction({kind:'steering-lock',locked:e.target.checked}));
+  on('net-free-lock','click',()=>changePickerRules({drag:networkRoom.settings.drag==='free'?'trace':'free'}));
+  on('net-car-contact','click',()=>changePickerRules({carsHit:!networkRoom.settings.carsHit}));
+  on('net-watch','click',watchRound);
   onSegment('net-personal-steering',steering=>{
     options.networkSteering=steering;saveOptions();submitNetworkDriver();
   },false);
@@ -18540,7 +19255,10 @@ function initializeMultiplayer() {
     const player=networkRoom.players.find(p=>p.id===networkRoom.id);
     localNetworkAction({kind:'ready',ready:!player.ready,revision:networkRoom.readyRevision});
   });
-  on('net-start','click',()=>{fullscreen();localNetworkAction({kind:'start'});});
+  on('net-start','click',()=>{
+    if(networkRaceView?.inLobby) localNetworkAction({kind:networkRaceView.done?'next-round':'resume-round'});
+    else {fullscreen();localNetworkAction({kind:'start'});}
+  });
   if(typeof location==='undefined') return;
   if(location.protocol==='http:'||location.protocol==='https:') {
     const query=new URLSearchParams(location.hash.slice(1));
@@ -18612,6 +19330,8 @@ function recordKey(c,kind) {
     c.drag==='free'?(c.release||'stop'):'',damageMode(c),c.tuneKey||tuningId(tuning),kind];
   if(kind==='damage'&&c.scoring) parts.push(c.scoring);
   if(c.hazards) parts.push('hazards');
+  const pickups=pickupRuleSignature(c.pickups);
+  if(pickups) parts.push('items:'+pickups);
   if(c.mode==='one-hit'&&(kind==='fast'||kind==='clean')) parts.push('one-hit');
   return parts.join('/');
 }
@@ -18677,6 +19397,7 @@ options.paint=normalizePaint(options.paint,options.type,options.colors?.[options
 delete options.colors;
 options.music=musicChoice(options.music);
 options.hazards=normalizeHazardSettings(options.hazards);
+options.pickups=normalizePickupRules(options.pickups);
 options.networkSteering=options.networkSteering==='drive'?'drive':'trace';
 let training=!!courses[options.course].training;
 let raceCourse=courseOptions(false).includes(options.course)?options.course:0;
@@ -18691,7 +19412,7 @@ function configNow() {
   const mode=training?'training':course.damageEvent?'damage':options.mode;
   return {course:options.course,courseId:course.id,layout:course.revision,type:options.type,
     color:vehicles[options.type].palette.indexOf(options.paint),laps:course.arena?0:options.laps,arena:course.arena||undefined,
-    mode,hazards:hazardsEnabled(course)||undefined,music:options.music,scoring:mode==='damage'?'objects-v1':undefined,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
+    mode,hazards:hazardsEnabled(course)||undefined,music:options.music,pickups:options.pickups,scoring:mode==='damage'?'objects-v1':undefined,drag:options.drag,release:'flick',damage:options.damage,tuneKey:tuningId(tuning)};
 }
 function clock(s) {
   const ms=Math.max(0,Math.round(s*1000));
@@ -18826,7 +19547,7 @@ function stopPointer(game) {
   game.pointer=null;game.tip=null;game.fingers=[];game.releasePending=null;
 }
 function pauseGame() {
-  if(run?.network) {setNetworkPause('menu',true);return;}
+  if(run?.network) {networkExitControls();return;}
   if(!run||run.finished||run.paused) return;
   run.paused=true;run.pausePulse=performance.now();run.frozenTip=run.tip;
   stopPointer(run);renderControls();
@@ -18855,25 +19576,67 @@ function renderControls() {
   $('replay-toggle').textContent=run.replayPlaying?'Ⅱ':run.elapsed>=run.replayHigh?'↺':'▶';
   $('replay-toggle').setAttribute('aria-label',run.replayPlaying?'Pause replay':run.elapsed>=run.replayHigh?'Replay again':'Play replay');
 }
+function inspectionSmoke(ctx,severity) {
+  if(severity<2) return;
+  for(let i=0;i<6;i++) {
+    const x=6-i*4,y=-16-i*3,r=5+i*1.6;
+    oval(ctx,x,y,r,r*.72,severity>=4?'#46524ab0':'#b2bdad9c');
+  }
+  if(severity>=3) {
+    polygon(ctx,[[7,-11],[.2,-16],[7,-26],[10,-20],[14,-25],[16,-15],[13,-11]],'#f28c55');
+    polygon(ctx,[[8,-12],[5,-16],[10,-21],[13,-16],[12,-12]],'#f5d171');
+  }
+}
+function drawInspectedPair(ctx,game) {
+  const spec=game.spec,damage=game.car.damage;
+  const length=rigVisualLength(spec),zoom=Math.min(4.1,259/length),offset=(length-spec.length)*zoom*.49;
+  const engine=spec.hover||spec.style==='electric'?0:Math.max(sectionStage(damage[1]),sectionStage(damage[12]));
+  const captions=['Undamaged','Current condition'];
+  const headings=[150,470], originY=222;
+  ctx.textAlign='center';ctx.font='700 23px system-ui';ctx.fillStyle='#f4eac4';
+  for(const [i,title] of captions.entries()) ctx.fillText(title,headings[i]+20,80);
+  ctx.beginPath();ctx.moveTo(330,91);ctx.lineTo(330,368);ctx.lineWidth=2;ctx.strokeStyle='#73907d';ctx.stroke();
+  for(const [i,x] of headings.entries()) {
+    const origin=x+20+offset;
+    drawVehicle(ctx,origin,originY,0,game.config.type,game.color,i?damage:zeroDamage(),
+      {scale:zoom,time:game.elapsed,cargo:visibleCargo(game),trailerAngles:game.car.trailerAngles?.map(a=>deltaAngle(game.car.a,a))});
+    if(!i) continue;
+    ctx.save();ctx.translate(origin,originY);ctx.scale(zoom,zoom);
+    const sections=[[.28,.27],[.33,0],[.28,-.27],[.16,-.28],[0,-.30],[-.16,-.29],
+      [.16,.28],[0,.31],[-.16,.29],[-.31,.26],[-.34,0],[-.31,-.26],[.02,0]];
+    for(const [section,value] of damage.entries()) {
+      if(value<=0) continue;
+      const [px,py]=sections[section],x=px*spec.length,y=py*spec.width,stage=sectionStage(value);
+      const dx=stage===1?1.6:stage+1;
+      ctx.beginPath();ctx.moveTo(x-dx,y-dx*.77);ctx.lineTo(x-dx*.23,y+dx*.11);
+      ctx.lineTo(x+dx*.27,y-.4);ctx.lineTo(x+dx,y+dx*.70);
+      if(stage>=2) {ctx.moveTo(x+dx*.25,y-.4);ctx.lineTo(x+dx*.77,y-dx*.43);}
+      ctx.lineWidth=stage>=3?1.15:.75;ctx.strokeStyle='#3a302c';ctx.stroke();
+      ctx.lineWidth=.38;ctx.strokeStyle='#ffe2a7';ctx.translate(0,-.48);ctx.stroke();ctx.translate(0,.48);
+    }
+    inspectionSmoke(ctx,engine);ctx.restore();
+  }
+  const total=damage.reduce((n,value)=>n+value,0),affected=damage.filter(value=>value>0).length;
+  ctx.font='650 17px system-ui';ctx.fillStyle='#d7e5bb';
+  ctx.fillText(total?Math.round(total)+' damage · '+affected+' affected section'+(affected===1?'':'s'):'No damage',330,381);
+  if(engine>=2) ctx.fillText(engine>=3?'Engine smoke and fire':'Engine smoke',330,408);
+  ctx.textAlign='start';
+}
+
 function inspectCar() {
-  if(!run || (!run.paused&&!run.damageFinish)) return;
+  if(!run||(!run.paused&&!run.damageFinish&&!(run.network&&(networkRaceView?.snapshot.paused?.length||run.finished)))) return;
+  if(modalType==='net-race') closeModal();
   run.inspect=!run.inspect;
   $('inspection').hidden=!run.inspect;
   if(run.inspect) {
-    const canvas=$('inspect-car'), box=$('track').getBoundingClientRect(), c=canvas.getContext('2d');
-    canvas.style.setProperty('--inspect-x',(box.left+box.width*run.car.x/W-innerWidth/2)+'px');
-    canvas.style.setProperty('--inspect-y',(box.top+box.height*run.car.y/H-innerHeight/2)+'px');
+    const canvas=$('inspect-car'),c=canvas.getContext('2d');
+    canvas.style.setProperty('--inspect-x','0px');canvas.style.setProperty('--inspect-y','0px');
     c.clearRect(0,0,660,460);
     rounded(c,10,10,640,440,28,'#25413f');
     rounded(c,22,22,616,416,21,'#36514a');
-    const type=run.config.type;
-    const spec=vehicles[type], angles=run.car.trailerAngles;
-    const poses=trailerPoses(spec,run.car), rear=poses.at(-1);
-    const length=rigVisualLength(spec), zoom=Math.min(7,395/length);
-    const originX=rear?(run.car.x-rear.x+Math.cos(rear.a)*rear.length*.5)*zoom*.48:0;
-    const originY=rear?(run.car.y-rear.y+Math.sin(rear.a)*rear.length*.5)*zoom*.48:0;
-    drawVehicle(c,330+originX,230+originY,run.car.a,type,run.color,run.car.damage,
-      {scale:zoom,time:run.elapsed,cargo:visibleCargo(run),trailerAngles:angles});
+    drawInspectedPair(c,run);
+  } else if(run.network) {
+    networkExitControls(false);
   }
   renderControls();
 }
@@ -18885,6 +19648,12 @@ function updateHud(force=false) {
   $('lap-hud').hidden=game.course.openYard;
   $('lap-hud').textContent='Lap '+lap+'/'+game.config.laps+(game.network?'':' · '+remaining+' left');
   $('time-hud').textContent=game.course.arena?clock(game.course.arena-game.elapsed)+' left':clock(game.elapsed);
+  const notice=game.pickupNotice,active=Object.keys(game.power||{}).filter(key=>effectActive(game,key));
+  const pickupHud=$('pickup-hud'),labels={boost:'Boost',slow:'Repair slowdown',armour:'Armour',invulnerable:'Invulnerable',phase:'Pass-through',cloak:'Cloaked'};
+  const bonuses=[notice&&notice.until>effectClock(game)?pickupTypes[notice.id]?.name:'',
+    ...active.map(key=>labels[key]+' '+Math.ceil(game.power[key]-effectClock(game))+'s'),
+    game.bonusPoints?'+'+game.bonusPoints+' pts':''].filter(Boolean);
+  pickupHud.hidden=!bonuses.length;pickupHud.textContent=[...new Set(bonuses)].join(' · ');
   const scoring=game.config.mode==='damage';
   $('score-hud').hidden=!scoring;
   if(scoring) $('score-hud').textContent=damagePoints(game).total.toLocaleString()+' pts';
@@ -19001,7 +19770,7 @@ function finish(game,reason) {
   const completed=reason==='Finished', clean=completed&&!game.hits;
   const saved=game.course.training||game.testDrive?null:saveRun(game,completed);
   const challenge=game.config.mode==='damage', breakdown=damagePoints(game);
-  const points=challenge?breakdown.total:completed?Math.round(10000/(1+game.elapsed/30))+(clean?1500:0):0;
+  const points=challenge?breakdown.total:(completed?Math.round(10000/(1+game.elapsed/30))+(clean?1500:0):0)+(game.bonusPoints||0);
   if(completed) audio.effect('finish');
   updateHud(true);
   game.showResult=()=>{
@@ -19014,6 +19783,7 @@ function finish(game,reason) {
       if(challenge) {
         stats.append(stat('Total score',points.toLocaleString()),stat('Object distance',breakdown.movement.toLocaleString()+' pts'),
           stat('Chain bonus',breakdown.chain.toLocaleString()+' pts'),stat('Car damage',breakdown.body.toLocaleString()+' pts'));
+        if(breakdown.bonus) stats.append(stat('Bonus items',breakdown.bonus.toLocaleString()+' pts'));
         if(game.chainCount) stats.append(stat('Best chain',(game.chainCount+1)+' objects'));
       } else {
         stats.append(stat('Wall contacts',game.hits),stat('Score',points));
@@ -19133,9 +19903,18 @@ for(const name of ['pointerup','pointercancel','lostpointercapture']) {
 }
 $('start').addEventListener('click',startSelectedRun);
 $('rules-open').addEventListener('click',openRaceRules);
-$('courses').addEventListener('keydown',event=>{
-  if(lobbyPicker?.canChoose===false||!['ArrowLeft','ArrowRight'].includes(event.key)) return;
-  event.preventDefault();changeCourse(event.key==='ArrowRight'?1:-1);
+$('pickup-rules-open').addEventListener('click',openPickupRules);
+attachCarousel('course-pager',changeCourse,()=>lobbyPicker?.canChoose!==false);
+$('courses').addEventListener('wheel',event=>{
+  if(!event.deltaX||lobbyPicker?.canChoose===false) return;
+  event.preventDefault();
+  const now=performance.now(),strip=$('courses');
+  if(now-(strip.lastWheel||0)<170) return;
+  strip.lastWheel=now;changeCourse(Math.sign(event.deltaX));
+},{passive:false});
+$('course-select').addEventListener('change',event=>{
+  const course=(lobbyPicker?.courses||courses).find(c=>c.id===event.target.value);
+  if(course) choosePickerCourse(course);
 });
 attachCarousel('vehicle-carousel',changeVehicle);
 $('records').addEventListener('click',()=>showRecords(options.course));
@@ -19215,9 +19994,9 @@ function animate(now) {
       }
     }
     if(!run) {requestAnimationFrame(animate);return;}
-    if(!$('stage').hidden) drawScene(run);
+    if(!$('play').hidden&&!$('stage').hidden) drawScene(run);
     updateHud();
-    const playing=(!run.network||networkCountdownValue()===0&&!networkRaceView?.snapshot.paused?.length)&&run.started&&!run.paused&&!run.finished&&$('rotation').hidden&&(!run.replay||run.replayPlaying);
+    const playing=!$('play').hidden&&(!run.network||networkCountdownValue()===0&&!networkRaceView?.snapshot.paused?.length)&&run.started&&!run.paused&&!run.finished&&$('rotation').hidden&&(!run.replay||run.replayPlaying);
     const engine=updateDriveAudio(run,duration,run.totalDistance-priorDistance);
     audio.tick(playing,timedIntensity(run),engine.speed,run.config.type,engine.engaged);
   } else audio.tick(false,false,0,0,false);
