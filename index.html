@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.13</title>
+<title>Track’n’Trace’n v0.14</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -196,6 +196,12 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 @media(min-width:720px){#net-pair[data-action=answer] #net-pair-steps{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
 #net-code-entry{min-width:0}
 #net-code-out{overflow-wrap:anywhere}
+#net-saved-list,#net-relay-roster{padding:0;display:grid;gap:8px;list-style:none;margin:0}
+#net-saved-list:empty,#net-relay-roster:empty{display:none}
+#net-saved-list li,#net-relay-roster li{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:9px;background:#19322d;border-radius:8px}
+#net-saved-list li>div,#net-relay-roster li>strong{margin-right:auto}
+#net-saved-list small{display:block;color:var(--muted);margin-top:3px}
+#net-relay-options p{margin:7px 0}
 #net-video{display:block;width:min(100%,480px);max-height:45vh;object-fit:cover;margin:8px auto}
 .net-panel details{margin-top:8px;font-size:13px}.net-panel summary{cursor:pointer;padding:5px 0}
 .net-file{display:inline-flex;gap:5px;align-items:center;min-height:40px;padding:5px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
@@ -299,7 +305,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.13</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.14</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -425,27 +431,36 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  <p id="net-status" role="status" aria-live="polite"></p>
  <p id="net-link-state" role="status" hidden>Wi-Fi interrupted. Waiting for the connection to recover…</p>
  <section id="net-entry" class="net-panel">
-  <h2>Play on the same Wi-Fi</h2>
-  <div class="net-buttons"><button id="net-host-direct" class="primary">Host multiplayer</button><button id="net-join-direct">Join multiplayer</button></div>
-  <p>Pair each guest with the host once, then keep the lobby open for more races. Up to four players.</p>
+  <h2>Saved lobbies</h2>
+  <p id="net-saved-empty">Create a lobby or join one on the same Wi-Fi. A saved lobby can race with any two to four players.</p>
+  <ul id="net-saved-list" aria-label="Saved lobbies"></ul>
+  <div class="net-buttons"><button id="net-create-saved" class="primary">Create lobby</button><button id="net-join-saved">Join lobby</button></div>
+  <details><summary>Quick QR play</summary><div class="net-buttons"><button id="net-host-direct">Host multiplayer</button><button id="net-join-direct">Join multiplayer</button></div></details>
+  <details id="net-relay-options"><summary>Lobby relay tab</summary><div class="net-buttons"><button id="net-relay-open">Open relay tab</button><button id="net-relay-host">Host a race via relay</button><button id="net-relay-join">Join a race via relay</button></div></details>
  </section>
  <section id="net-pair" class="net-panel" hidden>
   <div class="net-lobby-head"><h2 id="net-pair-title"></h2><button id="net-hide-pair" hidden>Hide invite</button></div><p id="net-pair-help"></p>
   <div id="net-pair-steps">
    <div id="net-qr-wrap" hidden>
     <canvas id="net-qr" role="img" aria-label="Multiplayer pairing QR"></canvas>
-    <div class="net-buttons" id="net-qr-actions"><button id="net-share-code" hidden>Share code</button><button id="net-refresh-invite" hidden>New invite</button></div>
+    <div class="net-buttons" id="net-qr-actions"><button id="net-refresh-invite" hidden>New invite</button></div>
     <details id="net-code-copy"><summary>Copy pairing code</summary><textarea id="net-code-out" readonly rows="3" aria-label="Pairing code"></textarea><button id="net-copy">Copy</button></details>
    </div>
    <div id="net-code-entry" hidden>
-    <div class="net-buttons"><button id="net-camera" class="primary">Scan QR</button><label class="net-file">Read QR photo<input type="file" id="net-image" accept="image/*"></label></div>
+    <div class="net-buttons" id="net-scan-actions"><button id="net-camera" class="primary">Scan QR</button><label class="net-file">Read QR photo<input type="file" id="net-image" accept="image/*"></label></div>
+    <button id="net-find-relay" hidden>Find relay in another tab</button>
     <video id="net-video" playsinline muted hidden></video><canvas id="net-scan-canvas" hidden></canvas>
     <details><summary>Paste pairing code</summary><textarea id="net-code" rows="3" placeholder="TNT:…" aria-label="Paste pairing code"></textarea><button id="net-scan-code">Use code</button></details>
    </div>
   </div>
  </section>
+ <section id="net-relay-panel" class="net-panel" hidden>
+  <div class="net-lobby-head"><h2>Lobby relay</h2><button id="net-relay-invite" class="primary">Invite device</button></div>
+  <p>Keep this tab open. One connected player hosts the race. Up to four players can use the relay.</p>
+  <ul id="net-relay-roster" aria-label="Relay players"></ul>
+ </section>
  <section id="net-lobby" class="net-panel" hidden>
-  <div class="net-lobby-head"><h2>Lobby</h2><button id="net-invite" hidden>Show invite QR</button></div>
+  <div class="net-lobby-head"><h2 id="net-lobby-title">Lobby</h2><button id="net-invite" hidden>Show invite QR</button></div>
   <ul id="net-roster" aria-label="Players"></ul>
   <label class="net-driver">Driver name<input id="net-name" maxlength="22" autocomplete="nickname"></label>
   <p id="net-turn"></p>
@@ -494,6 +509,183 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 </main>
 <div id="net-announcements" aria-live="polite"></div>
 <div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div><div id="modal-actions" hidden></div></section></div>
+<script id="tnt-sound-pairing">
+/* Optional local sound signaling. Remove this script to keep QR and paste only. */
+(() => {
+  'use strict';
+  const symbolSeconds=.024,probeSeconds=.008,syncHz=625,firstHz=1000,gapHz=125;
+  const maxBytes=1024,listenSeconds=62;
+  let active=null,playButton,listenButton;
+
+  function checksum(bytes) {
+    let crc=0xffff;
+    for(const byte of bytes) {
+      crc^=byte<<8;
+      for(let bit=0;bit<8;bit++) crc=((crc&0x8000)?(crc<<1)^0x1021:crc<<1)&0xffff;
+    }
+    return crc;
+  }
+  function packetSamples(bytes,rate) {
+    if(!bytes.length||bytes.length>maxBytes) throw Error('This code is too long for sound. Use the QR or paste the code.');
+    const packet=new Uint8Array(bytes.length+6);
+    packet.set([0x54,0x4e,bytes.length>>8,bytes.length&255]);
+    packet.set(bytes,4);
+    const crc=checksum(packet.subarray(0,-2));
+    packet.set([crc>>8,crc&255],packet.length-2);
+    const sync=Math.round(rate*.22),gap=Math.round(rate*.15);
+    const boundary=slot=>gap+sync+Math.round(rate*symbolSeconds*slot);
+    const samples=new Float32Array(boundary(packet.length*2)+gap);
+    const ramp=Math.max(1,Math.round(rate*.002));
+    const tone=(start,length,hz)=>{
+      const phase=2*Math.PI*hz/rate;
+      for(let i=0;i<length;i++) samples[start+i]=.43*Math.min(1,i/ramp,(length-1-i)/ramp)*Math.sin(i*phase);
+    };
+    tone(gap,sync,syncHz);
+    for(let i=0;i<packet.length;i++) {
+      const left=boundary(2*i),middle=boundary(2*i+1),right=boundary(2*i+2);
+      tone(left,middle-left,firstHz+(packet[i]>>4)*gapHz);
+      tone(middle,right-middle,firstHz+(packet[i]&15)*gapHz);
+    }
+    return samples;
+  }
+  function packetListener(rate,done) {
+    const windowSize=Math.round(rate*probeSeconds),step=Math.round(rate*.004);
+    const cell=rate*symbolSeconds,samples=new Float32Array(Math.ceil(rate*listenSeconds));
+    const coefficients=[syncHz,...Array.from({length:16},(_,i)=>firstHz+i*gapHz)]
+      .map(hz=>2*Math.cos(2*Math.PI*hz/rate));
+    let used=0,cursor=0,sync=0,slot=-1,origin=0,high=0,expected=0;
+    const packet=new Uint8Array(maxBytes+6);
+    const energy=at=>{
+      let sum=0;
+      for(let i=at;i<at+windowSize;i++) sum+=samples[i]**2;
+      return sum;
+    };
+    const power=(at,c)=>{
+      let prev=0,before=0;
+      for(let i=at;i<at+windowSize;i++) {
+        const next=samples[i]+c*prev-before;
+        before=prev;prev=next;
+      }
+      return Math.max(0,prev*prev+before*before-c*prev*before);
+    };
+    const reset=at=>{cursor=at;sync=0;slot=-1;expected=0;};
+    return chunk=>{
+      const length=Math.min(chunk.length,samples.length-used);
+      samples.set(chunk.subarray(0,length),used);used+=length;
+      while(true) {
+        const at=slot<0?cursor:Math.round(origin+slot*cell+(cell-windowSize)/2);
+        if(at+windowSize>used) return used>=samples.length;
+        const total=energy(at)*windowSize;
+        if(slot<0) {
+          if(total>.015&&power(at,coefficients[0])>total*.28) sync++;
+          else {
+            if(sync>=Math.floor(.1*rate/step)) {origin=at+Math.round(windowSize/2);slot=0;}
+            sync=0;
+          }
+          cursor+=step;
+          continue;
+        }
+        let best=0,second=0,value=0;
+        for(let i=0;i<16;i++) {
+          const strength=power(at,coefficients[i+1]);
+          if(strength>best) {second=best;best=strength;value=i;}
+          else if(strength>second) second=strength;
+        }
+        if(total<=.015||best<total*.14||best<second*1.5) {reset(at+step);continue;}
+        if(slot%2===0) high=value<<4;
+        else {
+          const index=slot>>1;
+          packet[index]=high|value;
+          if(index===0&&packet[0]!==0x54||index===1&&packet[1]!==0x4e) {reset(at+step);continue;}
+          if(index===3) {
+            const size=packet[2]*256+packet[3];
+            if(!size||size>maxBytes) {reset(at+step);continue;}
+            expected=size+6;
+          }
+          if(expected&&index===expected-1) {
+            const crc=packet[expected-2]*256+packet[expected-1];
+            if(crc===checksum(packet.subarray(0,expected-2))) {
+              done(packet.slice(4,expected-2));return true;
+            }
+            reset(at+step);continue;
+          }
+        }
+        slot++;
+      }
+    };
+  }
+
+  function stop() {
+    const job=active;active=null;
+    if(playButton) playButton.textContent='Play code sound';
+    if(listenButton) listenButton.textContent='Listen for code';
+    if(!job) return;
+    clearTimeout(job.timer);
+    for(const track of job.stream?.getTracks()||[]) track.stop();
+    if(job.processor) {job.processor.onaudioprocess=null;job.processor.disconnect();}
+    job.source?.disconnect();
+    if(job.context?.state!=='closed') job.context?.close().catch(()=>{});
+  }
+  function mount(ui) {
+    if(!playButton) {
+      playButton=document.createElement('button');playButton.textContent='Play code sound';
+      listenButton=document.createElement('button');listenButton.textContent='Listen for code';
+      playButton.type=listenButton.type='button';
+      ui.playArea.append(playButton);ui.listenArea.append(listenButton);
+    }
+    const Audio=window.AudioContext||window.webkitAudioContext;
+    playButton.hidden=!Audio||!ui.hasCode;
+    listenButton.hidden=!Audio||!navigator.mediaDevices?.getUserMedia||!ui.canRead;
+    if(!playButton.hidden) ui.playArea.hidden=false;
+    playButton.onclick=async()=>{
+      if(active?.kind==='play') {stop();ui.status('Sound stopped. The QR is still available.');return;}
+      ui.stopScan();
+      const job={kind:'play'};active=job;
+      try {
+        const ctx=job.context=new Audio();
+        const samples=packetSamples(ui.getBytes(),ctx.sampleRate);
+        await ctx.resume();
+        if(active!==job) return;
+        const sound=ctx.createBuffer(1,samples.length,ctx.sampleRate);
+        sound.copyToChannel(samples,0);
+        const source=job.source=ctx.createBufferSource();source.buffer=sound;
+        source.connect(ctx.destination);
+        source.onended=()=>{if(active===job) {stop();ui.status('Sound sent. Use the QR if the other device did not receive it.');}};
+        playButton.textContent='Stop sound';
+        ui.status('Playing pairing code · about '+Math.ceil(sound.duration)+' seconds.');
+        source.start();
+      } catch(error) {if(active===job) {stop();ui.status(error.message||'Sound playback failed. Use the QR.');}}
+    };
+    listenButton.onclick=async()=>{
+      if(active?.kind==='listen') {stop();ui.status('Listening stopped. You can scan the QR.');return;}
+      ui.stopScan();
+      const job={kind:'listen'};active=job;
+      try {
+        const ctx=job.context=new Audio();
+        const resumed=ctx.resume();resumed.catch(()=>{});
+        listenButton.textContent='Stop listening';
+        const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
+        if(active!==job) {for(const track of stream.getTracks()) track.stop();return;}
+        job.stream=stream;
+        await resumed;
+        if(active!==job) return;
+        const source=job.source=ctx.createMediaStreamSource(stream),processor=job.processor=ctx.createScriptProcessor(4096,1,1);
+        const receive=packetListener(ctx.sampleRate,bytes=>{
+          if(active===job) {stop();ui.receiveBytes(bytes);}
+        });
+        processor.onaudioprocess=event=>receive(event.inputBuffer.getChannelData(0));
+        const silent=ctx.createGain();silent.gain.value=0;
+        source.connect(processor);processor.connect(silent);silent.connect(ctx.destination);
+        job.timer=setTimeout(()=>{
+          if(active===job) {stop();ui.status('No valid sound code received. Try again nearby or use the QR.');}
+        },listenSeconds*1000);
+        ui.status('Listening locally. Play the code on the other device.');
+      } catch {if(active===job) {stop();ui.status('Microphone unavailable. Scan the QR or paste the code.');}}
+    };
+  }
+  window.tntSoundPairing={mount,stop};
+})();
+</script>
 <script>
 'use strict';
 /*
@@ -17748,7 +17940,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: offline pairing codes and WebRTC data channels.
-const multiplayerVersion='0.13';
+const multiplayerVersion='0.14';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -17859,8 +18051,8 @@ async function localPairing(peer,id,role) {
   return encodePairing({id,role,sdp});
 }
 class DirectRoomConnection {
-  constructor(events) {
-    this.events=events;this.peers=new Map();this.closed=false;
+  constructor(events,limit=maxNetworkPlayers-1) {
+    this.events=events;this.limit=limit;this.peers=new Map();this.closed=false;
   }
   createPeer(id) {
     if(typeof RTCPeerConnection!=='function') throw Error('This browser does not support direct pairing.');
@@ -17893,13 +18085,17 @@ class DirectRoomConnection {
   async invite(replace=false) {
     if(this.pending?.code&&!replace) return this.pending.code;
     if(this.pending) this.remove(this.pending.id);
-    if(this.peers.size>=maxNetworkPlayers-1) throw Error('This room is full.');
+    return (await this.offer(true)).code;
+  }
+  async offer(manual) {
+    if(this.closed) throw Error('This room has closed.');
+    if(this.peers.size>=this.limit) throw Error('This room is full.');
     const id=networkToken(),peer=this.createPeer(id);
-    this.pending=peer;
+    if(manual) this.pending=peer;
     this.bind(peer,peer.pc.createDataChannel('track-n-trace'));
     try {
       peer.code=await localPairing(peer.pc,id,'offer');
-      return peer.code;
+      return {id,code:peer.code};
     } catch(error) {this.remove(id);throw error;}
   }
   async answer(code) {
@@ -17915,8 +18111,8 @@ class DirectRoomConnection {
       return reply;
     } catch(error) {this.remove(data.id);throw error;}
   }
-  async accept(code) {
-    const data=await readPairing(code,'answer'),peer=this.pending;
+  async accept(code,id=this.pending?.id) {
+    const data=await readPairing(code,'answer'),peer=this.peers.get(id);
     if(!peer||data.id!==peer.id) throw Error('That reply is for a different invite. Scan the latest host QR.');
     await peer.pc.setRemoteDescription({sdp:data.sdp,type:'answer'});
     if(this.pending===peer) this.pending=null;
@@ -18193,6 +18389,352 @@ function networkResults(snapshot,settings,players) {
   return ranked.map((car,i)=>({...car,name:players.find(p=>p.id===car.id)?.name||'Driver',rank:i+1}));
 }
 
+// multiplayer/saved-lobbies.js
+const savedLobbiesKey='tnt-saved-lobbies-v1';
+const lobbyToken=value=>typeof value==='string'&&/^[a-f0-9]{24}$/.test(value);
+const lobbyName=value=>typeof value==='string'?value.trim().slice(0,40):'';
+function savedLobbies() {
+  try {
+    const list=JSON.parse(localStorage.getItem(savedLobbiesKey)||'[]');
+    return list.filter(lobby=>lobbyToken(lobby?.id)&&lobbyName(lobby.name)&&
+      (lobby.kind==='host'&&Array.isArray(lobby.members)||lobby.kind==='guest'&&lobbyToken(lobby.ticket)));
+  } catch {return [];}
+}
+function writeSavedLobby(lobby,id=lobby.id) {
+  try {
+    const list=savedLobbies().filter(item=>item.id!==id);
+    if(lobby) list.push(lobby);
+    localStorage.setItem(savedLobbiesKey,JSON.stringify(list));
+    return true;
+  } catch {
+    netStatus('This browser could not save the lobby. You can still play this session.');
+    return false;
+  }
+}
+function renderSavedLobbies() {
+  const items=savedLobbies(),list=$('net-saved-list');
+  $('net-saved-empty').hidden=!!items.length;
+  list.replaceChildren(...items.map(lobby=>{
+    const row=document.createElement('li'),details=document.createElement('div'),name=document.createElement('strong');
+    name.textContent=lobby.name;
+    const role=document.createElement('small');
+    role.textContent=lobby.kind==='host'?'Created by you · '+lobby.members.length+' remembered':'Joined';
+    details.append(name,role);
+    const withCurrent=action=>()=>{
+      const current=savedLobbies().find(item=>item.id===lobby.id);
+      if(current) action(current);else {renderSavedLobbies();netStatus('This lobby was removed.');}
+    };
+    const relay=button('Use relay',withCurrent(current=>beginRelayRace(current.kind==='host',current)));
+    const repair=withCurrent(current=>current.kind==='host'?openSavedHost(current,true):beginNetworkJoin(current,true));
+    row.append(details,button('Open',withCurrent(current=>current.kind==='host'?openSavedHost(current):beginNetworkJoin(current)),'primary'),
+      relay,button('Repair connection',repair),button('Remove',()=>{
+        openModal('net-forget','Remove saved lobby?',body=>{
+          body.append(paragraph('Remove “'+lobby.name+'” from this browser?'));
+          setModalActions(button('Cancel',closeModal),button('Remove lobby',()=>{
+            if(writeSavedLobby(null,lobby.id)) netStatus('Saved lobby removed.');
+            closeModal();renderSavedLobbies();
+          },'race-cancel'));
+        },closeModal);
+      }));
+    return row;
+  }));
+}
+function createSavedLobby() {
+  openModal('net-create-lobby','Create lobby',body=>{
+    const label=document.createElement('label'),input=document.createElement('input');
+    label.className='net-driver';input.maxLength=40;input.placeholder='Family Racing';label.append('Lobby name',input);
+    body.append(label);
+    const create=()=>{
+      const lobby={id:networkToken(),name:lobbyName(input.value)||'Family Racing',kind:'host',members:[],settings:networkSeedSettings()};
+      const saved=writeSavedLobby(lobby);
+      openSavedHost(lobby);
+      if(!saved) netStatus('This browser could not save the lobby. You can still play this session.');
+    };
+    input.addEventListener('keydown',event=>{if(event.key==='Enter') create();});
+    setModalActions(button('Cancel',closeModal),button('Create lobby',create,'primary'));
+  },closeModal);
+}
+function openSavedHost(lobby,repair=false) {
+  const room=makeNetworkRoom(true,{lobby,repair});
+  netStatus(repair?'Show the repair invite to the returning player.':'Lobby open. Invite players on the same Wi-Fi.');
+  if(repair) makeNetworkInvite();
+  return room;
+}
+function beginNetworkJoin(lobby=null,repair=false,save=true,relayRequest=null) {
+  const room=makeNetworkRoom(false,{lobby,save,repair,relayRequest});
+  const title=relayRequest?'Join a relay tab':lobby?'Join '+lobby.name:save?'Join a saved lobby':'Quick QR join';
+  const steps=relayRequest?'Scan the relay tab’s invite. You can also find a relay in another tab on this device.':
+    window.tntSoundPairing?'Scan the host’s invite or listen for its sound. Then show or play your reply to the host.':
+    'Scan the host’s invite or paste its code, then show your reply to the host.';
+  showNetworkPair(title,steps,'','offer');
+  if(!save&&!relayRequest) scanNetworkCamera();
+  return room;
+}
+function rememberLobbyMember(room,id,packet,driver) {
+  const lobby=room.lobby;
+  if(!lobby||packet.save!==true) return null;
+  if(packet.lobbyId&&packet.lobbyId!==lobby.id) throw Error('That invite belongs to another saved lobby.');
+  let entry=lobby.members.find(member=>member.ticket===packet.ticket);
+  if(packet.lobbyId&&!entry&&!(packet.repair===true&&room.repair))
+    throw Error('This browser’s saved pairing has changed. Use Repair connection on both devices.');
+  if(entry&&[...room.memberTickets.values()].includes(entry.ticket)) throw Error('That device has already joined.');
+  if(!entry) {
+    entry={ticket:networkToken(),name:driver.name||'Driver'};
+    lobby.members.push(entry);
+  } else if(driver.name) entry.name=driver.name;
+  room.memberTickets.set(id,entry.ticket);
+  writeSavedLobby(lobby);
+  return {id:lobby.id,name:lobby.name,ticket:entry.ticket};
+}
+function rememberJoinedLobby(room,info) {
+  if(!room.save) return;
+  if(!info&&room.lobby) throw Error('This is a Quick QR room. Use the invite from your saved lobby.');
+  if(!info) return;
+  if(!lobbyToken(info.id)||!lobbyToken(info.ticket)||!lobbyName(info.name)||
+    room.lobby&&room.lobby.id!==info.id) throw Error('The host sent a different saved lobby.');
+  if(savedLobbies().some(item=>item.id===info.id&&item.kind==='host')) return;
+  room.lobby={id:info.id,name:lobbyName(info.name),ticket:info.ticket,kind:'guest'};
+  writeSavedLobby(room.lobby);
+}
+
+// multiplayer/local-lobby-relay.js
+// The relay forwards WebRTC setup messages. The player host owns the race connection.
+const localRelayChannel='track-n-trace-relay-'+multiplayerVersion;
+let localLobbyRelay=null;
+class LocalLobbyRelay {
+  constructor() {
+    this.id=networkToken();this.members=new Map();this.host=null;this.tabPorts=new Set();this.closed=false;
+    this.link=new DirectRoomConnection({
+      open:()=>{},message:(id,packet)=>this.receive(id,packet),leave:id=>this.remove(id),
+      recovering:()=>{}
+    },maxNetworkPlayers);
+    if(typeof BroadcastChannel==='function') {
+      this.channel=new BroadcastChannel(localRelayChannel);
+      this.channel.onmessage=({data})=>{
+        if(!data||!lobbyToken(data.from)) return;
+        if(data.kind==='find') this.channel.postMessage({kind:'found',from:this.id,to:data.from});
+        else if(data.kind==='packet'&&data.to===this.id&&data.packet) {
+          if(data.packet.kind==='relay-hello'&&!this.members.has(data.from)&&!this.link.peers.has(data.from)) this.tabPorts.add(data.from);
+          if(this.tabPorts.has(data.from)) this.receive(data.from,data.packet);
+        }
+      };
+    }
+  }
+  send(id,packet) {
+    if(this.tabPorts.has(id)) this.channel.postMessage({kind:'packet',from:this.id,to:id,packet});
+    else this.link.send(id,packet);
+  }
+  receive(id,packet) {
+    if(this.closed||!packet) return;
+    if(packet.kind==='relay-hello') {
+      if(this.members.has(id)) return;
+      const error=packet.version!==multiplayerVersion?'Use the same Track N Trace version on both tabs.':
+        this.members.size>=maxNetworkPlayers?'The relay has four players.':
+        packet.host===true&&this.host?'A player is already hosting. Choose Join a race via relay.':
+        packet.host!==true&&!this.host?'Ask a player to host a race through this relay first.':'';
+      if(error) {this.send(id,{kind:'relay-ended',text:error});setTimeout(()=>this.remove(id),260);return;}
+      const name=networkDriver({name:packet.name}).name||'Player '+(this.members.size+1);
+      this.members.set(id,name);
+      if(packet.host===true) this.host=id;
+      this.send(id,{kind:'relay-welcome',host:id===this.host});
+      if(!this.link.pending) {$('net-pair').hidden=true;stopNetworkScan();}
+      renderLocalRelay();
+      return;
+    }
+    if(!this.members.has(id)) return;
+    if(packet.kind==='relay-left') {this.remove(id);return;}
+    if(packet.kind==='relay-name') {
+      const name=networkDriver({name:packet.name}).name;
+      if(name) {this.members.set(id,name);renderLocalRelay();}
+      return;
+    }
+    if(packet.kind==='relay-unavailable'&&id===this.host&&packet.to!==id&&this.members.has(packet.to)) {
+      this.send(packet.to,{kind:'relay-ended',text:'The player host is in a race. Join again when they return to the lobby.'});
+      return;
+    }
+    if(packet.kind==='relay-ready'&&id!==this.host&&this.host) {
+      this.send(this.host,{kind:'relay-peer',id});
+      return;
+    }
+    if(packet.kind!=='relay-signal'||typeof packet.code!=='string'||packet.code.length>20000||!this.members.has(packet.to)) return;
+    const permitted=id===this.host&&packet.to!==this.host&&packet.signal==='offer'||
+      id!==this.host&&packet.to===this.host&&packet.signal==='answer';
+    if(permitted) this.send(packet.to,{kind:'relay-signal',from:id,signal:packet.signal,code:packet.code});
+  }
+  remove(id,kick=false) {
+    if(this.closed) return;
+    const wasMember=this.members.delete(id);
+    if(kick&&wasMember) this.send(id,{kind:'relay-ended',text:'The relay operator removed this device.'});
+    if(id===this.host) {
+      this.host=null;
+      for(const other of this.members.keys()) {
+        this.send(other,{kind:'relay-ended',text:'The player host left the relay.'});
+        setTimeout(()=>this.remove(other),260);
+      }
+    } else if(wasMember&&this.host) this.send(this.host,{kind:'relay-peer-left',id});
+    this.tabPorts.delete(id);
+    if(kick) setTimeout(()=>this.link.remove(id),260);else this.link.remove(id);
+    if(localLobbyRelay===this) renderLocalRelay();
+  }
+  close() {
+    if(this.closed) return;
+    for(const id of this.members.keys()) this.send(id,{kind:'relay-ended',text:'The lobby relay closed.',allowRace:true});
+    this.closed=true;
+    this.channel?.close();this.channel=null;
+    setTimeout(()=>this.link.close(),260);
+  }
+}
+class RelayRaceClient {
+  constructor(room) {
+    this.room=room;this.routes=new Map();this.closed=false;
+    this.link=new DirectRoomConnection({
+      open:id=>{
+        if(this.remote&&this.remote!==id) {this.link.remove(id);return;}
+        this.tab?.close();this.tab=null;clearTimeout(this.findTimer);
+        this.remote=id;this.hello();
+      },
+      message:(_,packet)=>this.receive(packet),
+      leave:(_,reason)=>this.ended(reason,true),recovering:()=>{}
+    });
+  }
+  hello() {
+    this.send({kind:'relay-hello',version:multiplayerVersion,host:this.room.host,name:this.room.draft.name});
+    this.resultTimer=setTimeout(()=>this.ended('The relay did not answer. Open the relay and try its invite again.'),8000);
+  }
+  raceConnected() {clearTimeout(this.resultTimer);this.resultTimer=null;}
+  send(packet) {
+    if(this.closed) return;
+    if(this.tab&&this.remote) this.tab.postMessage({kind:'packet',from:this.id,to:this.remote,packet});
+    else if(this.remote) this.link.send(this.remote,packet);
+  }
+  findTab() {
+    if(this.closed||this.remote||typeof BroadcastChannel!=='function') return;
+    this.tab?.close();clearTimeout(this.findTimer);
+    this.id=networkToken();this.tab=new BroadcastChannel(localRelayChannel);
+    this.tab.onmessage=({data})=>{
+      if(this.closed||!data||data.to!==this.id||!lobbyToken(data.from)) return;
+      if(data.kind==='found'&&!this.remote) {
+        clearTimeout(this.findTimer);this.remote=data.from;this.hello();
+      } else if(data.kind==='packet'&&data.from===this.remote&&data.packet) this.receive(data.packet);
+    };
+    this.findTimer=setTimeout(()=>{
+      if(this.remote) return;
+      this.tab?.close();this.tab=null;
+      netStatus('No relay found in another tab. Use the relay invite QR or sound.');
+    },1700);
+    this.tab.postMessage({kind:'find',from:this.id});
+    netStatus('Looking for a relay in another tab…');
+  }
+  async receive(packet) {
+    const room=this.room;
+    if(this.closed||networkRoom!==room) return;
+    if(packet.kind==='relay-ended') {this.ended(packet.text,packet.allowRace===true);return;}
+    if(packet.kind==='relay-welcome'&&!this.connected&&packet.host===room.host) {
+      this.raceConnected();
+      this.connected=true;$('net-pair').hidden=true;stopNetworkScan();renderNetworkLobby();
+      netStatus(room.host?'Relay connected. Guests can now join through it.':'Relay connected. Connecting to the player host…');
+      if(!room.host) {
+        this.send({kind:'relay-ready'});
+        this.resultTimer=setTimeout(()=>this.ended('The race link did not open. Try joining through the relay again.'),25000);
+      }
+      return;
+    }
+    if(!this.connected) return;
+    try {
+      if(room.host&&packet.kind==='relay-peer'&&lobbyToken(packet.id)&&!this.routes.has(packet.id)) {
+        if(room.phase!=='lobby') {this.send({kind:'relay-unavailable',to:packet.id});return;}
+        const route={id:null};this.routes.set(packet.id,route);
+        try {
+          const offer=await room.link.offer(false);
+          if(this.closed||this.routes.get(packet.id)!==route) {room.link.remove(offer.id);return;}
+          route.id=offer.id;
+          route.timer=setTimeout(()=>{if(!room.players.some(p=>p.id===offer.id)) this.removeRoute(packet.id);},22000);
+          this.send({kind:'relay-signal',to:packet.id,signal:'offer',code:offer.code});
+        } catch(error) {this.removeRoute(packet.id);throw error;}
+      } else if(room.host&&packet.kind==='relay-peer-left') this.removeRoute(packet.id);
+      else if(packet.kind==='relay-signal'&&typeof packet.code==='string') {
+        if(room.host&&packet.signal==='answer') {
+          const route=this.routes.get(packet.from);
+          if(route?.id) await room.link.accept(packet.code,route.id);
+        } else if(!room.host&&packet.signal==='offer'&&!room.id) {
+          const reply=await room.link.answer(packet.code);
+          if(!this.closed&&networkRoom===room) this.send({kind:'relay-signal',to:packet.from,signal:'answer',code:reply});
+        }
+      }
+    } catch(error) {if(networkRoom===room&&!this.closed) netStatus(error.message);}
+  }
+  removeRoute(member) {
+    const route=this.routes.get(member);
+    if(!route) return;
+    this.routes.delete(member);clearTimeout(route.timer);
+    if(route.id) this.room.link.remove(route.id,'Player left the lobby relay.',true);
+  }
+  ended(message,allowRace) {
+    if(this.closed||networkRoom!==this.room) return;
+    const room=this.room;
+    if(allowRace&&room.id&&(room.host?room.players.length>1:true)) {
+      this.close(false);room.relay=null;room.relayRequest=null;renderNetworkLobby();
+      netStatus(message+' Current race links are still open.');
+    } else leaveNetworkRoom(message);
+  }
+  close(notify=true) {
+    if(this.closed) return;
+    if(notify) this.send({kind:'relay-left'});
+    this.closed=true;clearTimeout(this.findTimer);this.raceConnected();
+    for(const route of this.routes.values()) clearTimeout(route.timer);
+    this.tab?.close();this.link.close();
+  }
+}
+function renderLocalRelay() {
+  const relay=localLobbyRelay;
+  $('net-relay-panel').hidden=!relay;
+  if(!relay) return;
+  const rows=[...relay.members].map(([id,name])=>{
+    const row=document.createElement('li'),label=document.createElement('strong');
+    label.textContent=name+(id===relay.host?' · Race host':'');
+    row.append(label,button('Remove',()=>relay.remove(id,true)));
+    return row;
+  });
+  $('net-relay-roster').replaceChildren(...rows);
+  $('net-relay-invite').disabled=!!relay.busy||relay.members.size>=maxNetworkPlayers;
+}
+function startLocalRelay() {
+  if(localLobbyRelay) return;
+  leaveNetworkRoom();
+  localLobbyRelay=new LocalLobbyRelay();
+  openMultiplayer();
+  netStatus('Relay open. Invite the player host first.');
+}
+function closeLocalRelay() {
+  const relay=localLobbyRelay;
+  if(!relay) return;
+  openModal('net-close-relay','Close lobby relay?',body=>{
+    body.append(paragraph('Connected racers can keep playing. New joins will need a fresh invite.'));
+    setModalActions(button('Cancel',closeModal),button('Close relay',()=>{
+      localLobbyRelay=null;relay.close();leaveNetworkRoom('Lobby relay closed.');
+      if(location.hash==='#lobby-relay') history.replaceState(null,'',location.pathname+location.search);
+    },'race-cancel'));
+  },closeModal);
+}
+async function makeRelayInvite(replace=false) {
+  const relay=localLobbyRelay;
+  if(!relay||relay.busy||relay.members.size>=maxNetworkPlayers) return;
+  try {
+    relay.busy=true;renderLocalRelay();
+    const code=await relay.link.invite(replace);
+    if(localLobbyRelay!==relay) return;
+    showNetworkPair('Invite to relay','Ask the player to choose Host a race via relay or Join a race via relay, then exchange the two codes.',code,'answer');
+    netStatus('');
+  } catch(error) {if(localLobbyRelay===relay) netStatus(error.message);}
+  finally {relay.busy=false;if(localLobbyRelay===relay) renderLocalRelay();}
+}
+function beginRelayRace(host,lobby=null) {
+  const room=makeNetworkRoom(host,{relayRequest:host?'host':'guest',lobby,save:!host});
+  room.relay=new RelayRaceClient(room);
+  showNetworkPair('Connect to the lobby relay','Use the relay tab’s invite or find a relay in another tab on this device.','','offer');
+  return room;
+}
+
 // multiplayer/ui.js
 // Multiplayer UI: pairing screens, lobby, input capture and race presentation.
 let networkRoom=null;
@@ -18214,10 +18756,10 @@ function closeMultiplayer() {
   $('net-open').focus();
 }
 function leaveNetworkRoom(message='') {
-  if(lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
+  if(modalType.startsWith('net-')||lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
   stopNetworkScan();
   const room=networkRoom;networkRoom=null;
-  if(room) {clearTimeout(room.readyTimer);room.link?.close();}
+  if(room) {clearTimeout(room.readyTimer);clearTimeout(room.endTimer);room.relay?.close();room.link?.close();}
   if(run?.network) leaveNetworkRace();
   $('net-pair').hidden=true;
   $('net-code').value='';$('net-code-out').value='';
@@ -18229,13 +18771,15 @@ function localNetworkDriver() {
   try {name=localStorage.getItem('tnt-multiplayer-name')||'';} catch {}
   return networkDriver({name,type:options.type,color:vehicles[options.type].palette.indexOf(options.paint),steering:options.networkSteering});
 }
-function makeNetworkRoom(host) {
+function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null}={}) {
   leaveNetworkRoom();
-  const room={host,id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
+  const room={host,lobby,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
     readyRevision:0,readyUntil:0,recovering:new Set(),suggestions:new Map()};
   if(host) {
     room.phase='lobby';room.players.push({id:'host',...room.draft,name:room.draft.name||'Host',ready:false});
-    room.settings=networkSeedSettings();room.turn='host';
+    try {room.settings=lobby?.settings?networkSettings(lobby.settings):networkSeedSettings();}
+    catch {room.settings=networkSeedSettings();}
+    room.turn='host';
   }
   const events={
     open:id=>{if(networkRoom===room&&!room.host) sendNetworkHello(room,id);},
@@ -18249,7 +18793,8 @@ function makeNetworkRoom(host) {
 }
 function sendNetworkHello(room,id) {
   room.hostId=id;
-  room.link.send(id,{kind:'hello',version:multiplayerVersion,driver:room.draft});
+  room.link.send(id,{kind:'hello',version:multiplayerVersion,driver:room.draft,save:room.save,
+    lobbyId:room.lobby?.id,ticket:room.lobby?.ticket,repair:room.repair});
 }
 function networkRecovery(room,id,active) {
   if(active) room.recovering.add(id);else room.recovering.delete(id);
@@ -18273,7 +18818,7 @@ function networkDeparture(room,id,reason) {
     leaveNetworkRoom(reason||'The room closed.');
     return;
   }
-  room.recovering.delete(id);
+  room.recovering.delete(id);room.memberTickets.delete(id);
   const player=room.players.find(p=>p.id===id);
   if(!player) {renderNetworkLobby();netStatus(reason||'Pairing ended.');return;}
   room.players=room.players.filter(p=>p.id!==id);
@@ -18293,12 +18838,21 @@ function networkControls(room) {
   return !!room?.id&&room.id===room.controller;
 }
 function openEndMultiplayer() {
+  if(localLobbyRelay) {closeLocalRelay();return;}
   const room=networkRoom;
   if(!room) return;
+  if(!room.id||room.relayRequest&&!room.relay?.connected) {leaveNetworkRoom('Connection cancelled.');return;}
   const end=networkControls(room)||room.host;
   const action=button(end?'×  End multiplayer':'×  Leave multiplayer',()=>{
-    if(end) localNetworkAction({kind:'terminate'});
-    else leaveNetworkRoom('You left multiplayer.');
+    if(!end) {leaveNetworkRoom('You left multiplayer.');return;}
+    closeModal();localNetworkAction({kind:'terminate'});
+    if(!room.host&&networkRoom===room) {
+      netStatus('Waiting for the host to close the session…');
+      clearTimeout(room.endTimer);
+      room.endTimer=setTimeout(()=>{
+        if(networkRoom===room) leaveNetworkRoom('Left multiplayer. The host did not confirm the session ended.');
+      },2600);
+    }
   },'race-cancel');
   openModal('net-leave',end?'End multiplayer?':'Leave multiplayer?',body=>{
     body.append(paragraph(end?'This closes the room for everyone.':'You’ll leave this room.'));
@@ -18351,12 +18905,17 @@ function manageNetworkLobby(room,id,packet) {
       setTimeout(()=>room.link.remove(id),250);
       return;
     }
+    let membership=null;
     if(!player) {
       const driver=networkDriver(packet.driver);
+      try {membership=rememberLobbyMember(room,id,packet,driver);}
+      catch(error) {
+        room.link.send(id,{kind:'reject',error:error.message});setTimeout(()=>room.link.remove(id),250);return;
+      }
       room.players.push({...driver,id,name:driver.name||'Driver '+(room.players.length+1),ready:false});
       resetNetworkReady(room);
     }
-    room.link.send(id,{kind:'welcome',id,version:multiplayerVersion});
+    room.link.send(id,{kind:'welcome',id,version:multiplayerVersion,membership});
     if(!room.link.pending) {$('net-pair').hidden=true;stopNetworkScan();}
     sendNetworkLobby(room);netStatus('Player joined.');
     return;
@@ -18404,6 +18963,7 @@ function manageNetworkLobby(room,id,packet) {
       const settings=networkSettings(packet.settings);
       if(JSON.stringify(settings)===JSON.stringify(room.settings)) return;
       room.settings=settings;resetNetworkReady(room);
+      if(room.lobby) {room.lobby.settings=settings;writeSavedLobby(room.lobby);}
     } catch(error) {
       if(id==='host') netStatus(error.message);
       else room.link.send(id,{kind:'notice',text:error.message});
@@ -18425,6 +18985,9 @@ function networkMessage(room,id,packet) {
   if(packet.kind==='rule-splash') {showRuleSuggestion(room,packet);return;}
   if(packet.kind==='welcome') {
     if(packet.version!==multiplayerVersion) {leaveNetworkRoom('Both devices must use Track N Trace v'+multiplayerVersion+'.');return;}
+    room.relay?.raceConnected();
+    try {rememberJoinedLobby(room,packet.membership);}
+    catch(error) {leaveNetworkRoom(error.message);return;}
     room.id=packet.id;$('net-pair').hidden=true;stopNetworkScan();netStatus('Connected.');
   }
   if(!room.id) return;
@@ -18560,15 +19123,15 @@ function drawNetworkQR(canvas,value) {
 function showNetworkPair(title,text,code='',action='') {
   stopNetworkScan();netText('net-pair-title',title);netText('net-pair-help',text);
   $('net-pair').hidden=false;$('net-pair').dataset.action=action;
-  $('net-hide-pair').hidden=!networkRoom?.host;
+  $('net-hide-pair').hidden=!localLobbyRelay&&(!networkRoom?.host||!!networkRoom.relayRequest);
+  $('net-find-relay').hidden=action!=='offer'||!networkRoom?.relayRequest||typeof BroadcastChannel!=='function';
   $('net-code').value='';$('net-code-out').value=code;
   $('net-qr-wrap').hidden=!code;$('net-code-entry').hidden=!action;
   $('net-camera').hidden=!navigator.mediaDevices?.getUserMedia;
   $('net-camera').dataset.label=action==='answer'?'Scan guest reply':'Scan host invite';
   netText('net-camera',$('net-camera').dataset.label);
-  $('net-share-code').hidden=!code||typeof navigator.share!=='function';
   $('net-refresh-invite').hidden=action!=='answer';
-  $('net-qr-actions').hidden=$('net-share-code').hidden&&$('net-refresh-invite').hidden;
+  $('net-qr-actions').hidden=$('net-refresh-invite').hidden;
   $('net-code-copy').open=false;
   $('net-qr').hidden=!code;
   $('net-qr').dataset.drawn='false';
@@ -18576,9 +19139,15 @@ function showNetworkPair(title,text,code='',action='') {
     try {drawNetworkQR($('net-qr'),code);$('net-qr').dataset.drawn='true';}
     catch {
       $('net-qr').hidden=true;$('net-code-copy').open=true;
-      netText('net-pair-help',text+' This code is too large for a QR. Share or copy it instead.');
+      netText('net-pair-help',text+' This code is too large for a QR. Copy it instead.');
     }
   }
+  window.tntSoundPairing?.mount({
+    playArea:$('net-qr-actions'),listenArea:$('net-scan-actions'),hasCode:!!code,canRead:!!action,
+    getBytes:()=>pairingFromBase45(code.slice(pairingHeader.length,-1)),
+    receiveBytes:bytes=>applyNetworkCode(pairingHeader+pairingToBase45(bytes)+':'),
+    stopScan:stopNetworkScan,status:netStatus
+  });
   $('net-pair').scrollIntoView?.({block:'nearest'});
 }
 async function makeNetworkInvite(replace=false) {
@@ -18589,32 +19158,40 @@ async function makeNetworkInvite(replace=false) {
     const code=await room.link.invite(replace);
     if(networkRoom!==room||room.phase!=='lobby') return;
     netStatus('');
-    if(!$('multiplayer').hidden) showNetworkPair('Invite a player','Ask the guest to tap Join multiplayer and scan this QR. Then scan the reply on their screen.',code,'answer');
-  } catch(error) {if(networkRoom===room) netStatus(error.message);}
-  finally {room.busy=false;if(networkRoom===room) renderNetworkLobby();}
-}
-async function applyNetworkCode(input) {
-  const room=networkRoom,action=$('net-pair').dataset.action;
-  const code=input.trim();
-  if(!room||!action||room.busy||!code) return;
-  stopNetworkScan();room.busy=true;netStatus('Connecting…');
-  try {
-    if(action==='offer') {
-      const reply=await room.link.answer(code);
-      if(networkRoom!==room) return;
-      showNetworkPair('Reply to the host','Have the host tap Scan guest reply and scan this QR, or send the reply code.',reply);
-      netStatus('Waiting for the host to accept your reply…');
-    } else {
-      await room.link.accept(code);
-      if(networkRoom===room) {
-        $('net-pair').hidden=true;
-        if($('net-status').textContent==='Connecting…') netStatus('Waiting for the guest to connect…');
-      }
+    if(!$('multiplayer').hidden) {
+      const entry=room.lobby?'Have the guest open the saved lobby or tap Join lobby.':'Have the guest choose Join multiplayer under Quick QR play.';
+      const method=window.tntSoundPairing?' Scan each other’s QR or play the invite and reply sounds.':' Scan the invite and reply on each other’s screens.';
+      showNetworkPair('Invite a player',entry+method,code,'answer');
     }
   } catch(error) {if(networkRoom===room) netStatus(error.message);}
   finally {room.busy=false;if(networkRoom===room) renderNetworkLobby();}
 }
+async function applyNetworkCode(input) {
+  const target=localLobbyRelay||networkRoom,action=$('net-pair').dataset.action;
+  const current=()=>target===(localLobbyRelay||networkRoom);
+  const code=input.trim();
+  if(!target||!action||target.busy||!code) return;
+  const link=target.relay?.link||target.link;
+  stopNetworkScan();target.busy=true;netStatus('Connecting…');
+  try {
+    if(action==='offer') {
+      const reply=await link.answer(code);
+      if(!current()) return;
+      showNetworkPair('Reply to the host',window.tntSoundPairing?'Have the host scan the QR or listen for your reply sound.':
+        'Have the host scan the QR or paste the reply code.',reply);
+      netStatus('Waiting for the host to accept your reply…');
+    } else {
+      await link.accept(code);
+      if(current()) {
+        $('net-pair').hidden=true;
+        if($('net-status').textContent==='Connecting…') netStatus('Waiting for the guest to connect…');
+      }
+    }
+  } catch(error) {if(current()) netStatus(error.message);}
+  finally {target.busy=false;if(current()) renderNetworkLobby();}
+}
 function stopNetworkScan() {
+  window.tntSoundPairing?.stop();
   for(const track of networkScanner?.stream?.getTracks()||[]) track.stop();
   networkScanner=null;
   const video=$('net-video');
@@ -18659,31 +19236,37 @@ async function scanNetworkCamera() {
 async function scanNetworkFile(file) {
   if(!file) return;
   stopNetworkScan();
-  const room=networkRoom;
+  const pairingTarget=localLobbyRelay||networkRoom;
   const url=URL.createObjectURL(file);
   try {
     const image=new Image();image.src=url;await image.decode();
-    if(networkRoom!==room) return;
+    if((localLobbyRelay||networkRoom)!==pairingTarget) return;
     const code=readNetworkImage(image,image.naturalWidth,image.naturalHeight);
     if(!code) throw Error();
     await applyNetworkCode(code);
-  } catch {if(networkRoom===room) netStatus('No QR found in that image. Try a closer, sharper photo.');}
+  } catch {if((localLobbyRelay||networkRoom)===pairingTarget) netStatus('No QR found in that image. Try a closer, sharper photo.');}
   finally {URL.revokeObjectURL(url);}
 }
 function renderNetworkLobby() {
   const room=networkRoom;
-  netText('net-open',room?'Return to multiplayer':'Multiplayer');
-  $('net-entry').hidden=!!room;
+  netText('net-open',room||localLobbyRelay?'Return to multiplayer':'Multiplayer');
+  $('net-entry').hidden=!!room||!!localLobbyRelay;
+  if(!$('net-entry').hidden&&!$('multiplayer').hidden) renderSavedLobbies();
   $('net-link-state').hidden=!room?.recovering.size;
   const sidelined=room?.phase==='race'&&networkRaceView?.inLobby;
-  $('net-lobby').hidden=!room?.id||room.phase!=='lobby'&&!sidelined;
-  $('net-leave').hidden=!room;
-  if($('multiplayer').hidden||!room?.id||room.phase!=='lobby'&&!sidelined) {
+  $('net-lobby').hidden=!room?.id||!!room.relayRequest&&!room.relay?.connected||room.phase!=='lobby'&&!sidelined;
+  $('net-leave').hidden=!room&&!localLobbyRelay;
+  $('net-back').hidden=!!localLobbyRelay;
+  $('net-relay-panel').hidden=!localLobbyRelay;
+  if(localLobbyRelay) {netText('net-leave','Close relay');renderLocalRelay();}
+  else if(room?.relayRequest&&!room.relay?.connected||room&&!room.id) netText('net-leave','Cancel connection');
+  if($('multiplayer').hidden||$('net-lobby').hidden) {
     mountLobbyPickers(null);
     return;
   }
   const own=room.players.find(p=>p.id===room.id);
   const chooser=room.players.find(p=>p.id===room.turn);
+  netText('net-lobby-title',room.lobby?.name||'Lobby');
   if(!own||!room.settings) return;
   const canChoose=chooser===own&&!sidelined,controls=networkControls(room);
   netText('net-turn',sidelined?'Change your vehicle and paint for the next round.':canChoose?'You’re the Race Director. Choose the course and rules.':
@@ -18764,7 +19347,7 @@ function renderNetworkLobby() {
   netText('net-start',paused?'▶ Continue race':sidelined?'Next round':'Start race');
   $('net-start').disabled=paused?!networkRaceView.snapshot.pauseRoster.every(p=>!p.required||p.ready):
     !sidelined&&(settling||room.recovering.size>0||room.players.length<2||!room.players.every(p=>p.ready));
-  $('net-invite').hidden=!room.host||!!sidelined;
+  $('net-invite').hidden=!room.host||!!sidelined||!!room.relayRequest;
   $('net-invite').disabled=room.busy||room.players.length>=maxNetworkPlayers;
   $('net-refresh-invite').disabled=room.busy;
 }
@@ -18802,6 +19385,7 @@ function submitNetworkDriver() {
   const driver={name:name||own.name,type:options.type,color:vehicles[options.type].palette.indexOf(options.paint),steering:options.networkSteering};
   try {localStorage.setItem('tnt-multiplayer-name',name);} catch {}
   localNetworkAction({kind:'driver',driver});
+  networkRoom.relay?.send({kind:'relay-name',name:driver.name});
 }
 function selectNetworkCourse(course) {
   changeNetworkRules({course:course.id,courseFile:course.courseFile,hazards:false});
@@ -19201,24 +19785,30 @@ function initializeMultiplayer() {
   on('net-host-direct','click',()=>{
     makeNetworkRoom(true);makeNetworkInvite();
   });
-  on('net-join-direct','click',()=>{
-    makeNetworkRoom(false);
-    showNetworkPair('Scan host invite','Scan the host’s QR, then show or send the reply to the host.','','offer');
-    scanNetworkCamera();
-  });
+  on('net-join-direct','click',()=>beginNetworkJoin(null,false,false));
+  on('net-create-saved','click',createSavedLobby);
+  on('net-join-saved','click',()=>beginNetworkJoin());
   on('net-invite','click',()=>makeNetworkInvite());
-  on('net-refresh-invite','click',()=>makeNetworkInvite(true));
+  on('net-refresh-invite','click',()=>localLobbyRelay?makeRelayInvite(true):makeNetworkInvite(true));
+  on('net-relay-open','click',()=>{
+    const url=new URL(location.href);url.hash='lobby-relay';
+    const tab=window.open(url.href,'_blank');
+    if(tab) tab.opener=null;
+    else startLocalRelay();
+  });
+  on('net-relay-invite','click',()=>makeRelayInvite());
+  on('net-relay-host','click',()=>beginRelayRace(true));
+  on('net-relay-join','click',()=>beginRelayRace(false));
+  on('net-find-relay','click',()=>{
+    const client=networkRoom?.relay;
+    if(!client||networkRoom.busy||client.link.peers.size) return;
+    stopNetworkScan();client.findTab();
+  });
   on('net-scan-code','click',()=>applyNetworkCode($('net-code').value));
   on('net-copy','click',async()=>{
     const field=$('net-code-out');field.select();
     try {if(navigator.clipboard) await navigator.clipboard.writeText(field.value);else if(!document.execCommand('copy')) throw Error();netStatus('Code copied.');}
     catch {netStatus('Code selected. Use your device’s Copy command.');}
-  });
-  on('net-share-code','click',async()=>{
-    const code=$('net-code-out').value;
-    if(!code||!navigator.share) return;
-    try {await navigator.share({text:code});}
-    catch(error) {if(error.name!=='AbortError') netStatus('Sharing is unavailable. Copy the code or scan the QR.');}
   });
   on('net-camera','click',()=>networkScanner?stopNetworkScan():scanNetworkCamera());
   on('net-image','change',e=>{scanNetworkFile(e.target.files?.[0]);e.target.value='';});
@@ -19233,9 +19823,12 @@ function initializeMultiplayer() {
     if(networkRaceView?.inLobby) localNetworkAction({kind:networkRaceView.done?'next-round':'resume-round'});
     else {fullscreen();localNetworkAction({kind:'start'});}
   });
+  if(location.hash==='#lobby-relay') startLocalRelay();
   window.addEventListener('pagehide',event=>{
     stopNetworkScan();
-    if(!event.persisted) networkRoom?.link.close();
+    if(!event.persisted) {
+      networkRoom?.relay?.close();networkRoom?.link.close();localLobbyRelay?.close();
+    }
   });
 }
 
@@ -19941,6 +20534,7 @@ window.addEventListener('orientationchange',windowChanged);
 document.addEventListener('fullscreenchange',windowChanged);
 screen.orientation?.addEventListener('change',windowChanged);
 document.addEventListener('visibilitychange',()=>{
+  if(document.hidden) window.tntSoundPairing?.stop();
   if(run?.network) setNetworkPause('background',document.hidden);
   else if(document.hidden) pauseGame();
 });
