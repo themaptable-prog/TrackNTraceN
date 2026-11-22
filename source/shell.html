@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#162c2d">
+<title>Track’n’Trace’n v0.09</title>
+<style>
+:root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
+#setup{height:100dvh;overflow:auto;padding:clamp(12px,2.3vw,28px) max(16px,env(safe-area-inset-right)) 20px max(16px,env(safe-area-inset-left));background:radial-gradient(ellipse at 68% -25%,#304947 0,transparent 62%),var(--ink)}
+.wrap{width:min(1260px,100%);margin:auto}.masthead{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-bottom:clamp(10px,1.85vh,20px)}.wordmark{margin:0;color:var(--cream);font-family:Impact,"Arial Black",system-ui,sans-serif;font-style:italic;text-transform:uppercase;letter-spacing:-.025em;font-size:clamp(29px,5vw,64px);line-height:1}.wordmark em{color:var(--orange);font-style:inherit}.mast-actions,.buttons,.segmented{display:flex;align-items:center;gap:7px}
+.layout{display:grid;grid-template-columns:minmax(250px,1fr) minmax(282px,323px);gap:clamp(10px,1.6vw,20px);align-items:start}.course-area,.garage{min-width:0}.course-hero{position:relative;border-radius:14px;overflow:hidden;background:#5a9569;border:1px solid var(--edge);isolation:isolate}.course-hero canvas{display:block;width:100%;aspect-ratio:1200/660}.course-heading{position:absolute;inset:auto 0 0;padding:22px 15px 11px;display:flex;justify-content:space-between;gap:8px;align-items:end;background:linear-gradient(transparent,#142726e6);pointer-events:none}.course-heading h2{margin:0;font-size:clamp(17px,3vw,33px);letter-spacing:-.035em;line-height:1.04}.course-heading p{margin:4px 0 0;text-transform:uppercase;color:#d9e4b9;font:700 10px var(--mono);letter-spacing:.11em}.pager{display:flex;gap:5px;pointer-events:auto}.pager button{width:40px;height:34px;font-size:22px;line-height:1;background:#1c3535e6}
+.tabbar{display:flex;justify-content:space-between;align-items:center;margin:9px 0 7px}.tabs{display:flex;gap:16px}.tabs button{background:none;border:0;border-radius:0;padding:7px 0 5px;color:var(--muted);font-weight:750;font-size:12px;border-bottom:2px solid transparent}.tabs button[aria-pressed=true]{color:var(--orange);border-color:var(--orange)}.course-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.course-list button{min-height:32px;padding:4px 6px;text-align:left;color:var(--muted);font-size:11px;line-height:1.15;font-weight:700}.course-list button[aria-pressed=true]{color:var(--cream);background:#374b3e;border-color:#b6cc89}.course-list button small{color:var(--orange);font:700 9px var(--mono);margin-right:4px}.garage{background:var(--panel);border:1px solid var(--edge);border-radius:14px;padding:clamp(10px,1.4vw,16px)}.garage h2{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+.vehicle-preview{position:relative;display:grid;grid-template-columns:38px 1fr 38px;align-items:center;gap:3px;padding:2px 6px;background:repeating-linear-gradient(135deg,#31474680 0 5px,#2a413e80 5px 10px),#304744;border:1px solid #4d6254;border-radius:10px}.vehicle-preview .icon{height:38px;min-width:36px}.vehicle-preview canvas{display:block;width:100%;height:clamp(51px,9.5vh,82px)}.vehicle-name{text-align:center;margin:4px 0 0;font-size:clamp(17px,2.5vw,24px);font-weight:900;line-height:1;letter-spacing:-.035em}.swatches{display:flex;justify-content:center;gap:7px;margin:8px 0 10px}.swatches button{width:29px;height:25px;background:var(--swatch);border:2px solid #1c3535;box-shadow:0 0 0 1px #5d6d5c}.swatches button[aria-pressed=true]{box-shadow:0 0 0 2px var(--cream)}.config{display:grid;gap:5px}.config-row{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:6px}.config-row label,.config-row .label{font-weight:750;font-size:11px;color:var(--muted)}.segmented{gap:4px;align-items:stretch}.segmented button,select{flex:1;min-width:0;padding:5px 4px;min-height:30px;font-weight:750;font-size:11px}.segmented button[aria-pressed=true]{background:#d7ec9b;color:#19302b;border-color:#d7ec9b}.config select{width:100%;color:var(--cream);background:#263e3d;border:1px solid var(--edge);border-radius:7px}.launch{margin-top:9px;display:flex;gap:6px}.launch button{min-height:42px;font-size:12px;font-weight:850}.primary{background:var(--orange);color:#241d17;border-color:var(--orange);font-weight:850;padding:9px 15px}.primary:hover{background:var(--orange-hot)}.launch .primary{flex:1;text-transform:uppercase;letter-spacing:.06em}.launch .secondary{background:#304846;padding:0 10px}.hint{min-height:13px;margin:7px 0 0;font-size:10px;line-height:1.25;color:var(--muted)}
+#play{position:fixed;inset:0;overflow:hidden;display:grid;place-items:center;background:#142627;touch-action:none} #stage{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);overflow:hidden;touch-action:none} #track{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair} .hud{position:absolute;inset:0 0 auto;display:flex;justify-content:space-between;align-items:start;gap:6px;padding:clamp(6px,1.3vw,15px);pointer-events:none}.live-splits{display:flex;gap:4px;flex-wrap:wrap;max-width:65%}.hud-pill{display:flex;gap:8px;align-items:center;min-height:32px;background:#122825ec;padding:5px 8px;border-radius:7px;font:700 clamp(10px,1.28vw,15px) var(--mono);border:1px solid #c4d49d65;color:var(--cream);white-space:nowrap}.hud-pill b{color:var(--orange)} .hud .buttons{pointer-events:auto;align-items:start}.hud .icon{background:#122825ec;border-color:#c4d49d65;height:34px;min-width:36px}.hud .timers{display:flex;flex-direction:column;align-items:end;gap:4px}.hud .left-hud{display:flex;gap:5px;align-items:start}.hud .live-splits .hud-pill{min-height:24px;font-size:clamp(8px,1vw,11px);padding:3px 5px}
+#run-controls{position:fixed;inset:auto 0 max(8px,env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:6;pointer-events:none;padding:0 8px} .pause-tray{pointer-events:auto;background:#172f2fed;border:1px solid #627663;border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px}.pause-tray button{min-height:36px;padding:6px 11px;font-size:12px;font-weight:850}.pause-tray span{font-size:12px;padding:0 5px;color:var(--cream)}.orientation{position:fixed;inset:0;z-index:8;background:#132b2ce3;display:grid;place-items:center;padding:20px;text-align:center}.orientation section{padding:22px;background:var(--panel);border:1px solid var(--edge);border-radius:14px}.orientation h2{margin:6px 0 4px}.orientation p{font-size:13px;color:var(--muted);margin:0 0 14px}.orientation button{padding:7px 12px}.rotate-icon{font-size:37px;color:var(--orange)}#inspection{position:fixed;inset:0;display:grid;place-items:center;z-index:4;background:#11282780;pointer-events:none}#inspection canvas{width:min(42vw,330px);height:min(42vh,230px);pointer-events:auto;cursor:pointer;filter:drop-shadow(0 10px 13px #132825a3)} .modal-layer{position:fixed;inset:0;z-index:10;display:grid;place-items:center;padding:14px;background:#102424c9;backdrop-filter:blur(4px)}.dialog{width:min(560px,100%);max-height:calc(100dvh - 28px);overflow:auto;padding:14px;border-radius:15px;border:1px solid #596c5d;background:var(--panel);box-shadow:0 14px 60px #122324c9}.dialog-header{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px}.dialog h2{margin:0;font-size:clamp(20px,3.5vw,29px);letter-spacing:-.04em}.dialog h3{margin:14px 0 6px;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}.dialog p{font-size:13px;color:var(--muted);margin:8px 0}.dialog .buttons{flex-wrap:wrap}.dialog button{min-height:35px;padding:5px 9px;font-size:12px;font-weight:750}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(97px,1fr));gap:6px;margin:6px 0 9px}.stats div{background:#263f3d;border:1px solid var(--edge);padding:8px;border-radius:8px}.stats small{display:block;color:var(--muted);font-size:10px}.stats strong{font-family:var(--mono);font-size:16px;color:var(--cream)}.record{display:grid;grid-template-columns:1fr auto auto;gap:5px;align-items:center;border-top:1px solid #3b5550;padding:6px 0}.record b,.record small{display:block}.record b{font-size:13px}.record small{color:var(--muted);font-size:11px}.record button.delete{color:#ffbea7}.replay-bar{pointer-events:auto;display:flex;align-items:center;gap:9px}.replay-bar input{width:clamp(75px,23vw,260px);accent-color:var(--orange)}
+@media(max-width:680px){.layout{grid-template-columns:1fr}.course-hero{max-height:45vh}.course-hero canvas{max-height:45vh;object-fit:contain}.course-list{grid-template-columns:repeat(4,minmax(0,1fr))}.garage{margin-bottom:6px}.wordmark{font-size:clamp(28px,10vw,51px)}}
+@media(orientation:landscape) and (max-height:460px){#setup{padding-top:8px}.masthead{padding-bottom:7px}.wordmark{font-size:clamp(27px,5vw,42px)}.garage{padding:8px}.garage h2{margin-bottom:5px}.vehicle-preview canvas{height:39px}.swatches{margin:5px 0}.vehicle-name{font-size:17px}.config{gap:3px}.config .segmented button,.config select{min-height:25px;padding:3px}.launch{margin-top:5px}.launch button{min-height:35px}.hint{margin-top:4px}.course-hero canvas{max-height:calc(100dvh - 115px);object-fit:contain}.course-list button{min-height:26px}.tabbar{margin:2px 0}}
+@media(prefers-reduced-motion:no-preference){#inspection canvas{animation:inspect .2s ease-out}@keyframes inspect{from{transform:translate(var(--inspect-x,0),var(--inspect-y,0)) scale(.25);opacity:.32}to{transform:translate(0,0) scale(1);opacity:1}}}
+
+.tool-button{min-height:35px;padding:6px 10px;font-size:12px;font-weight:800;white-space:nowrap}
+#sound{font-size:12px;font-weight:850;padding:0 8px}
+.development{margin-top:12px;background:#213938;color:var(--muted)}
+.modal-layer[data-view=tuning] .dialog{width:min(1260px,100%);display:flex;flex-direction:column;overflow:hidden;padding:clamp(12px,2vw,22px)}
+.modal-layer[data-view=tuning] #modal-body{display:flex;flex-direction:column;min-height:0}
+#tuning-controls{overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;padding:0 9px 4px 1px}
+#tuning-controls h3{margin:9px 0 4px}
+#tuning-controls h3:not(:first-child){margin-top:20px}
+#tuning-controls label{display:grid;grid-template-columns:clamp(125px,23%,235px) minmax(0,1fr) 70px;gap:clamp(8px,1.65vw,22px);align-items:center;min-height:47px;border-top:1px solid var(--edge);font-size:clamp(12px,1.7vw,15px)}
+#tuning-controls input,.editor-tools input[type=range]{min-width:0;accent-color:var(--orange)}
+#tuning-controls input{width:100%;height:36px;margin:0;cursor:pointer}
+#tuning-controls output,.editor-tools output{font-family:var(--mono);color:var(--cream);text-align:right}
+.tuning-footer{display:flex;justify-content:flex-end;flex-shrink:0;border-top:1px solid var(--edge);padding-top:10px}
+@media(max-width:520px){
+ #tuning-controls label{grid-template-columns:minmax(0,1fr) auto;gap:0 8px;padding-top:7px}
+ #tuning-controls input{grid-column:1/-1;grid-row:2}
+}
+.settings-text{width:100%;box-sizing:border-box;margin:2px 0 7px;background:#142728;border:1px solid var(--edge);border-radius:8px;padding:8px;color:var(--cream);font:12px var(--mono);resize:vertical}
+#creator{height:100dvh;overflow:auto;padding:clamp(10px,1.8vw,24px);background:var(--ink)}
+.editor-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}.editor-head h1{font-size:clamp(19px,3.3vw,32px);margin:0 auto 0 0;letter-spacing:-.045em}
+.editor-head .buttons{flex-wrap:wrap}.editor-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(195px,275px);gap:10px}.editor-map{background:#46665a;border-radius:12px;border:1px solid var(--edge);overflow:hidden}.editor-map canvas{display:block;width:100%;touch-action:none;cursor:crosshair}
+.editor-tools{display:grid;gap:5px;border:1px solid var(--edge);border-radius:11px;background:var(--panel);padding:9px;font-size:12px;color:var(--muted)}.editor-tools input:not([type=range]),.editor-tools select{height:31px;min-width:0;background:#263e3d;border:1px solid var(--edge);border-radius:6px;color:var(--cream);padding:3px 5px;font-size:12px}
+.editor-tools label{font-weight:750}.editor-tools label output{float:right}.editor-tools input[type=range]{display:block;width:100%;margin:4px 0}.editor-tools input:disabled,.editor-tools select:disabled{opacity:.45}
+.editor-group,.editor-crossings{display:grid;gap:5px}.editor-group button{font-size:11px;padding:5px 7px;min-height:30px;font-weight:750}.editor-pair{display:grid;grid-template-columns:1fr 1fr;gap:5px}.editor-pair select{display:block;width:100%;margin-top:3px}.editor-crossings{margin-top:5px;border-top:1px solid var(--edge);padding-top:6px}
+#creator-elevation-point,#creator-stack strong{color:var(--cream)}
+#creator-elevation{flex-wrap:wrap}#creator-elevation button{min-width:43px}
+.elevation-warning{margin:4px 0;color:#ffd0a2;font-size:11px;line-height:1.35}
+#creator-stack{display:grid;gap:6px;margin-top:6px}
+#creator-passes{display:grid;gap:4px}
+#creator-passes button{text-align:left}
+#creator-passes button[aria-pressed=true]{border-color:var(--orange);background:#475745;color:var(--cream)}
+.prop-tray{display:flex;gap:5px;overflow:auto;padding:4px;background:#142a2a;border-radius:7px}.prop-tray button{min-width:max-content;touch-action:none}@media(prefers-reduced-motion:no-preference){.prop-tray{animation:tray-in .16s ease-out}@keyframes tray-in{from{transform:translateY(-8px);opacity:.4}to{transform:translateY(0);opacity:1}}}.prop-tray button[aria-pressed=true]{background:#d7ec9b;color:#19302b}
+#courses{max-height:min(31vh,270px);overflow:auto;padding:1px}
+@media(max-width:670px){.editor-layout{grid-template-columns:1fr}.editor-tools{margin-bottom:8px}.wordmark{font-size:clamp(22px,6vw,40px)}.mast-actions{gap:4px}.mast-actions .icon{min-width:34px}.mast-actions .tool-button{font-size:10px;padding:4px}}
+.tabs{flex-wrap:wrap;gap:2px clamp(8px,2vw,16px)}
+.hud-run-info{display:flex;gap:4px;flex-wrap:wrap}
+#score-hud{color:var(--green)}#chain-hud{color:var(--orange-hot)}
+/* WORKSPACE_UI */
+</style>
+</head>
+<body>
+<main id="setup">
+ <div class="wrap">
+  <header class="masthead">
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.09</span></div>
+   <div class="mast-actions"><!-- NETWORK_MENU --><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
+  </header>
+  <div class="layout">
+   <section class="course-area" aria-label="Course selection">
+    <div class="tabbar"><div class="tabs"><button id="races-tab" aria-pressed="true">Race courses</button><button id="damage-tab" aria-pressed="false">Damage events</button><button id="training-tab" aria-pressed="false">Training</button></div></div>
+    <div class="course-hero carousel-surface" id="course-carousel" role="group" aria-label="Course carousel" tabindex="0"><canvas class="slide-surface" id="preview" width="960" height="528" aria-hidden="true"></canvas>
+     <div class="course-heading"><div aria-live="polite"><p id="course-kind"></p><h2 id="course-name"></h2></div><div class="pager"><button id="prev-course" aria-label="Previous course">‹</button><button id="next-course" aria-label="Next course">›</button></div></div>
+    </div>
+    <div id="courses" class="course-list" aria-label="Nearby courses"></div>
+    <div class="course-footer"><output id="course-position" class="course-position"></output><button id="edit-course" class="tool-button">Edit course</button><button id="records" class="tool-button">Records</button></div>
+   </section>
+   <section class="garage" aria-label="Vehicle and start">
+    <h2>Garage</h2>
+    <div class="vehicle-preview carousel-surface" id="vehicle-carousel" role="group" aria-label="Vehicle carousel" tabindex="0">
+     <button class="neighbor" id="prev-vehicle" aria-label="Previous vehicle"><canvas id="vehicle-prev-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">‹</span></button>
+     <canvas class="slide-surface" id="vehicle" width="260" height="130" aria-hidden="true"></canvas>
+     <button class="neighbor" id="next-vehicle" aria-label="Next vehicle"><canvas id="vehicle-next-art" width="120" height="66" aria-hidden="true"></canvas><span aria-hidden="true">›</span></button>
+    </div>
+    <select class="vehicle-name" id="vehicle-name" aria-label="Choose vehicle" aria-describedby="vehicle-detail"></select>
+    <p id="vehicle-detail" class="vehicle-detail" hidden></p>
+    <div class="paint-heading"><span>Paint colour</span><output id="paint-name"></output></div>
+    <div class="swatches" id="swatches" aria-label="Vehicle colour"></div>
+    <div class="launch">
+     <button class="rules-button" id="rules-open" aria-haspopup="dialog"><strong>Race rules</strong><small id="rules-summary"></small><span aria-hidden="true">›</span></button>
+     <button id="start" class="primary">Start race</button>
+    </div>
+    <p class="hint" id="hint"></p>
+   </section>
+  </div>
+  <button id="tuning-open" class="tool-button development" aria-haspopup="dialog">Development tuning</button>
+  <div id="rule-storage" hidden>
+   <div id="rule-fields">
+    <p id="rule-course" class="rule-course"></p>
+    <div class="rule-field" id="mode-row"><span class="label">Event</span><div class="segmented" id="event-select"><button data-value="race">Race</button><button data-value="one-hit">One Hit Loss</button><button data-value="damage">Damage challenge</button></div><p id="event-explanation" class="rule-explanation" hidden></p></div>
+    <div class="rule-field"><span class="label">Steering</span><div class="segmented" id="drag-select"><button data-value="trace">Draw path</button><button data-value="free">Free drag</button></div></div>
+    <div class="rule-field"><span class="label">Damage</span><div class="segmented" id="damage-select"><button data-value="off">Off</button><button data-value="open">Damage only</button><button data-value="total">Can total</button></div></div>
+    <div class="rule-field" id="lap-row"><span class="label">Laps</span><div class="segmented"><button id="less-laps" aria-label="Fewer laps">−</button><button id="laps-value" aria-label="Lap count, press to increase">3</button><button id="more-laps" aria-label="More laps">+</button></div></div>
+    <div class="rule-field" id="hazards-row" hidden><span class="label">Track hazards</span><div class="segmented" id="hazards-select"><button data-value="off">Off</button><button data-value="on">On</button></div><p id="hazards-copy" class="rule-explanation"></p></div>
+    <div class="rule-field"><label for="music-select">Soundtrack</label><select id="music-select"></select></div>
+    <div class="rule-field" id="ghost-row"><label for="ghost-select">Ghost</label><select id="ghost-select" aria-label="Ghost"></select></div>
+   </div>
+  </div>
+ </div>
+</main>
+<main id="creator" hidden>
+ <div class="wrap">
+  <header class="editor-head"><button id="creator-close" class="icon" aria-label="Back to menu">‹</button><h1>Course creator</h1>
+   <div class="buttons"><button id="creator-new" class="tool-button">New track</button><button id="creator-import" class="tool-button">Import</button><input id="creator-file" type="file" accept=".json,application/json" hidden><button id="creator-export" class="tool-button">Export</button><button id="creator-save" class="primary tool-button">Save course</button></div>
+  </header>
+  <div class="editor-layout">
+   <div>
+    <div class="editor-toolbar">
+     <div class="segmented" id="creator-mode"><button data-value="track">Route</button><button data-value="river">River</button><button data-value="objects">Objects</button></div>
+     <span class="version" id="creator-selection"></span>
+    </div>
+    <div class="editor-map"><canvas id="creator-map" width="1200" height="660" aria-label="Course editor map"></canvas></div>
+    <p id="creator-map-note" class="editor-map-note"></p>
+    <p id="creator-status" role="status" class="hint"></p>
+   </div>
+   <aside class="editor-tools">
+    <h2>Course settings</h2>
+    <div class="editor-course-header">
+     <label>Course name<input id="creator-name" type="text" maxlength="55"></label>
+     <label>Style<select id="creator-theme"></select></label>
+    </div>
+    <div id="creator-track-tools" class="editor-group">
+     <h3>Route point</h3>
+     <div class="segmented"><button id="creator-add">Add point</button><button id="creator-remove">Remove</button><button id="creator-startline">Set start</button></div>
+     <label>Track width <output id="creator-width-value"></output><input id="creator-width" type="range" min="49" max="152"></label>
+     <label for="creator-road">Road to the next point</label><select id="creator-road"><option value="">Style default</option><option value="asphalt">Asphalt</option><option value="dirt">Dirt</option><option value="grass">Grass</option></select>
+     <div class="editor-pair">
+      <label>Left edge<select id="creator-left"></select></label><label>Right edge<select id="creator-right"></select></label>
+     </div>
+     <label>Curve smoothing <output id="creator-curve-value"></output><input id="creator-curve" type="range" min="0" max="100"></label>
+     <div class="editor-crossings">
+      <strong id="creator-elevation-point">Point 1 · Ground</strong>
+      <div class="segmented" id="creator-elevation"><button data-value="auto">Auto</button><button data-value="up">Up</button><button data-value="same">Same</button><button data-value="down">Down</button></div>
+      <p id="creator-portal" class="hint" hidden></p>
+      <p id="creator-elevation-warning" class="elevation-warning" role="status" hidden></p>
+      <div id="creator-stack" hidden>
+       <strong>Crossing order</strong>
+       <div id="creator-passes"></div>
+       <button id="creator-swap">Swap selected passes</button>
+      </div>
+     </div>
+    </div>
+    <div id="creator-river-tools" class="editor-group" hidden>
+     <h3>River</h3>
+     <div class="segmented"><button id="river-add">Add river point</button><button id="river-remove">Remove point</button><button id="river-clear">Clear river</button></div>
+     <label>River width <output id="river-width-value"></output><input id="river-width" type="range" min="10" max="110"></label>
+    </div>
+    <div id="creator-object-tools" class="editor-group" hidden>
+     <h3>Movable objects</h3>
+     <div class="prop-tray" id="prop-tray"></div>
+     <label>Rotation <output id="prop-angle-value"></output><input id="prop-angle" type="range" min="0" max="359"></label>
+     <label for="prop-level">Route level</label><select id="prop-level"><option value="-2">−2 Tunnel</option><option value="-1">−1 Tunnel</option><option value="0">Ground</option><option value="1">+1 Deck</option><option value="2">+2 Deck</option><option value="3">+3 Deck</option></select>
+     <button id="prop-remove">Remove object</button>
+    </div>
+   </aside>
+  </div>
+ </div>
+</main>
+<!-- NETWORK_LOBBY -->
+<main id="play" hidden>
+ <div id="stage">
+  <canvas id="track" width="1800" height="990" aria-label="Race course"></canvas>
+  <div class="hud">
+   <div class="left-hud"><div class="hud-run-info"><div class="hud-pill" id="lap-hud"></div><div class="hud-pill" id="score-hud" hidden></div><div class="hud-pill" id="chain-hud" hidden></div></div><div id="splits" class="live-splits"></div></div>
+   <div class="buttons"><div class="timers"><div class="hud-pill" id="time-hud"></div></div><button class="icon" id="pause" aria-label="Pause">Ⅱ</button></div>
+  </div>
+ </div>
+ <!-- NETWORK_RACE_HUD -->
+ <div id="inspection" hidden><canvas id="inspect-car" width="660" height="460" aria-label="Enlarged vehicle, tap to return"></canvas></div>
+ <div id="run-controls" hidden><div class="pause-tray">
+  <button id="resume" class="primary">Resume</button>
+  <button id="inspect">Inspect car</button>
+  <button id="retry">Restart</button>
+  <button id="quit">Exit</button>
+  <div class="buttons" id="finish-controls" hidden><button id="damage-result" class="primary">Results</button><button id="damage-retry">Retry</button><button id="damage-exit">Exit</button></div>
+  <div class="replay-bar" id="replay-controls" hidden><button id="replay-toggle" aria-label="Pause replay">Ⅱ</button><input id="seek" aria-label="Replay position" type="range" min="0" max="1000" value="0"><button id="replay-exit">Exit replay</button></div>
+ </div></div>
+ <div id="rotation" class="orientation" hidden><section role="dialog" aria-modal="true" aria-labelledby="rotation-title" aria-describedby="rotation-note"><div class="rotate-icon" aria-hidden="true">↻</div><h2 id="rotation-title">Return to landscape</h2><p id="rotation-note">Restore the original orientation to resume.</p><button id="rotation-exit">Back to menu</button></section></div>
+</main>
+<div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div><div id="modal-actions" hidden></div></section></div>
+<script>
