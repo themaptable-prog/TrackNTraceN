@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.14</title>
+<title>Track’n’Trace’n v0.15</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -173,7 +173,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 
 
 #multiplayer{max-width:850px;height:100dvh;overflow:auto;overscroll-behavior:contain;margin:0 auto;padding:16px clamp(10px,4vw,28px) 36px}
-.net-header{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.net-header{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:12px}
 .net-header h1{margin:0 auto 0 0;font-size:clamp(21px,5vw,33px)}
 .net-header button,.net-panel button:not(:where(#picker-layout button)){min-height:40px;padding:6px 12px}
 #net-status{color:#ffe092;min-height:1.25em;margin:0 0 9px}
@@ -196,11 +196,15 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 @media(min-width:720px){#net-pair[data-action=answer] #net-pair-steps{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
 #net-code-entry{min-width:0}
 #net-code-out{overflow-wrap:anywhere}
-#net-saved-list,#net-relay-roster{padding:0;display:grid;gap:8px;list-style:none;margin:0}
+#net-sound-feedback{background:#18302b;margin:8px 0;padding:8px;border-radius:7px;font-size:13px}
+#net-sound-feedback label{margin-right:12px}
+#net-sound-feedback meter{width:min(28vw,170px);vertical-align:middle}
+#net-sound-feedback p{padding-top:4px}
+#net-saved-list,#net-relay-roster,#net-known-list,#net-lan-invitations{padding:0;display:grid;gap:8px;list-style:none;margin:0}
 #net-saved-list:empty,#net-relay-roster:empty{display:none}
-#net-saved-list li,#net-relay-roster li{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:9px;background:#19322d;border-radius:8px}
-#net-saved-list li>div,#net-relay-roster li>strong{margin-right:auto}
-#net-saved-list small{display:block;color:var(--muted);margin-top:3px}
+#net-saved-list li,#net-relay-roster li,#net-known-list li,#net-lan-invitations li{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:9px;background:#19322d;border-radius:8px}
+#net-saved-list li>div,#net-relay-roster li>strong,#net-known-list li>div,#net-lan-invitations li>strong{margin-right:auto}
+#net-saved-list small,#net-known-list small{display:block;color:var(--muted);margin-top:3px}
 #net-relay-options p{margin:7px 0}
 #net-video{display:block;width:min(100%,480px);max-height:45vh;object-fit:cover;margin:8px auto}
 .net-panel details{margin-top:8px;font-size:13px}.net-panel summary{cursor:pointer;padding:5px 0}
@@ -305,7 +309,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.14</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.15</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -427,14 +431,22 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  </div>
 </main>
 <main id="multiplayer" hidden>
- <header class="net-header"><button id="net-back">Back to menu</button><h1>Multiplayer</h1><button id="net-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button><button id="net-leave" hidden>Leave multiplayer</button></header>
+ <header class="net-header"><button id="net-back">Back to menu</button><button id="net-lobbies-back" hidden>Back to lobbies</button><h1>Multiplayer</h1><button id="net-lan-alert" hidden>Requests</button><button id="net-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button><button id="net-leave" hidden>Leave multiplayer</button></header>
  <p id="net-status" role="status" aria-live="polite"></p>
  <p id="net-link-state" role="status" hidden>Wi-Fi interrupted. Waiting for the connection to recover…</p>
  <section id="net-entry" class="net-panel">
-  <h2>Saved lobbies</h2>
+  <h2>Waiting Room</h2>
+  <button id="net-return-session" class="primary" hidden>Return to current lobby</button>
+  <section id="net-lan-requests" hidden><h3>Connection requests</h3><ul id="net-lan-invitations"></ul></section>
+  <h3>Saved lobbies</h3>
   <p id="net-saved-empty">Create a lobby or join one on the same Wi-Fi. A saved lobby can race with any two to four players.</p>
   <ul id="net-saved-list" aria-label="Saved lobbies"></ul>
   <div class="net-buttons"><button id="net-create-saved" class="primary">Create lobby</button><button id="net-join-saved">Join lobby</button></div>
+  <details id="net-known"><summary>Known devices</summary><p id="net-known-empty">Devices appear here after pairing with a saved lobby.</p><ul id="net-known-list"></ul></details>
+  <details><summary>Local network helper</summary>
+   <p id="net-lan-status" role="status">LAN helper optional. QR and sound work on their own.</p>
+   <div class="net-buttons"><button id="net-lan-setup">Set up LAN helper</button><button id="net-lan-download">Download LAN helper</button></div>
+  </details>
   <details><summary>Quick QR play</summary><div class="net-buttons"><button id="net-host-direct">Host multiplayer</button><button id="net-join-direct">Join multiplayer</button></div></details>
   <details id="net-relay-options"><summary>Lobby relay tab</summary><div class="net-buttons"><button id="net-relay-open">Open relay tab</button><button id="net-relay-host">Host a race via relay</button><button id="net-relay-join">Join a race via relay</button></div></details>
  </section>
@@ -461,6 +473,8 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  </section>
  <section id="net-lobby" class="net-panel" hidden>
   <div class="net-lobby-head"><h2 id="net-lobby-title">Lobby</h2><button id="net-invite" hidden>Show invite QR</button></div>
+  <details id="net-member-details" hidden><summary id="net-member-count"></summary><ul id="net-member-list"></ul></details>
+  <button id="net-enable-lan" hidden>Enable LAN reconnect</button>
   <ul id="net-roster" aria-label="Players"></ul>
   <label class="net-driver">Driver name<input id="net-name" maxlength="22" autocomplete="nickname"></label>
   <p id="net-turn"></p>
@@ -509,13 +523,229 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 </main>
 <div id="net-announcements" aria-live="polite"></div>
 <div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div><div id="modal-actions" hidden></div></section></div>
+<script type="text/plain" id="tnt-lan-helper">
+#!/usr/bin/env python3
+"""Optional Track N Trace LAN signaling. Run with Python 3.9+ on one device."""
+import argparse
+import base64
+import hashlib
+import hmac
+import ipaddress
+import json
+import re
+import secrets
+import socket
+import struct
+import threading
+import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import urlsplit
+
+DEVICE = re.compile(r"[a-f0-9]{24}\Z")
+LIMIT = 32000
+SLOTS = threading.BoundedSemaphore(32)
+LOCK = threading.Lock()
+PEERS = {}
+WAITING = {}
+GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
+
+def is_lan(address):
+    ip = ipaddress.ip_address(address)
+    return ip.is_loopback or any(
+        ip in ipaddress.ip_network(block)
+        for block in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16")
+    )
+
+
+def encode_frame(opcode, data):
+    size = len(data)
+    header = bytes((128 | opcode, size)) if size < 126 else struct.pack("!BBH", 128 | opcode, 126, size)
+    return header + data
+
+
+class Handler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
+    def setup(self):
+        super().setup()
+        self.connection.settimeout(38)
+        self.out_lock = threading.Lock()
+
+    def log_message(self, *_):
+        pass
+
+    def do_GET(self):
+        self.close_connection = True
+        if not is_lan(self.client_address[0]):
+            self.send_error(403)
+            return
+        path = urlsplit(self.path).path
+        if path == "/":
+            data = b"Track N Trace LAN helper is running. Open your local index.html and paste the setup address in Multiplayer.\n"
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(data)
+            return
+
+        key = self.headers.get("Sec-WebSocket-Key", "")
+        try:
+            key_valid = len(base64.b64decode(key, validate=True)) == 16
+        except ValueError:
+            key_valid = False
+        if (
+            not hmac.compare_digest(path.encode(), ("/ws/" + self.server.access_key).encode())
+            or not key_valid
+            or self.headers.get("Upgrade", "").lower() != "websocket"
+            or "upgrade" not in {word.strip() for word in self.headers.get("Connection", "").lower().split(",")}
+            or self.headers.get("Sec-WebSocket-Version") != "13"
+        ):
+            self.send_error(404)
+            return
+        if not SLOTS.acquire(blocking=False):
+            self.send_error(503)
+            return
+        self.device = None
+        try:
+            accept = base64.b64encode(hashlib.sha1((key + GUID).encode()).digest()).decode()
+            self.send_response(101)
+            self.send_header("Connection", "Upgrade")
+            self.send_header("Upgrade", "websocket")
+            self.send_header("Sec-WebSocket-Accept", accept)
+            self.end_headers()
+            self.exchange()
+        except (OSError, ValueError, EOFError, UnicodeError):
+            pass
+        finally:
+            with LOCK:
+                if PEERS.get(self.device) is self:
+                    del PEERS[self.device]
+            SLOTS.release()
+
+    def exact(self, count):
+        chunk = self.rfile.read(count)
+        if len(chunk) != count:
+            raise EOFError
+        return chunk
+
+    def frame(self):
+        first, second = self.exact(2)
+        opcode, size = first & 15, second & 127
+        if first != 128 | opcode or not second & 128 or size == 127:
+            raise ValueError("Unsupported frame")
+        if size == 126:
+            size = struct.unpack("!H", self.exact(2))[0]
+        if size > LIMIT or (opcode >= 8 and size > 125):
+            raise ValueError("Frame too large")
+        mask = self.exact(4)
+        payload = self.exact(size)
+        return opcode, bytes(byte ^ mask[index % 4] for index, byte in enumerate(payload))
+
+    def send_frame(self, opcode, data):
+        with self.out_lock:
+            self.wfile.write(encode_frame(opcode, data))
+
+    def send_packet(self, packet):
+        try:
+            self.send_frame(1, json.dumps(packet, separators=(",", ":")).encode())
+        except OSError:
+            pass
+
+    def exchange(self):
+        while True:
+            opcode, data = self.frame()
+            if opcode == 8:
+                self.send_frame(8, b"")
+                return
+            if opcode == 9:
+                self.send_frame(10, data)
+                continue
+            if opcode != 1:
+                raise ValueError("Expected text")
+            message = json.loads(data)
+            if not isinstance(message, dict):
+                raise ValueError("Expected object")
+            if self.device is None:
+                device = message.get("device")
+                if message.get("kind") != "hello" or not isinstance(device, str) or not DEVICE.fullmatch(device):
+                    return
+                with LOCK:
+                    if device in PEERS:
+                        return
+                    PEERS[device] = self
+                    self.device = device
+                    queued = WAITING.pop(device, [])
+                self.send_packet({"kind": "hello"})
+                for expires, packet in queued:
+                    if expires >= time.monotonic():
+                        self.send_packet(packet)
+            elif message.get("kind") == "presence":
+                with LOCK:
+                    online = list(PEERS)
+                self.send_packet({"kind": "presence", "online": online})
+            elif message.get("kind") == "forward":
+                target = message.get("to")
+                box = message.get("box")
+                if not isinstance(target, str) or not DEVICE.fullmatch(target) or not isinstance(box, str) or len(box) > 29000:
+                    continue
+                packet = {"kind": "signal", "from": self.device, "box": box}
+                with LOCK:
+                    recipient = PEERS.get(target)
+                    if recipient is None and len(box) <= 1024:
+                        now = time.monotonic()
+                        for device in list(WAITING):
+                            WAITING[device] = [row for row in WAITING[device] if row[0] >= now]
+                            if not WAITING[device]:
+                                del WAITING[device]
+                        if target in WAITING or len(WAITING) < 32:
+                            queue = WAITING.setdefault(target, [])
+                            if len(queue) < 6:
+                                queue.append((now + 55, packet))
+                if recipient:
+                    recipient.send_packet(packet)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--key", help="Reuse your original 32 hexadecimal characters when restarting")
+    options = parser.parse_args()
+    key = options.key or secrets.token_hex(16)
+    if not re.fullmatch(r"[a-f0-9]{32}", key):
+        parser.error("--key must be 32 lowercase hexadecimal characters")
+    server = ThreadingHTTPServer(("0.0.0.0", options.port), Handler)
+    server.access_key = key
+    try:
+        addresses = sorted({
+            item[4][0] for item in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)
+            if is_lan(item[4][0]) and not item[4][0].startswith("127.")
+        })
+    except OSError:
+        addresses = []
+    if not addresses:
+        print("Use ipconfig (Windows) or your Wi-Fi settings to find this device's IPv4 address.", flush=True)
+    print("Track N Trace LAN helper. Keep this window open.", flush=True)
+    print("Reuse this address and key for returning devices. Restart with --key " + key, flush=True)
+    for address in addresses or ["YOUR-LAN-IP"]:
+        print(f"LAN setup address: http://{address}:{options.port}/#tnt-lan={key}", flush=True)
+    print(f"On this device: http://127.0.0.1:{options.port}/#tnt-lan={key}", flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+</script>
 <script id="tnt-sound-pairing">
 /* Optional local sound signaling. Remove this script to keep QR and paste only. */
 (() => {
   'use strict';
   const symbolSeconds=.024,probeSeconds=.008,syncHz=625,firstHz=1000,gapHz=125;
   const maxBytes=1024,listenSeconds=62;
-  let active=null,playButton,listenButton;
+  let active=null,playButton,listenButton,feedback,level,clock,phase;
 
   function checksum(bytes) {
     let crc=0xffff;
@@ -548,7 +778,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
     }
     return samples;
   }
-  function packetListener(rate,done) {
+  function packetListener(rate,done,update=()=>{}) {
     const windowSize=Math.round(rate*probeSeconds),step=Math.round(rate*.004);
     const cell=rate*symbolSeconds,samples=new Float32Array(Math.ceil(rate*listenSeconds));
     const coefficients=[syncHz,...Array.from({length:16},(_,i)=>firstHz+i*gapHz)]
@@ -568,7 +798,9 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
       }
       return Math.max(0,prev*prev+before*before-c*prev*before);
     };
-    const reset=at=>{cursor=at;sync=0;slot=-1;expected=0;};
+    const reset=(at,reason)=>{
+      update(reason,0);cursor=at;sync=0;slot=-1;expected=0;
+    };
     return chunk=>{
       const length=Math.min(chunk.length,samples.length-used);
       samples.set(chunk.subarray(0,length),used);used+=length;
@@ -579,7 +811,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
         if(slot<0) {
           if(total>.015&&power(at,coefficients[0])>total*.28) sync++;
           else {
-            if(sync>=Math.floor(.1*rate/step)) {origin=at+Math.round(windowSize/2);slot=0;}
+            if(sync>=Math.floor(.1*rate/step)) {origin=at+Math.round(windowSize/2);slot=0;update('signal',0);}
             sync=0;
           }
           cursor+=step;
@@ -591,15 +823,15 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
           if(strength>best) {second=best;best=strength;value=i;}
           else if(strength>second) second=strength;
         }
-        if(total<=.015||best<total*.14||best<second*1.5) {reset(at+step);continue;}
+        if(total<=.015||best<total*.14||best<second*1.5) {reset(at+step,'incomplete');continue;}
         if(slot%2===0) high=value<<4;
         else {
           const index=slot>>1;
           packet[index]=high|value;
-          if(index===0&&packet[0]!==0x54||index===1&&packet[1]!==0x4e) {reset(at+step);continue;}
+          if(index===0&&packet[0]!==0x54||index===1&&packet[1]!==0x4e) {reset(at+step,'invalid');continue;}
           if(index===3) {
             const size=packet[2]*256+packet[3];
-            if(!size||size>maxBytes) {reset(at+step);continue;}
+            if(!size||size>maxBytes) {reset(at+step,'invalid');continue;}
             expected=size+6;
           }
           if(expected&&index===expected-1) {
@@ -607,9 +839,10 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
             if(crc===checksum(packet.subarray(0,expected-2))) {
               done(packet.slice(4,expected-2));return true;
             }
-            reset(at+step);continue;
+            reset(at+step,'checksum');continue;
           }
         }
+        if(expected&&slot%12===0) update('receiving',Math.min(99,Math.floor((slot>>1)*100/expected)));
         slot++;
       }
     };
@@ -620,7 +853,8 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
     if(playButton) playButton.textContent='Play code sound';
     if(listenButton) listenButton.textContent='Listen for code';
     if(!job) return;
-    clearTimeout(job.timer);
+    clearTimeout(job.timer);clearInterval(job.ticker);
+    if(feedback) feedback.hidden=true;
     for(const track of job.stream?.getTracks()||[]) track.stop();
     if(job.processor) {job.processor.onaudioprocess=null;job.processor.disconnect();}
     job.source?.disconnect();
@@ -632,6 +866,12 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
       listenButton=document.createElement('button');listenButton.textContent='Listen for code';
       playButton.type=listenButton.type='button';
       ui.playArea.append(playButton);ui.listenArea.append(listenButton);
+      feedback=document.createElement('div');feedback.hidden=true;feedback.id='net-sound-feedback';
+      const label=document.createElement('label');label.textContent='Microphone level ';
+      level=document.createElement('meter');level.min=0;level.max=1;level.value=0;
+      level.setAttribute('aria-label','Microphone input level');label.append(level);
+      clock=document.createElement('span');phase=document.createElement('p');phase.setAttribute('role','status');
+      feedback.append(label,clock,phase);ui.listenArea.after(feedback);
     }
     const Audio=window.AudioContext||window.webkitAudioContext;
     playButton.hidden=!Audio||!ui.hasCode;
@@ -650,7 +890,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
         sound.copyToChannel(samples,0);
         const source=job.source=ctx.createBufferSource();source.buffer=sound;
         source.connect(ctx.destination);
-        source.onended=()=>{if(active===job) {stop();ui.status('Sound sent. Use the QR if the other device did not receive it.');}};
+        source.onended=()=>{if(active===job) {stop();ui.status('Playback complete. Check the listening device for confirmation.');}};
         playButton.textContent='Stop sound';
         ui.status('Playing pairing code · about '+Math.ceil(sound.duration)+' seconds.');
         source.start();
@@ -670,14 +910,40 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
         await resumed;
         if(active!==job) return;
         const source=job.source=ctx.createMediaStreamSource(stream),processor=job.processor=ctx.createScriptProcessor(4096,1,1);
+        feedback.hidden=false;level.value=0;phase.textContent='Listening for the opening tone';
+        const deadline=performance.now()+listenSeconds*1000;
+        const updateTimer=()=>{clock.textContent=Math.max(0,Math.ceil((deadline-performance.now())/1000))+' s left';};
+        updateTimer();job.ticker=setInterval(updateTimer,250);
+        const messages={
+          signal:'Pairing signal detected',
+          incomplete:'Signal cut out or was unclear. Replay the code from the start.',
+          invalid:'Tones heard, but the code header could not be read. Try again.',
+          checksum:'The full code arrived with errors. Replay it or use QR.'
+        };
         const receive=packetListener(ctx.sampleRate,bytes=>{
           if(active===job) {stop();ui.receiveBytes(bytes);}
+        },(state,progress)=>{
+          job.signal=state;
+          phase.textContent=state==='receiving'?'Receiving code · '+progress+'%':messages[state];
         });
-        processor.onaudioprocess=event=>receive(event.inputBuffer.getChannelData(0));
+        processor.onaudioprocess=event=>{
+          if(active!==job) return;
+          const samples=event.inputBuffer.getChannelData(0);
+          let sum=0;
+          for(const sample of samples) sum+=sample*sample;
+          const input=Math.sqrt(sum/samples.length);
+          level.value=Math.min(1,Math.max(input*3,level.value*.77));
+          job.heard||=input>.008;
+          receive(samples);
+        };
         const silent=ctx.createGain();silent.gain.value=0;
         source.connect(processor);processor.connect(silent);silent.connect(ctx.destination);
         job.timer=setTimeout(()=>{
-          if(active===job) {stop();ui.status('No valid sound code received. Try again nearby or use the QR.');}
+          if(active!==job) return;
+          const reason=job.signal?messages[job.signal]||'The code was incomplete. Replay it from the start.':
+            job.heard?'Microphone heard audio, but no pairing tone was detected.':'No audio reached the microphone. Check the input device.';
+          stop();ui.status(reason+' QR is available.');
+
         },listenSeconds*1000);
         ui.status('Listening locally. Play the code on the other device.');
       } catch {if(active===job) {stop();ui.status('Microphone unavailable. Scan the QR or paste the code.');}}
@@ -17940,7 +18206,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: offline pairing codes and WebRTC data channels.
-const multiplayerVersion='0.14';
+const multiplayerVersion='0.15';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -18328,9 +18594,6 @@ class NetworkRound {
     this.waitingToResume=false;this.pausedBy=null;this.pauseReasons.clear();this.pauseReady.clear();
     this.countdown=3;this.accumulator=0;this.sendIn=0;
   }
-  canGiveUp() {
-    return !this.course.openYard&&[...this.drivers.values()].some(game=>game.networkResult==='Finished');
-  }
   withdraw(id,reason='Disconnected') {
     const game=this.drivers.get(id);
     if(game&&!game.finished) finishNetworkDriver(game,reason);
@@ -18390,6 +18653,290 @@ function networkResults(snapshot,settings,players) {
 }
 
 // multiplayer/saved-lobbies.js
+// multiplayer/lan-discovery.js
+// Only uses a user-configured private IPv4 address. WebRTC still carries the race.
+const lanSettingsKey='tnt-lan-helper-v1';
+const knownDevicesKey='tnt-known-devices-v1';
+function rememberedDevices() {
+  try {
+    const items=JSON.parse(localRead(knownDevicesKey)||'[]');
+    return Array.isArray(items)?items.filter(item=>lobbyToken(item?.device)):[];
+  } catch {return [];}
+}
+function rememberNetworkDevice(device,name,kind='Player') {
+  if(!lobbyToken(device)) return;
+  const list=rememberedDevices(),entry=list.find(item=>item.device===device&&item.kind===kind);
+  if(entry) {entry.name=networkName(name)||entry.name;entry.seen=Date.now();}
+  else list.push({device,name:networkName(name)||kind,kind,seen:Date.now()});
+  localWrite(knownDevicesKey,JSON.stringify(list.slice(-100)));
+}
+const lanDeviceKey='tnt-lan-device-v1';
+function localRead(key) {try {return localStorage.getItem(key)||'';} catch {return '';}}
+function localWrite(key,value) {
+  try {if(value) localStorage.setItem(key,value);else localStorage.removeItem(key);}
+  catch {}
+}
+const storedLanDevice=localRead(lanDeviceKey);
+const lanDevice=/^[a-f0-9]{24}$/.test(storedLanDevice)?storedLanDevice:networkToken();
+localWrite(lanDeviceKey,lanDevice);
+let lanSocket=null,lanPresence=new Set(),lanRetry=0,lanHeartbeat=0,lanConnectTimer=0;
+const lanInvites=new Map(),lanAttempts=new Map(),lanSeen=new Map(),lanReplay=new Map();
+const lanConfig=()=>readLanAddress(localRead(lanSettingsKey));
+
+function readLanAddress(value) {
+  try {
+    const url=new URL(value);
+    const ip=url.hostname.split('.').map(Number), [a,b]=ip;
+    const privateIPv4=/^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname)&&ip.every(x=>x>=0&&x<=255)&&
+      (a===10||a===127||a===192&&b===168||a===172&&b>=16&&b<=31||a===169&&b===254);
+    if(url.protocol!=='http:'||!privateIPv4||url.username||url.password||url.search||url.pathname!=='/'||
+      !/^#tnt-lan=[a-f0-9]{32}$/.test(url.hash)) return null;
+    return {url:url.href,socket:'ws://'+url.host+'/ws/'+url.hash.slice(9)};
+  } catch {return null;}
+}
+function setLanAddress(value) {
+  const addr=value.trim()?readLanAddress(value.trim()):null;
+  if(value.trim()&&!addr) {lanUi('Enter the LAN setup address printed by the helper.');return;}
+  localWrite(lanSettingsKey,addr?.url||'');
+  connectLan();
+}
+function lanUi(message) {
+  if(message) netText('net-lan-status',message);
+  if(!$('net-entry').hidden&&!$('multiplayer').hidden) {
+    renderSavedLobbies();renderKnownDevices();
+  }
+  renderLanInvites();
+  if(networkRoom&&!$('net-lobby').hidden) renderNetworkLobby();
+}
+function lanSend(packet) {
+  if(lanSocket?.readyState!==WebSocket.OPEN||!lanSocket.lanReady) throw Error('LAN helper unavailable. QR and sound are available.');
+  lanSocket.send(JSON.stringify(packet));
+}
+function connectLan() {
+  clearTimeout(lanRetry);clearTimeout(lanConnectTimer);clearInterval(lanHeartbeat);
+  if(lanSocket) {lanSocket.onclose=null;lanSocket.close();lanSocket=null;}
+  lanPresence.clear();
+  const config=lanConfig();
+  if(!config) {lanUi('LAN helper optional. QR and sound work on their own.');return;}
+  if(!crypto.subtle||typeof WebSocket!=='function') {
+    lanUi('LAN pairing needs a browser with Web Crypto. Open the downloaded index.html in Chrome or use QR.');return;
+  }
+  let socket;
+  try {socket=lanSocket=new WebSocket(config.socket);}
+  catch {lanUi('This browser could not open the LAN helper. Use QR or sound.');return;}
+  lanUi('Connecting to the LAN helper…');
+  lanConnectTimer=setTimeout(()=>{if(lanSocket===socket&&!socket.lanReady) socket.close();},4400);
+  socket.onopen=()=>socket.send(JSON.stringify({kind:'hello',device:lanDevice}));
+  socket.onmessage=({data})=>{
+    if(lanSocket!==socket) return;
+    const packet=decodeNetworkPacket(data);
+    if(!packet) return;
+    if(packet.kind==='hello'&&!socket.lanReady) {
+      clearTimeout(lanConnectTimer);socket.lanReady=true;
+      lanUi('On the local network · remembered devices can send requests.');
+      lanSend({kind:'presence'});
+      lanHeartbeat=setInterval(()=>{try {lanSend({kind:'presence'});} catch {}},5500);
+    } else if(packet.kind==='presence'&&Array.isArray(packet.online)) {
+      const next=new Set(packet.online.filter(lobbyToken));
+      let changed=next.size!==lanPresence.size;
+      for(const id of next) {changed=changed||!lanPresence.has(id);lanSeen.set(id,Date.now());}
+      lanPresence=next;
+      if(changed) lanUi();
+    } else if(packet.kind==='signal'&&lobbyToken(packet.from)&&typeof packet.box==='string') {
+      receiveLanSignal(packet).catch(()=>{});
+    }
+  };
+  socket.onclose=()=>{
+    if(lanSocket!==socket) return;
+    lanSocket=null;clearInterval(lanHeartbeat);lanPresence.clear();
+    lanUi('LAN helper offline. You can still use QR, sound or a relay tab.');
+    lanRetry=setTimeout(connectLan,10000);
+  };
+}
+function lanPeers(lobby) {
+  if(lobby.kind==='host') return lobby.members.filter(member=>lobbyToken(member.device)&&lobbyToken(member.ticket))
+    .map(member=>({...member,role:'Guest'}));
+  return lobbyToken(lobby.hostDevice)?[{device:lobby.hostDevice,ticket:lobby.ticket,name:lobby.hostName||'Host',role:'Host'}]:[];
+}
+function lanAlias(peer) {return networkName(localRead('tnt-device-name-'+peer.device))||peer.name||'Device';}
+const lanB64=bytes=>btoa(String.fromCharCode(...bytes));
+const lanUn64=text=>Uint8Array.from(atob(text),char=>char.charCodeAt(0));
+const lanEncoding=new TextEncoder();
+const lanContext=(from,to)=>lanEncoding.encode('TNT LAN '+multiplayerVersion+' '+from+' '+to);
+async function lanKey(ticket) {
+  const hash=await crypto.subtle.digest('SHA-256',lanEncoding.encode('Track N Trace lobby '+ticket));
+  return crypto.subtle.importKey('raw',hash,'AES-GCM',false,['encrypt','decrypt']);
+}
+async function sendLanSignal(lobby,peer,fields) {
+  const key=await lanKey(peer.ticket),iv=crypto.getRandomValues(new Uint8Array(12));
+  const payload={...fields,lobby:lobby.id,nonce:networkToken(),issued:Date.now()};
+  const bytes=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:lanContext(lanDevice,peer.device)},key,lanEncoding.encode(JSON.stringify(payload)));
+  lanSend({kind:'forward',to:peer.device,box:lanB64(iv)+'.'+lanB64(new Uint8Array(bytes))});
+}
+async function receiveLanSignal({from,box}) {
+  if(box.length>29000) return;
+  const [iv,data]=box.split('.');
+  if(!iv||!data) return;
+  for(const lobby of savedLobbies()) for(const peer of lanPeers(lobby).filter(item=>item.device===from)) {
+    let packet;
+    try {
+      const key=await lanKey(peer.ticket);
+      const plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv:lanUn64(iv),additionalData:lanContext(from,lanDevice)},key,lanUn64(data));
+      packet=JSON.parse(new TextDecoder().decode(plaintext));
+    } catch {continue;}
+    if(packet.lobby!==lobby.id||!lobbyToken(packet.nonce)||!lobbyToken(packet.request)||
+      !Number.isFinite(packet.issued)||Math.abs(Date.now()-packet.issued)>120000||lanReplay.has(packet.nonce)) return;
+    lanReplay.set(packet.nonce,Date.now());
+    for(const [id,when] of lanReplay) if(Date.now()-when>240000) lanReplay.delete(id);
+    await handleLanSignal(lobby,peer,packet);
+    return;
+  }
+}
+function ensureLanRoom(lobby,host) {
+  const existing=networkRoom;
+  if(existing?.host===host&&existing.lobby?.id===lobby.id&&(!existing.id||existing.phase==='lobby')&&!existing.relayRequest) {
+    networkWaiting=false;openMultiplayer();return existing;
+  }
+  if(run||existing?.id) throw Error('Leave the current race or lobby before accepting a different one.');
+  return makeNetworkRoom(host,{lobby,save:true});
+}
+function trackLanAttempt(request,entry) {
+  lanAttempts.set(request,entry);
+  entry.timer=setTimeout(()=>{
+    if(lanAttempts.get(request)!==entry) return;
+    lanAttempts.delete(request);
+    if(entry.peerId&&entry.room?.link.peers.get(entry.peerId)?.channel?.readyState!=='open') entry.room.link.remove(entry.peerId);
+    lanUi('The LAN request expired. Try again or use QR.');
+  },65000);
+}
+async function askLan(lobby,peer) {
+  try {
+    const request=networkToken();
+    await sendLanSignal(lobby,peer,{kind:'request',request});
+    trackLanAttempt(request,{lobby:lobby.id,device:peer.device});
+    lanUi(lanPresence.has(peer.device)?'Request sent to '+lanAlias(peer)+'.':'Request sent. The other player can receive it if they open the game in the next minute.');
+  } catch(error) {lanUi(error.message);}
+}
+async function sendLanOffer(lobby,peer,request) {
+  const room=ensureLanRoom(lobby,true),offer=await room.link.offer(false);
+  room.lanPeers.add(peer.device);
+  const previous=lanAttempts.get(request);
+  if(previous) clearTimeout(previous.timer);
+  trackLanAttempt(request,{lobby:lobby.id,device:peer.device,room,peerId:offer.id});
+  try {await sendLanSignal(lobby,peer,{kind:'offer',request,code:offer.code});}
+  catch(error) {room.link.remove(offer.id);throw error;}
+  netStatus('Waiting for '+lanAlias(peer)+' to connect…');
+}
+async function handleLanSignal(lobby,peer,packet) {
+  if(packet.kind==='request') {
+    if(lanInvites.size>=24) lanInvites.delete(lanInvites.keys().next().value);
+    lanInvites.set(packet.request,{lobby,peer,expires:Date.now()+65000});
+    renderLanInvites();renderLaneLabel();
+    setTimeout(()=>{renderLanInvites();renderLaneLabel();},66000);
+    return;
+  }
+  const pending=lanAttempts.get(packet.request);
+  if(!pending||pending.lobby!==lobby.id||pending.device!==peer.device) return;
+  if(packet.kind==='accept'&&lobby.kind==='host'&&!pending.room) {
+    await sendLanOffer(lobby,peer,packet.request);
+  } else if(packet.kind==='offer'&&lobby.kind==='guest'&&typeof packet.code==='string'&&!pending.room) {
+    const room=ensureLanRoom(lobby,false);
+    pending.room=room;
+    try {
+      const reply=await room.link.answer(packet.code);
+      await sendLanSignal(lobby,peer,{kind:'answer',request:packet.request,code:reply});
+      netStatus('Opening the direct race connection…');
+    } catch(error) {if(networkRoom===room) leaveNetworkRoom(error.message);}
+  } else if(packet.kind==='answer'&&pending.room?.host&&pending.room===networkRoom&&typeof packet.code==='string') {
+    await pending.room.link.accept(packet.code,pending.peerId);
+    clearTimeout(pending.timer);lanAttempts.delete(packet.request);
+  }
+}
+async function acceptLan(request) {
+  const invite=lanInvites.get(request);
+  if(!invite||invite.expires<Date.now()) {lanInvites.delete(request);renderLanInvites();return;}
+  const {lobby,peer}=invite;
+  try {
+    if(lobby.kind==='host') await sendLanOffer(lobby,peer,request);
+    else {
+      if(run||networkRoom?.id&&networkRoom.lobby?.id!==lobby.id) throw Error('Leave the current race or lobby first.');
+      if(networkRoom?.id&&networkRoom.lobby?.id===lobby.id) throw Error('You are already connected to this lobby.');
+      trackLanAttempt(request,{lobby:lobby.id,device:peer.device});
+      await sendLanSignal(lobby,peer,{kind:'accept',request});
+      lanUi('Accepted. Waiting for the host to open the connection…');
+    }
+    lanInvites.delete(request);renderLanInvites();renderLaneLabel();
+  } catch(error) {lanUi(error.message);}
+}
+function renderLanInvites() {
+  const list=$('net-lan-invitations');
+  for(const [id,invite] of lanInvites) if(invite.expires<Date.now()) lanInvites.delete(id);
+  list.replaceChildren(...[...lanInvites].map(([id,{lobby,peer}])=>{
+    const row=document.createElement('li'),label=document.createElement('strong');
+    label.textContent=lanAlias(peer)+' · '+lobby.name;
+    row.append(label,button(lobby.kind==='host'?'Accept and host':'Accept invite',()=>acceptLan(id),'primary'),
+      button('Dismiss',()=>{lanInvites.delete(id);renderLanInvites();renderLaneLabel();}));
+    return row;
+  }));
+  $('net-lan-requests').hidden=!list.children.length;
+  $('net-lan-alert').hidden=!list.children.length||networkWaiting||!networkRoom;
+  netText('net-lan-alert',list.children.length===1?'1 request':list.children.length+' requests');
+}
+function renderLaneLabel() {netText('net-open',lanInvites.size?'Multiplayer · request':networkRoom?'Return to multiplayer':'Multiplayer');}
+function renderKnownDevices() {
+  const rows=new Map();
+  for(const lobby of savedLobbies()) for(const peer of lanPeers(lobby)) {
+    if(!rows.has(peer.device)) rows.set(peer.device,[]);
+    rows.get(peer.device).push({lobby,peer});
+  }
+  for(const peer of rememberedDevices()) {
+    const key=peer.kind==='Relay'?peer.device+'/relay':peer.device;
+    if(!rows.has(key)) rows.set(key,[{peer,lobby:null}]);
+  }
+  const list=$('net-known-list');
+  $('net-known-empty').hidden=!!rows.size;
+  list.replaceChildren(...[...rows].map(([device,entries])=>{
+    const {peer}=entries[0],row=document.createElement('li'),details=document.createElement('div'),name=document.createElement('strong'),state=document.createElement('small');
+    name.textContent=peer.kind==='Relay'?(localRead('tnt-device-name-'+device)||peer.name):lanAlias(peer);
+    const seen=lanSeen.get(device)||peer.seen||entries[0].lobby?.seen;
+    const joined=entries.filter(entry=>entry.lobby);
+    const status=peer.kind==='Relay'&&networkRoom?.relay?.relayDevice===peer.device?'Connected':
+      lanPresence.has(device)?'Online':seen?'Last seen '+new Date(Number(seen)).toLocaleString():'Presence unknown';
+    state.textContent=status+' · '+(joined.length?joined.map(({lobby,peer:p})=>lobby.name+' ('+p.role+')').join(', '):
+      peer.kind==='Relay'?'Relay tab':'No saved lobby');
+    details.append(name,state);row.append(details,button('Rename',()=>{
+      openModal('net-rename-device','Name this device',body=>{
+        const input=document.createElement('input');input.value=name.textContent;input.maxLength=22;input.setAttribute('aria-label','Device name');
+        body.append(input);
+        setModalActions(button('Cancel',closeModal),button('Save',()=>{
+          localWrite('tnt-device-name-'+device,networkName(input.value));closeModal();renderKnownDevices();renderSavedLobbies();
+        },'primary'));
+      },closeModal);
+    }));
+    for(const {lobby,peer:p} of joined) row.append(button('Request · '+lobby.name,()=>askLan(lobby,p)));
+    return row;
+  }));
+}
+function showLanSetup() {
+  openModal('net-lan-setup','LAN helper setup',body=>{
+    body.append(paragraph('Run the downloaded helper with Python 3.9 or newer on one device. Copy the LAN setup address from its window. Enter the address here. Guests can enable it after their first saved-lobby QR pairing.'));
+    const input=document.createElement('input');input.type='text';input.value=lanConfig()?.url||'';input.setAttribute('aria-label','LAN setup address');
+    input.placeholder='http://192.168.1.20:8765/#tnt-lan=…';input.style.width='100%';
+    body.append(input);
+    setModalActions(button('Cancel',closeModal),button('Save address',()=>{
+      if(input.value.trim()&&!readLanAddress(input.value.trim())) {input.setCustomValidity('Use the private LAN setup address printed by the helper.');input.reportValidity();return;}
+      closeModal();setLanAddress(input.value);
+    },'primary'));
+    input.addEventListener('input',()=>input.setCustomValidity(''));
+  },closeModal);
+}
+function downloadLanHelper() {
+  const source=$('tnt-lan-helper').textContent.trimStart();
+  const url=URL.createObjectURL(new Blob([source],{type:'text/x-python'}));
+  const link=document.createElement('a');link.href=url;link.download='track-n-trace-lan.py';link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
 const savedLobbiesKey='tnt-saved-lobbies-v1';
 const lobbyToken=value=>typeof value==='string'&&/^[a-f0-9]{24}$/.test(value);
 const lobbyName=value=>typeof value==='string'?value.trim().slice(0,40):'';
@@ -18418,15 +18965,23 @@ function renderSavedLobbies() {
     const row=document.createElement('li'),details=document.createElement('div'),name=document.createElement('strong');
     name.textContent=lobby.name;
     const role=document.createElement('small');
-    role.textContent=lobby.kind==='host'?'Created by you · '+lobby.members.length+' remembered':'Joined';
+    const peers=lanPeers(lobby),online=peers.filter(peer=>lanPresence.has(peer.device)).length;
+    const count=lobby.kind==='host'?1+lobby.members.length:lobby.roster?.length||2;
+    const current=networkRoom?.lobby?.id===lobby.id?networkRoom.players.length:0;
+    role.textContent=(lobby.kind==='host'?'Created by you':'Joined')+' · '+count+' known · '+online+' peers online · '+current+' connected';
+    const methods=document.createElement('small');
+    methods.textContent='Direct QR / Sound · Relay tab'+(peers.length?' · LAN reconnect':'');
+    details.append(methods);
     details.append(name,role);
     const withCurrent=action=>()=>{
+      if(networkRoom?.lobby?.id===lobby.id&&networkRoom.id) {$('net-return-session').click();return;}
+      if(networkRoom?.id) {netStatus('Leave the current lobby before switching to another one.');return;}
       const current=savedLobbies().find(item=>item.id===lobby.id);
       if(current) action(current);else {renderSavedLobbies();netStatus('This lobby was removed.');}
     };
-    const relay=button('Use relay',withCurrent(current=>beginRelayRace(current.kind==='host',current)));
+    const relay=button('Via relay',withCurrent(current=>beginRelayRace(current.kind==='host',current)));
     const repair=withCurrent(current=>current.kind==='host'?openSavedHost(current,true):beginNetworkJoin(current,true));
-    row.append(details,button('Open',withCurrent(current=>current.kind==='host'?openSavedHost(current):beginNetworkJoin(current)),'primary'),
+    row.append(details,button('Open direct',withCurrent(current=>current.kind==='host'?openSavedHost(current):beginNetworkJoin(current)),'primary'),
       relay,button('Repair connection',repair),button('Remove',()=>{
         openModal('net-forget','Remove saved lobby?',body=>{
           body.append(paragraph('Remove “'+lobby.name+'” from this browser?'));
@@ -18436,6 +18991,7 @@ function renderSavedLobbies() {
           },'race-cancel'));
         },closeModal);
       }));
+    for(const peer of peers) row.append(button((lobby.kind==='host'?'Invite ':'Request host · ')+lanAlias(peer),()=>askLan(lobby,peer)));
     return row;
   }));
 }
@@ -18444,14 +19000,14 @@ function createSavedLobby() {
     const label=document.createElement('label'),input=document.createElement('input');
     label.className='net-driver';input.maxLength=40;input.placeholder='Family Racing';label.append('Lobby name',input);
     body.append(label);
-    const create=()=>{
+    const create=(viaRelay=false)=>{
       const lobby={id:networkToken(),name:lobbyName(input.value)||'Family Racing',kind:'host',members:[],settings:networkSeedSettings()};
       const saved=writeSavedLobby(lobby);
-      openSavedHost(lobby);
+      if(viaRelay) beginRelayRace(true,lobby);else openSavedHost(lobby);
       if(!saved) netStatus('This browser could not save the lobby. You can still play this session.');
     };
     input.addEventListener('keydown',event=>{if(event.key==='Enter') create();});
-    setModalActions(button('Cancel',closeModal),button('Create lobby',create,'primary'));
+    setModalActions(button('Cancel',closeModal),button('Create via relay',()=>create(true)),button('Create lobby',()=>create(),'primary'));
   },closeModal);
 }
 function openSavedHost(lobby,repair=false) {
@@ -18474,7 +19030,8 @@ function rememberLobbyMember(room,id,packet,driver) {
   const lobby=room.lobby;
   if(!lobby||packet.save!==true) return null;
   if(packet.lobbyId&&packet.lobbyId!==lobby.id) throw Error('That invite belongs to another saved lobby.');
-  let entry=lobby.members.find(member=>member.ticket===packet.ticket);
+  const device=lobbyToken(packet.device)&&packet.device!==lanDevice?packet.device:null;
+  let entry=lobby.members.find(member=>member.ticket===packet.ticket||!packet.lobbyId&&device&&member.device===device);
   if(packet.lobbyId&&!entry&&!(packet.repair===true&&room.repair))
     throw Error('This browser’s saved pairing has changed. Use Repair connection on both devices.');
   if(entry&&[...room.memberTickets.values()].includes(entry.ticket)) throw Error('That device has already joined.');
@@ -18482,9 +19039,14 @@ function rememberLobbyMember(room,id,packet,driver) {
     entry={ticket:networkToken(),name:driver.name||'Driver'};
     lobby.members.push(entry);
   } else if(driver.name) entry.name=driver.name;
+  if(device) {entry.device=device;rememberNetworkDevice(device,driver.name);}
+  entry.method=room.relayRequest?'Relay tab':room.lanPeers.has(device)?'LAN helper':'Direct';
+  entry.seen=Date.now();
   room.memberTickets.set(id,entry.ticket);
   writeSavedLobby(lobby);
-  return {id:lobby.id,name:lobby.name,ticket:entry.ticket};
+  const config=lanConfig();
+  return {id:lobby.id,name:lobby.name,ticket:entry.ticket,hostDevice:lanDevice,hostName:room.players[0]?.name,
+    helper:config&&!config.url.startsWith('http://127.')?config.url:null};
 }
 function rememberJoinedLobby(room,info) {
   if(!room.save) return;
@@ -18493,7 +19055,10 @@ function rememberJoinedLobby(room,info) {
   if(!lobbyToken(info.id)||!lobbyToken(info.ticket)||!lobbyName(info.name)||
     room.lobby&&room.lobby.id!==info.id) throw Error('The host sent a different saved lobby.');
   if(savedLobbies().some(item=>item.id===info.id&&item.kind==='host')) return;
-  room.lobby={id:info.id,name:lobbyName(info.name),ticket:info.ticket,kind:'guest'};
+  room.lobby={...room.lobby,id:info.id,name:lobbyName(info.name),ticket:info.ticket,kind:'guest',
+    hostDevice:lobbyToken(info.hostDevice)?info.hostDevice:null,hostName:networkName(info.hostName),seen:Date.now()};
+  if(room.lobby.hostDevice) rememberNetworkDevice(room.lobby.hostDevice,room.lobby.hostName);
+  room.helperOffer=!lanConfig()?readLanAddress(info.helper)?.url:null;
   writeSavedLobby(room.lobby);
 }
 
@@ -18503,7 +19068,7 @@ const localRelayChannel='track-n-trace-relay-'+multiplayerVersion;
 let localLobbyRelay=null;
 class LocalLobbyRelay {
   constructor() {
-    this.id=networkToken();this.members=new Map();this.host=null;this.tabPorts=new Set();this.closed=false;
+    this.id=networkToken();this.members=new Map();this.host=null;this.lobbyId=null;this.waiting=new Set();this.memberLobbies=new Map();this.tabPorts=new Set();this.closed=false;
     this.link=new DirectRoomConnection({
       open:()=>{},message:(id,packet)=>this.receive(id,packet),leave:id=>this.remove(id),
       recovering:()=>{}
@@ -18531,12 +19096,20 @@ class LocalLobbyRelay {
       const error=packet.version!==multiplayerVersion?'Use the same Track N Trace version on both tabs.':
         this.members.size>=maxNetworkPlayers?'The relay has four players.':
         packet.host===true&&this.host?'A player is already hosting. Choose Join a race via relay.':
-        packet.host!==true&&!this.host?'Ask a player to host a race through this relay first.':'';
+        packet.host!==true&&this.lobbyId&&packet.lobby&&packet.lobby!==this.lobbyId?'This relay is hosting a different lobby.':'';
       if(error) {this.send(id,{kind:'relay-ended',text:error});setTimeout(()=>this.remove(id),260);return;}
       const name=networkDriver({name:packet.name}).name||'Player '+(this.members.size+1);
-      this.members.set(id,name);
-      if(packet.host===true) this.host=id;
-      this.send(id,{kind:'relay-welcome',host:id===this.host});
+      this.members.set(id,name);this.memberLobbies.set(id,lobbyToken(packet.lobby)?packet.lobby:null);
+      if(packet.host===true) {this.host=id;this.lobbyId=this.memberLobbies.get(id);}
+      this.send(id,{kind:'relay-welcome',host:id===this.host,waiting:this.waiting.size,relayDevice:lanDevice});
+      if(id===this.host) {
+        for(const waiting of this.waiting) {
+          if(this.lobbyId&&this.memberLobbies.get(waiting)&&this.memberLobbies.get(waiting)!==this.lobbyId) {
+            this.send(waiting,{kind:'relay-ended',text:'The relay opened a different lobby.'});
+          } else this.send(waiting,{kind:'relay-host-ready'});
+        }
+      } else if(this.host) this.send(id,{kind:'relay-host-ready'});
+      else this.waiting.add(id);
       if(!this.link.pending) {$('net-pair').hidden=true;stopNetworkScan();}
       renderLocalRelay();
       return;
@@ -18553,6 +19126,7 @@ class LocalLobbyRelay {
       return;
     }
     if(packet.kind==='relay-ready'&&id!==this.host&&this.host) {
+      this.waiting.delete(id);renderLocalRelay();
       this.send(this.host,{kind:'relay-peer',id});
       return;
     }
@@ -18563,10 +19137,10 @@ class LocalLobbyRelay {
   }
   remove(id,kick=false) {
     if(this.closed) return;
-    const wasMember=this.members.delete(id);
+    const wasMember=this.members.delete(id);this.memberLobbies.delete(id);this.waiting.delete(id);
     if(kick&&wasMember) this.send(id,{kind:'relay-ended',text:'The relay operator removed this device.'});
     if(id===this.host) {
-      this.host=null;
+      this.host=null;this.lobbyId=null;
       for(const other of this.members.keys()) {
         this.send(other,{kind:'relay-ended',text:'The player host left the relay.'});
         setTimeout(()=>this.remove(other),260);
@@ -18598,7 +19172,7 @@ class RelayRaceClient {
     });
   }
   hello() {
-    this.send({kind:'relay-hello',version:multiplayerVersion,host:this.room.host,name:this.room.draft.name});
+    this.send({kind:'relay-hello',version:multiplayerVersion,host:this.room.host,name:this.room.draft.name,lobby:this.room.lobby?.id});
     this.resultTimer=setTimeout(()=>this.ended('The relay did not answer. Open the relay and try its invite again.'),8000);
   }
   raceConnected() {clearTimeout(this.resultTimer);this.resultTimer=null;}
@@ -18631,12 +19205,17 @@ class RelayRaceClient {
     if(packet.kind==='relay-ended') {this.ended(packet.text,packet.allowRace===true);return;}
     if(packet.kind==='relay-welcome'&&!this.connected&&packet.host===room.host) {
       this.raceConnected();
-      this.connected=true;$('net-pair').hidden=true;stopNetworkScan();renderNetworkLobby();
-      netStatus(room.host?'Relay connected. Guests can now join through it.':'Relay connected. Connecting to the player host…');
-      if(!room.host) {
-        this.send({kind:'relay-ready'});
-        this.resultTimer=setTimeout(()=>this.ended('The race link did not open. Try joining through the relay again.'),25000);
-      }
+      this.connected=true;this.relayDevice=lobbyToken(packet.relayDevice)?packet.relayDevice:null;
+      if(this.relayDevice) rememberNetworkDevice(this.relayDevice,'Lobby relay','Relay');
+      $('net-pair').hidden=true;stopNetworkScan();renderNetworkLobby();
+      netStatus(room.host?(packet.waiting?packet.waiting+' players waiting. Connecting them…':'Relay connected. Guests can now join through it.'):
+        'Connected to the relay. Waiting for the player host…');
+      return;
+    }
+    if(this.connected&&!room.host&&!room.id&&packet.kind==='relay-host-ready') {
+      this.raceConnected();
+      this.send({kind:'relay-ready'});
+      this.resultTimer=setTimeout(()=>this.ended('The race link did not open. Try joining through the relay again.'),25000);
       return;
     }
     if(!this.connected) return;
@@ -18691,7 +19270,7 @@ function renderLocalRelay() {
   if(!relay) return;
   const rows=[...relay.members].map(([id,name])=>{
     const row=document.createElement('li'),label=document.createElement('strong');
-    label.textContent=name+(id===relay.host?' · Race host':'');
+    label.textContent=name+(id===relay.host?' · Race host':relay.waiting.has(id)?' · Waiting for host':'');
     row.append(label,button('Remove',()=>relay.remove(id,true)));
     return row;
   });
@@ -18703,7 +19282,7 @@ function startLocalRelay() {
   leaveNetworkRoom();
   localLobbyRelay=new LocalLobbyRelay();
   openMultiplayer();
-  netStatus('Relay open. Invite the player host first.');
+  netStatus('Relay open. Players can wait here until their host arrives.');
 }
 function closeLocalRelay() {
   const relay=localLobbyRelay;
@@ -18737,7 +19316,7 @@ function beginRelayRace(host,lobby=null) {
 
 // multiplayer/ui.js
 // Multiplayer UI: pairing screens, lobby, input capture and race presentation.
-let networkRoom=null;
+let networkRoom=null,networkWaiting=false;
 let networkScanner=null;
 let networkRaceView=null;
 let networkPointerId=null;
@@ -18758,7 +19337,10 @@ function closeMultiplayer() {
 function leaveNetworkRoom(message='') {
   if(modalType.startsWith('net-')||lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
   stopNetworkScan();
-  const room=networkRoom;networkRoom=null;
+  const room=networkRoom;networkRoom=null;networkWaiting=false;
+  if(room) for(const [request,attempt] of lanAttempts) if(attempt.room===room) {
+    clearTimeout(attempt.timer);lanAttempts.delete(request);
+  }
   if(room) {clearTimeout(room.readyTimer);clearTimeout(room.endTimer);room.relay?.close();room.link?.close();}
   if(run?.network) leaveNetworkRace();
   $('net-pair').hidden=true;
@@ -18773,10 +19355,10 @@ function localNetworkDriver() {
 }
 function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null}={}) {
   leaveNetworkRoom();
-  const room={host,lobby,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
+  const room={host,lobby,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),lanPeers:new Set(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
     readyRevision:0,readyUntil:0,recovering:new Set(),suggestions:new Map()};
   if(host) {
-    room.phase='lobby';room.players.push({id:'host',...room.draft,name:room.draft.name||'Host',ready:false});
+    room.phase='lobby';room.players.push({id:'host',device:lobby?lanDevice:null,...room.draft,name:room.draft.name||'Host',ready:false});
     try {room.settings=lobby?.settings?networkSettings(lobby.settings):networkSeedSettings();}
     catch {room.settings=networkSeedSettings();}
     room.turn='host';
@@ -18788,13 +19370,13 @@ function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=n
     recovering:(id,active)=>{if(networkRoom===room) networkRecovery(room,id,active);}
   };
   room.link=new DirectRoomConnection(events);
-  networkRoom=room;openMultiplayer();
+  networkWaiting=false;networkRoom=room;openMultiplayer();
   return room;
 }
 function sendNetworkHello(room,id) {
   room.hostId=id;
   room.link.send(id,{kind:'hello',version:multiplayerVersion,driver:room.draft,save:room.save,
-    lobbyId:room.lobby?.id,ticket:room.lobby?.ticket,repair:room.repair});
+    lobbyId:room.lobby?.id,ticket:room.lobby?.ticket,repair:room.repair,device:room.save?lanDevice:null});
 }
 function networkRecovery(room,id,active) {
   if(active) room.recovering.add(id);else room.recovering.delete(id);
@@ -18815,7 +19397,9 @@ function networkRecovery(room,id,active) {
 }
 function networkDeparture(room,id,reason) {
   if(!room.host) {
-    leaveNetworkRoom(reason||'The room closed.');
+    const racing=!!run?.network;
+    leaveNetworkRoom(racing?'Race ended because the host disconnected.':reason||'The lobby closed.');
+    if(racing) openMultiplayer();
     return;
   }
   room.recovering.delete(id);room.memberTickets.delete(id);
@@ -18842,20 +19426,12 @@ function openEndMultiplayer() {
   const room=networkRoom;
   if(!room) return;
   if(!room.id||room.relayRequest&&!room.relay?.connected) {leaveNetworkRoom('Connection cancelled.');return;}
-  const end=networkControls(room)||room.host;
-  const action=button(end?'×  End multiplayer':'×  Leave multiplayer',()=>{
-    if(!end) {leaveNetworkRoom('You left multiplayer.');return;}
-    closeModal();localNetworkAction({kind:'terminate'});
-    if(!room.host&&networkRoom===room) {
-      netStatus('Waiting for the host to close the session…');
-      clearTimeout(room.endTimer);
-      room.endTimer=setTimeout(()=>{
-        if(networkRoom===room) leaveNetworkRoom('Left multiplayer. The host did not confirm the session ended.');
-      },2600);
-    }
+  const action=button('× Leave lobby',()=>{
+    if(room.host) {closeModal();endNetworkRoom(room,true);}
+    else {leaveNetworkRoom('');closeMultiplayer();}
   },'race-cancel');
-  openModal('net-leave',end?'End multiplayer?':'Leave multiplayer?',body=>{
-    body.append(paragraph(end?'This closes the room for everyone.':'You’ll leave this room.'));
+  openModal('net-leave','Leave lobby?',body=>{
+    body.append(paragraph(room.host?'Everyone will disconnect. Your saved lobby will still be available.':'You’ll disconnect and return to the main menu.'));
     setModalActions(button('Cancel',returnToNetworkMenu),action);
   },returnToNetworkMenu);
 }
@@ -18870,6 +19446,8 @@ function transmitNetwork(room,packet) {
 }
 function sendNetworkLobby(room) {
   transmitNetwork(room,{kind:'lobby',players:room.players,turn:room.turn,controller:room.controller,settings:room.settings,phase:room.phase,
+    savedRoster:room.lobby?[{name:room.players[0]?.name||'Host',device:lanDevice,role:'Host'},
+      ...room.lobby.members.map(p=>({name:p.name,device:p.device,role:'Guest',seen:p.seen}))]:null,
     readyRevision:room.readyRevision,readyWait:Math.max(0,room.readyUntil-performance.now())});
   renderNetworkLobby();
 }
@@ -18890,9 +19468,14 @@ function broadcastNetworkSnapshot(room) {
   transmitNetwork(room,snapshot);
   receiveNetworkSnapshot(room,snapshot);
 }
-function endNetworkRoom(room) {
-  transmitNetwork(room,{kind:'room-ended'});
-  setTimeout(()=>{if(networkRoom===room) leaveNetworkRoom('Multiplayer ended.');},200);
+function endNetworkRoom(room,toMenu=false) {
+  if(room.closing) return;
+  room.closing=true;transmitNetwork(room,{kind:'room-ended'});
+  room.endTimer=setTimeout(()=>{
+    if(networkRoom!==room) return;
+    leaveNetworkRoom(toMenu?'':'Lobby closed.');
+    if(toMenu) closeMultiplayer();
+  },200);
 }
 function manageNetworkLobby(room,id,packet) {
   const player=room.players.find(p=>p.id===id);
@@ -18912,11 +19495,11 @@ function manageNetworkLobby(room,id,packet) {
       catch(error) {
         room.link.send(id,{kind:'reject',error:error.message});setTimeout(()=>room.link.remove(id),250);return;
       }
-      room.players.push({...driver,id,name:driver.name||'Driver '+(room.players.length+1),ready:false});
+      room.players.push({...driver,id,device:room.lobby&&lobbyToken(packet.device)?packet.device:null,name:driver.name||'Driver '+(room.players.length+1),ready:false});
       resetNetworkReady(room);
     }
     room.link.send(id,{kind:'welcome',id,version:multiplayerVersion,membership});
-    if(!room.link.pending) {$('net-pair').hidden=true;stopNetworkScan();}
+    if(!room.link.pending) {$('net-pair').hidden=true;$('net-pair').dataset.reopen='false';stopNetworkScan();}
     sendNetworkLobby(room);netStatus('Player joined.');
     return;
   }
@@ -18933,9 +19516,20 @@ function manageNetworkLobby(room,id,packet) {
     if(packet.kind==='pause'&&packet.reason!=='connection') room.round.pause(id,packet.reason,packet.paused===true);
     else if(packet.kind==='pause-ready') room.round.readyToResume(id,packet.ready===true);
     else if(packet.kind==='resume-round'&&controls) room.round.resume();
-    else if(packet.kind==='give-up'&&room.round.canGiveUp()) room.round.withdraw(id,'Gave up');
+    else if(packet.kind==='retire-to-lobby') {
+      const round=room.round;
+      if(!round.done&&id===room.controller) {
+        const last=networkResults(round.snapshot(),round.settings,round.players).filter(car=>car.id!==id&&!car.result).at(-1);
+        if(last) {
+          round.pause(last.id,'menu',true);
+          room.temporaryController??=room.controller;
+          room.controller=last.id;sendNetworkLobby(room);
+        }
+      }
+      round.withdraw(id,packet.concede===true?'Conceded':'Retired to lobby');
+    }
     else if(packet.kind==='end-round'&&controls) room.round.end('Round ended');
-    else if(packet.kind==='next-round'&&controls&&room.round.done) {networkNextRound();return;}
+    else if(packet.kind==='next-round'&&(controls||id==='host')&&room.round.done) {networkNextRound();return;}
     else return;
     room.round.checkOutcome();broadcastNetworkSnapshot(room);
     return;
@@ -18972,13 +19566,14 @@ function manageNetworkLobby(room,id,packet) {
   sendNetworkLobby(room);
 }
 function networkMessage(room,id,packet) {
+  if(room.closing) return;
   if(room.host) {manageNetworkLobby(room,id,packet);return;}
   if(room.hostId!==id) return;
   if(packet.kind==='reject') {
     leaveNetworkRoom(packet.error);
     return;
   }
-  if(packet.kind==='room-ended') {leaveNetworkRoom('Multiplayer ended.');return;}
+  if(packet.kind==='room-ended') {leaveNetworkRoom('The host left the lobby.');openMultiplayer();return;}
   if(packet.kind==='removed') {leaveNetworkRoom('Removed from multiplayer.');return;}
   if(packet.kind==='notice') {room.pickupDraft=null;netStatus(packet.text);syncPickupControls();return;}
   if(packet.kind==='announcement') {showRaceAnnouncement(packet.text);return;}
@@ -18986,13 +19581,19 @@ function networkMessage(room,id,packet) {
   if(packet.kind==='welcome') {
     if(packet.version!==multiplayerVersion) {leaveNetworkRoom('Both devices must use Track N Trace v'+multiplayerVersion+'.');return;}
     room.relay?.raceConnected();
+    for(const [request,attempt] of lanAttempts) if(attempt.room===room) {
+      clearTimeout(attempt.timer);lanAttempts.delete(request);
+    }
     try {rememberJoinedLobby(room,packet.membership);}
     catch(error) {leaveNetworkRoom(error.message);return;}
-    room.id=packet.id;$('net-pair').hidden=true;stopNetworkScan();netStatus('Connected.');
+    room.id=packet.id;$('net-pair').hidden=true;$('net-pair').dataset.reopen='false';stopNetworkScan();netStatus('Connected.');
   }
   if(!room.id) return;
   if(packet.kind==='lobby') {
     room.players=packet.players;room.settings=packet.settings;room.turn=packet.turn;room.phase=packet.phase;room.controller=packet.controller;
+    if(room.lobby&&Array.isArray(packet.savedRoster)&&JSON.stringify(room.lobby.roster)!==JSON.stringify(packet.savedRoster)) {
+      room.lobby.roster=packet.savedRoster;writeSavedLobby(room.lobby);
+    }
     if(room.pickupDraft&&(room.turn!==room.id||room.phase!=='lobby'||
       pickupRuleSignature(room.pickupDraft)===pickupRuleSignature(room.settings.pickups))) room.pickupDraft=null;
     room.readyRevision=packet.readyRevision;
@@ -19145,7 +19746,7 @@ function showNetworkPair(title,text,code='',action='') {
   window.tntSoundPairing?.mount({
     playArea:$('net-qr-actions'),listenArea:$('net-scan-actions'),hasCode:!!code,canRead:!!action,
     getBytes:()=>pairingFromBase45(code.slice(pairingHeader.length,-1)),
-    receiveBytes:bytes=>applyNetworkCode(pairingHeader+pairingToBase45(bytes)+':'),
+    receiveBytes:bytes=>applyNetworkCode(pairingHeader+pairingToBase45(bytes)+':',true),
     stopScan:stopNetworkScan,status:netStatus
   });
   $('net-pair').scrollIntoView?.({block:'nearest'});
@@ -19166,7 +19767,7 @@ async function makeNetworkInvite(replace=false) {
   } catch(error) {if(networkRoom===room) netStatus(error.message);}
   finally {room.busy=false;if(networkRoom===room) renderNetworkLobby();}
 }
-async function applyNetworkCode(input) {
+async function applyNetworkCode(input,bySound=false) {
   const target=localLobbyRelay||networkRoom,action=$('net-pair').dataset.action;
   const current=()=>target===(localLobbyRelay||networkRoom);
   const code=input.trim();
@@ -19179,15 +19780,15 @@ async function applyNetworkCode(input) {
       if(!current()) return;
       showNetworkPair('Reply to the host',window.tntSoundPairing?'Have the host scan the QR or listen for your reply sound.':
         'Have the host scan the QR or paste the reply code.',reply);
-      netStatus('Waiting for the host to accept your reply…');
+      netStatus((bySound?'Sound code accepted. ':'')+'Waiting for the host to accept your reply…');
     } else {
       await link.accept(code);
       if(current()) {
         $('net-pair').hidden=true;
-        if($('net-status').textContent==='Connecting…') netStatus('Waiting for the guest to connect…');
+        if($('net-status').textContent==='Connecting…') netStatus((bySound?'Sound code accepted. ':'')+'Waiting for the guest to connect…');
       }
     }
-  } catch(error) {if(current()) netStatus(error.message);}
+  } catch(error) {if(current()) netStatus((bySound?'Sound code could not be used. ':'')+error.message);}
   finally {target.busy=false;if(current()) renderNetworkLobby();}
 }
 function stopNetworkScan() {
@@ -19249,12 +19850,17 @@ async function scanNetworkFile(file) {
 }
 function renderNetworkLobby() {
   const room=networkRoom;
-  netText('net-open',room||localLobbyRelay?'Return to multiplayer':'Multiplayer');
-  $('net-entry').hidden=!!room||!!localLobbyRelay;
-  if(!$('net-entry').hidden&&!$('multiplayer').hidden) renderSavedLobbies();
+  renderLaneLabel();
+  if(localLobbyRelay) netText('net-open','Return to multiplayer');
+  $('net-entry').hidden=!!localLobbyRelay||!!room&&!networkWaiting;
+  $('net-lobbies-back').hidden=!room||networkWaiting;
+  $('net-return-session').hidden=!room;
+  if(room&&!networkWaiting) $('net-pair').dataset.reopen='false';
+  if(!$('net-entry').hidden&&!$('multiplayer').hidden) {renderSavedLobbies();renderKnownDevices();}
+  renderLanInvites();
   $('net-link-state').hidden=!room?.recovering.size;
   const sidelined=room?.phase==='race'&&networkRaceView?.inLobby;
-  $('net-lobby').hidden=!room?.id||!!room.relayRequest&&!room.relay?.connected||room.phase!=='lobby'&&!sidelined;
+  $('net-lobby').hidden=networkWaiting||!room?.id||!!room.relayRequest&&!room.relay?.connected||room.phase!=='lobby'&&!sidelined;
   $('net-leave').hidden=!room&&!localLobbyRelay;
   $('net-back').hidden=!!localLobbyRelay;
   $('net-relay-panel').hidden=!localLobbyRelay;
@@ -19267,6 +19873,20 @@ function renderNetworkLobby() {
   const own=room.players.find(p=>p.id===room.id);
   const chooser=room.players.find(p=>p.id===room.turn);
   netText('net-lobby-title',room.lobby?.name||'Lobby');
+  const roster=room.host?room.lobby?.members:room.lobby?.roster;
+  const known=room.host?1+(roster?.length||0):roster?.length||2;
+  const online=roster?.filter(member=>member.device!==lanDevice&&lanPresence.has(member.device)).length||0;
+  $('net-member-details').hidden=!room.lobby;
+  $('net-enable-lan').hidden=!room.helperOffer;
+  netText('net-member-count',known+' known · '+online+' peers online via helper · '+room.players.length+' connected · '+room.players.filter(p=>p.ready).length+' ready');
+  $('net-member-list').replaceChildren(...(roster||[]).filter(person=>person.device!==lanDevice).map(person=>{
+    const member=document.createElement('li');
+    const connected=room.players.some(player=>person.device&&player.device===person.device||
+      room.host&&person.ticket&&room.memberTickets.get(player.id)===person.ticket);
+    member.textContent=lanAlias(person)+' · '+(person.role||'Guest')+' · '+(connected?'Connected':
+      lanPresence.has(person.device)?'Online':person.seen?'Last seen '+new Date(person.seen).toLocaleString():'Presence unknown');
+    return member;
+  }));
   if(!own||!room.settings) return;
   const canChoose=chooser===own&&!sidelined,controls=networkControls(room);
   netText('net-turn',sidelined?'Change your vehicle and paint for the next round.':canChoose?'You’re the Race Director. Choose the course and rules.':
@@ -19286,8 +19906,8 @@ function renderNetworkLobby() {
     const current=networkRaceView?.snapshot.cars.find(car=>car.id===player.id);
     ready.textContent=room.recovering.has(player.id)?'Reconnecting':sidelined?current?.result||'Racing':player.ready?'Ready':'Choosing';ready.dataset.ready=String(player.ready);
     row.append(art,swatch,name,details);
-    for(const [active,label] of [[host,'Host'],[director,'Race Director']]) if(active) {
-      const role=document.createElement('span');role.className='net-role'+(label==='Host'?'':' director');
+    for(const [active,label] of [[host,'Host'],[player.id==='host'&&!host,'Connection host'],[director,'Race Director']]) if(active) {
+      const role=document.createElement('span');role.className='net-role'+(label==='Race Director'?' director':'');
       role.textContent=label;row.append(role);
     }
     row.append(ready);
@@ -19339,12 +19959,13 @@ function renderNetworkLobby() {
   const settling=room.readyUntil>performance.now();
   netText('net-ready-button',settling?'Settings changed…':own.ready?'Cancel ready':'Ready');
   $('net-ready-button').hidden=!!sidelined;$('net-ready-button').disabled=settling;
-  netText('net-leave',controls||room.host?'End multiplayer':'Leave multiplayer');
-  $('net-back').disabled=!!sidelined;
+  netText('net-leave','Leave lobby');
+  $('net-back').disabled=false;
   $('net-watch').hidden=!sidelined;
   const paused=sidelined&&!!networkRaceView.snapshot.paused?.length&&!networkRaceView.done;
-  $('net-start').hidden=!controls||!!sidelined&&!networkRaceView.done&&!paused;
-  netText('net-start',paused?'▶ Continue race':sidelined?'Next round':'Start race');
+  const canEndRound=room.host&&sidelined&&networkRaceView.done;
+  $('net-start').hidden=!(controls||canEndRound)||!!sidelined&&!networkRaceView.done&&!paused;
+  netText('net-start',paused?'▶ Continue race':sidelined?'Return everyone to lobby':'Start race');
   $('net-start').disabled=paused?!networkRaceView.snapshot.pauseRoster.every(p=>!p.required||p.ready):
     !sidelined&&(settling||room.recovering.size>0||room.players.length<2||!room.players.every(p=>p.ready));
   $('net-invite').hidden=!room.host||!!sidelined||!!room.relayRequest;
@@ -19409,7 +20030,7 @@ function networkBegin() {
   enterNetworkRace(room,packet,round.local);
 }
 function enterNetworkRace(room,packet,hostGame=null) {
-  stopNetworkScan();$('net-pair').hidden=true;closeModal();audio.unlock();
+  networkWaiting=false;stopNetworkScan();$('net-pair').hidden=true;closeModal();audio.unlock();
   const course=hostGame?.course||networkCourse(packet.settings);
   const player=packet.players.find(p=>p.id===room.id), settings=packet.settings;
   if(!player) throw Error('Your player is missing from this round.');
@@ -19524,6 +20145,7 @@ function receiveNetworkSnapshot(room,snapshot) {
     if(run.inspect) {run.inspect=false;$('inspection').hidden=true;}
   }
   renderNetworkRaceHud();
+  if(view.returningToLobby&&run.finished&&!view.inLobby) enterPitLobby();
   if(view.inLobby&&(view.pausedShown||wasPaused)) renderNetworkLobby();
   if(snapshot.done&&!view.done) {
     view.done=true;stopNetworkPointer();
@@ -19663,6 +20285,7 @@ function showRaceAnnouncement(text) {
 function enterPitLobby() {
   const view=networkRaceView;
   if(!view||!run?.finished) return;
+  view.returningToLobby=false;networkWaiting=false;
   stopNetworkPointer();view.menuPause=false;view.inLobby=true;
   $('play').hidden=true;$('multiplayer').hidden=false;closeModal();renderNetworkLobby();
 }
@@ -19696,8 +20319,10 @@ function showNetworkResults() {
     }
     body.append(rows);
     if(!networkControls(room)) body.append(paragraph('The host can return everyone to the lobby.'));
-    setModalActions(button('Return to lobby',enterPitLobby),button(networkControls(room)||room.host?'×  End multiplayer':'×  Leave multiplayer',openEndMultiplayer,'race-cancel'),
-      ...(networkControls(room)?[button('Next round',()=>localNetworkAction({kind:'next-round'}),'primary')]:[]));
+    setModalActions(button('Return to lobby',()=>{
+      if(networkControls(room)||room.host) localNetworkAction({kind:'next-round'});
+      else enterPitLobby();
+    },'primary'),button('× Leave lobby',openEndMultiplayer,'race-cancel'));
   });
 }
 function networkNextRound() {
@@ -19705,6 +20330,7 @@ function networkNextRound() {
   if(!room?.host||!room.round?.done) return;
   const roster=room.round.players,was=roster.findIndex(p=>p.id===room.turn);
   const following=roster.slice(was+1).concat(roster.slice(0,was+1)).find(p=>room.players.some(q=>p.id===q.id));
+  if(room.temporaryController) {room.controller=room.temporaryController;room.temporaryController=null;}
   room.turn=following?.id||room.controller;room.round=null;room.phase='lobby';
   resetNetworkReady(room);leaveNetworkRace();sendNetworkLobby(room);
   netStatus('Choose the next course and rules.');
@@ -19731,11 +20357,15 @@ function refreshNetworkPauseMenu() {
     state.textContent=!entry.required?entry.status||'Spectating':entry.blocked?'Away':entry.ready?'Ready':'Waiting';row.dataset.ready=String(entry.ready);
     row.append(name,state);return row;
   }));
-  const me=roster.find(p=>p.id===room.id);
+  const me=roster.find(p=>p.id===room.id),retire=$('pause-return-lobby');
+  if(retire) retire.textContent=networkConcedeAvailable()?'Concede and return':'Return to lobby';
   const ready=$('pause-ready-action'),resume=$('pause-resume-action');
   ready.hidden=!paused||!me?.required;ready.disabled=!!me?.blocked;
   ready.textContent=me?.ready?'Cancel ready':'Ready to resume';
   resume.hidden=!paused||!networkControls(room);resume.disabled=!roster.every(p=>!p.required||p.ready);
+}
+function networkConcedeAvailable() {
+  return !!run&&!run.finished&&networkRaceView?.snapshot.cars.filter(car=>!car.result).length===1;
 }
 function networkExitControls(requestPause=true) {
   const room=networkRoom,view=networkRaceView;
@@ -19756,13 +20386,23 @@ function networkExitControls(requestPause=true) {
     full.setAttribute('aria-label','Fullscreen');full.title='Fullscreen';
     const buttons=[ready,resume,full];
     buttons.push(button('Inspect vehicle',inspectCar));
-    if(run.finished) buttons.push(button('Return to lobby',enterPitLobby));
-    else if(!run.course.openYard&&view.snapshot.cars.some(car=>car.result==='Finished')) buttons.push(button('Give up',()=>{
-      localNetworkAction({kind:'give-up'});view.menuPause=false;closeModal();
-      if(run.finished&&view.snapshot.paused?.length) networkExitControls(false);
-    },'race-stop'));
+    const returnButton=button('Return to lobby',()=>{
+      if(view.done) {showNetworkResults();return;}
+      const concede=networkConcedeAvailable();
+      function retire() {
+        view.returningToLobby=true;
+        if(run.finished) enterPitLobby();
+        localNetworkAction({kind:'retire-to-lobby',concede});
+      }
+      if(run.finished) retire();
+      else openModal('net-retire',concede?'Concede and return?':'Return to lobby?',body=>{
+        body.append(paragraph('You’ll retire from this race and stay in the lobby.'));
+        setModalActions(button('Cancel',()=>networkExitControls(false)),button(concede?'Concede and return':'Return to lobby',retire,'race-stop'));
+      },()=>networkExitControls(false));
+    });
+    returnButton.id='pause-return-lobby';buttons.push(returnButton);
     if(networkControls(room)) buttons.push(button('■ End round',()=>localNetworkAction({kind:'end-round'}),'race-stop'));
-    buttons.push(button(networkControls(room)||room.host?'× End multiplayer':'× Leave multiplayer',openEndMultiplayer,'race-cancel'));
+    buttons.push(button('× Leave lobby',openEndMultiplayer,'race-cancel'));
     setModalActions(...buttons);
   },()=>{
     view.menuPause=false;closeModal();
@@ -19774,6 +20414,24 @@ function initializeMultiplayer() {
   const on=(id,event,listener)=>$(id).addEventListener(event,listener);
   on('net-open','click',openMultiplayer);
   on('net-back','click',closeMultiplayer);
+  const showWaiting=()=>{
+    stopNetworkScan();networkWaiting=true;
+    $('net-pair').dataset.reopen=String(!$('net-pair').hidden);$('net-pair').hidden=true;
+    renderNetworkLobby();
+  };
+  on('net-lobbies-back','click',showWaiting);
+  on('net-lan-alert','click',showWaiting);
+  on('net-return-session','click',()=>{
+    networkWaiting=false;
+    if($('net-pair').dataset.reopen==='true') $('net-pair').hidden=false;
+    renderNetworkLobby();
+  });
+  on('net-lan-setup','click',showLanSetup);
+  on('net-lan-download','click',downloadLanHelper);
+  on('net-enable-lan','click',()=>{
+    const address=networkRoom?.helperOffer;
+    if(address) {networkRoom.helperOffer=null;$('net-enable-lan').hidden=true;setLanAddress(address);netStatus('Saved the local reconnect address.');}
+  });
   on('net-leave','click',openEndMultiplayer);
   on('net-full','click',fullscreen);
   on('net-free-lock','click',()=>changePickerRules({drag:networkRoom.settings.drag==='free'?'trace':'free'}));
@@ -19824,9 +20482,14 @@ function initializeMultiplayer() {
     else {fullscreen();localNetworkAction({kind:'start'});}
   });
   if(location.hash==='#lobby-relay') startLocalRelay();
+  else if(!lanConfig()&&readLanAddress(location.href)) {
+    const address=location.href;
+    history.replaceState(null,'',location.pathname+location.search);setLanAddress(address);
+  } else connectLan();
   window.addEventListener('pagehide',event=>{
     stopNetworkScan();
     if(!event.persisted) {
+      if(lanSocket) {lanSocket.onclose=null;lanSocket.close();}
       networkRoom?.relay?.close();networkRoom?.link.close();localLobbyRelay?.close();
     }
   });
