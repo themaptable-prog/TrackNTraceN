@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#202224">
-<title>Track’n’Trace’n v0.19</title>
+<title>Track’n’Trace’n v0.19.1</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -318,7 +318,16 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 .net-panel,.garage,.dialog{background:linear-gradient(145deg,#33363aec,#222529f7 75%);border-color:var(--edge)}
 #net-status{min-height:1.25em}
 .net-panel .net-lobby-head,.garage h2{border-left:3px solid #c95446;padding-left:8px}
-button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(.race-stop):not(.race-continue):not(.race-restart){background-color:#30373c}
+button:where(:not(.primary,.lobby-remove,[data-paint],.race-cancel,.race-stop,.race-continue,.race-restart)){background-color:#30373c}
+:is(#multiplayer,#modal) :is(input:not([type=checkbox],[type=range]),select,textarea){
+  color:var(--cream);background-color:var(--field);border:1px solid var(--line);border-radius:7px;
+  padding:6px 8px;font:inherit;min-height:36px;
+}
+:is(#multiplayer,#modal) :is(input,textarea)::placeholder{color:var(--muted);opacity:1}
+:is(#multiplayer,#modal) input::file-selector-button{
+  color:var(--cream);background:#30373c;border:1px solid var(--line);border-radius:6px;
+  padding:6px;font:inherit;cursor:pointer
+}
 #start,#net-start{border-bottom:3px solid #ad623c}
 #net-peer-enable[aria-pressed=true]{background-color:#5a653e!important;border-color:#c1cb87;color:#fff6d5}
 #net-saved-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;background:#272a2d;border:1px solid #57514c;padding:5px}
@@ -379,7 +388,7 @@ button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.19</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.19.1</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
