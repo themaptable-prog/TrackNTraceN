@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.17</title>
+<meta name="theme-color" content="#202224">
+<title>Track’n’Trace’n v0.18</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -206,10 +206,6 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 #net-same-device-relay{display:grid;gap:7px;margin:8px 0}
 #net-relay-digits{max-width:8em;padding:6px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:var(--cream)}
 #net-device-digits,#net-relay-tab-code{font-variant-numeric:tabular-nums;color:var(--cream)}
-#net-sound-feedback{background:#18302b;margin:8px 0;padding:8px;border-radius:7px;font-size:13px}
-#net-sound-feedback label{margin-right:12px}
-#net-sound-feedback meter{width:min(28vw,170px);vertical-align:middle}
-#net-sound-feedback p{padding-top:4px}
 #net-saved-list,#net-relay-roster,#net-known-list{padding:0;display:grid;gap:8px;list-style:none;margin:0}
 #net-saved-list:empty,#net-relay-roster:empty{display:none}
 #net-saved-list li,#net-relay-roster li,#net-known-list li{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:9px;background:#19322d;border-radius:8px}
@@ -313,13 +309,80 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 .pickup-row [aria-disabled=true]{opacity:.68}
 @media(max-width:525px){.pickup-row{grid-template-columns:1fr 1fr}.pickup-row>label:first-child{grid-column:1/-1}}
 
+/* Asphalt, chequered flag and kerb colours */
+:root{--ink:#202224;--deep:#151719;--panel:#282c30;--edge:#55565a;--line:#55565a;--cream:#fff4e0;--muted:#c1c0be;--orange:#ffb563;--orange-hot:#ffd097;--green:#dbe9a7}
+#race-backdrop{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:radial-gradient(ellipse at 27% -10%,#383939,transparent 75%),repeating-linear-gradient(116deg,#232425 0 3px,#222325 3px 5px)}
+#race-backdrop svg{width:100%;height:100%;opacity:.56}
+#race-backdrop .flag{transform-origin:center;animation:flag-drift 17s ease-in-out infinite alternate}
+@keyframes flag-drift{from{transform:translateY(-7px) rotate(-1.5deg) scaleY(.94)}to{transform:translateY(12px) rotate(1.5deg) scaleY(1.04)}}
+#setup,#multiplayer,#creator{position:relative;background:transparent}
+#setup .brand{border-left:5px solid #d95043;padding-left:10px}
+#setup .masthead{border-bottom:3px solid #8c8a84;margin-bottom:12px}
+.net-panel,.garage,.dialog{background:linear-gradient(145deg,#33363aec,#222529f7 75%);border-color:var(--edge)}
+#net-status{min-height:1.25em}
+.net-panel .net-lobby-head,.garage h2{border-left:3px solid #c95446;padding-left:8px}
+button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(.race-stop):not(.race-continue):not(.race-restart){background-color:#30373c}
+#start,#net-start{border-bottom:3px solid #ad623c}
+#net-peer-enable[aria-pressed=true]{background-color:#5a653e!important;border-color:#c1cb87;color:#fff6d5}
+#net-saved-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;background:#272a2d;border:1px solid #57514c;padding:5px}
+#net-saved-list li.active-lobby{border-color:#ffb563;animation:lobby-ready-ring 2.8s ease-in-out infinite}
+@keyframes lobby-ready-ring{50%{box-shadow:0 0 0 3px #ffb56360}}
+#net-saved-list .lobby-card{display:grid;gap:4px;min-width:0;text-align:left;padding:8px 10px;font-size:15px}
+#net-saved-list small{font-size:11px;margin:0}
+.lobby-methods{display:flex;gap:5px;flex-wrap:wrap;font:650 10px var(--mono);text-transform:uppercase}
+.lobby-methods span{padding:2px 5px;border-radius:3px;background:#45474b;color:#e5e1d8}
+.lobby-methods [data-last=true]{background:#69513b;color:#ffe0ab}
+.lobby-methods .muted-method{opacity:.55}
+#net-saved-list .lobby-remove{position:relative;isolation:isolate;width:42px;padding:0;overflow:hidden;font-size:24px;color:#ffe2dc;background:#6c3735;border-color:#ac5952;touch-action:none;user-select:none}
+.lobby-remove::after{content:'';position:absolute;inset:auto 0 0;height:0;background:#d14b42;z-index:-1}
+.lobby-remove.holding::after{height:100%;transition:height 1s linear}
+#net-host-invites{flex-wrap:wrap}
+.course-strip,.course-strip .course-list,.course-strip .course-list button{touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.course-strip .course-list{grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden;overscroll-behavior-x:contain}
+.course-strip .course-list canvas{pointer-events:none}
+#courses button[aria-pressed=true],#vehicle-tiles button[aria-pressed=true]{border-color:#ffb563;background:#4b4135}
+#vehicle-tiles button{min-width:0}
+.picker-transfer{position:fixed;z-index:12;transform-origin:top left;pointer-events:none;object-fit:fill;border-radius:8px}
+.vehicle-hero{background:repeating-linear-gradient(90deg,#c35b52 0 22px,#e0d8c8 22px 44px) bottom/100% 4px no-repeat,#32363a}
+.pickup-grid .pickup-row{grid-template-columns:minmax(0,1fr) auto;align-items:start}
+.pickup-item-settings{min-width:0}
+.pickup-item-settings[open]{grid-column:1/-1;grid-row:3}
+.pickup-bulk{padding:8px 12px;border:1px solid var(--edge);border-radius:8px;margin:8px 0;background:#31353a}
+.pickup-fields{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.pickup-fields label{display:flex;align-items:center;gap:5px;font-size:12px}
+.pickup-fields input[type=number]{width:55px}
+#net-peer-panel details{margin-top:0}
+@media(prefers-reduced-motion:reduce){#race-backdrop .flag,#net-saved-list li.active-lobby{animation:none}}
 </style>
 </head>
 <body>
+<div id="race-backdrop" aria-hidden="true">
+ <svg viewBox="0 0 1200 770" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+   <pattern id="flag-checks" width="84" height="84" patternUnits="userSpaceOnUse" patternTransform="rotate(-16) skewX(-13)">
+    <path fill="#c8c6bc" d="M0 0h42v42H0zm42 42h42v42H42z"/>
+    <path fill="#2d2f30" d="M42 0h42v42H42zM0 42h42v42H0z"/>
+   </pattern>
+   <linearGradient id="flag-shade"><stop stop-color="#161819" stop-opacity=".8"/><stop offset=".55" stop-color="#2a2926" stop-opacity=".36"/><stop offset="1" stop-color="#151718" stop-opacity=".65"/></linearGradient>
+   <path id="flag-shape" d="M316 49C542 137 644-57 875-9c150 31 252 131 407 81l-31 271c-206 44-307-63-462-49-140 12-232 155-470 80z"/>
+  </defs>
+  <path d="M-110 724C204 708 312 540 508 571s303 180 788 43" fill="none" stroke="#3f3f40" stroke-width="97"/>
+  <path d="M-110 724C204 708 312 540 508 571s303 180 788 43" fill="none" stroke="#a3a09b" stroke-width="3" stroke-dasharray="16 21" opacity=".35"/>
+  <path d="M-95 674C216 662 312 493 514 529s303 168 774 40" fill="none" stroke="#d9cec0" stroke-width="9"/>
+  <path d="M-95 674C216 662 312 493 514 529s303 168 774 40" fill="none" stroke="#b94f46" stroke-width="9" stroke-dasharray="18 18"/>
+  <g fill="#242728" stroke="#747572" stroke-width="2" opacity=".52">
+   <path d="M15 197h145l40 37H5zm15-14 43-25h112l27 25zM17 232v26m44-26v26m44-26v26m44-26v26m44-26v26"/>
+   <ellipse cx="1129" cy="694" rx="29" ry="11"/><ellipse cx="1129" cy="685" rx="29" ry="11"/><ellipse cx="1129" cy="676" rx="29" ry="11"/><ellipse cx="1129" cy="676" rx="15" ry="5"/>
+   <path d="M1011 720q-8-43 21-51 31-5 43 26l-16 2-12 22z"/><path d="M1012 699h42" stroke="#b98255"/>
+  </g>
+  <g class="flag" opacity=".59"><use href="#flag-shape" fill="url(#flag-checks)"/><use href="#flag-shape" fill="url(#flag-shade)"/>
+   <path d="M317 69C546 153 650-38 881 11c144 32 235 128 386 89" fill="none" stroke="#ded6c6" opacity=".4" stroke-width="2"/></g>
+ </svg>
+</div>
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.17</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.18</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -441,13 +504,10 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  </div>
 </main>
 <main id="multiplayer" hidden>
- <header class="net-header"><button id="net-back">Back to menu</button><button id="net-lobbies-back" hidden>Back to lobbies</button><h1>Multiplayer</h1><button id="net-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button><button id="net-leave" hidden>Leave multiplayer</button></header>
+ <header class="net-header"><button id="net-back">Back to menu</button><button id="net-lobbies-back" hidden>Back to lobbies</button><h1 id="net-heading">Multiplayer</h1><button id="net-peer-enable" aria-pressed="false" hidden>PeerJS off</button><button id="net-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button><button id="net-leave" hidden>Leave multiplayer</button></header>
  <p id="net-status" role="status" aria-live="polite"></p>
  <p id="net-link-state" role="status" hidden>Wi-Fi interrupted. Waiting for the connection to recover…</p>
  <section id="net-entry" class="net-panel">
-  <h2>Waiting Room</h2>
-  <button id="net-return-session" class="primary" hidden>Return to current lobby</button>
-  <h3>Saved lobbies</h3>
   <p id="net-saved-empty">Create a lobby or join one on the same Wi-Fi. A saved lobby can race with any two to four players.</p>
   <ul id="net-saved-list" aria-label="Saved lobbies"></ul>
   <div class="net-buttons"><button id="net-create-saved" class="primary">Create lobby</button><button id="net-join-saved">Join lobby</button></div>
@@ -456,15 +516,9 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
   <details id="net-relay-options"><summary>Lobby relay tab</summary><div class="net-buttons"><button id="net-relay-open">Open relay tab</button><button id="net-relay-host">Host a race via relay</button><button id="net-relay-join">Join a race via relay</button></div></details>
  </section>
  <section id="net-peer-panel" class="net-panel" hidden aria-label="PeerJS multiplayer">
-  <div class="net-lobby-head"><h2>PeerJS</h2><label class="net-peer-toggle"><input type="checkbox" id="net-peer-enable"> Enable internet matchmaking</label></div>
-  <p>Loads PeerJS from jsDelivr. The public PeerServer exchanges connection details, and Google STUN helps find a direct route. Race traffic goes directly between players.</p>
-  <p id="net-peer-state" role="status">Off · QR, sound and relay play stay local.</p>
-  <label id="net-peer-auto-row" class="net-peer-toggle" hidden><input type="checkbox" id="net-peer-auto"> Reconnect to the last PeerJS lobby when enabled</label>
-  <div id="net-peer-actions" class="net-buttons" hidden>
-   <button id="net-peer-host">Host with PeerJS</button>
-   <label>Join code <input id="net-peer-join-code" maxlength="12" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX"></label>
-   <button id="net-peer-join">Join</button>
-  </div>
+  <details><summary>PeerJS connection details</summary><p>With PeerJS enabled, jsDelivr provides the library, PeerServer finds the lobby, and Google STUN helps find a direct route. Race traffic goes directly between players.</p></details>
+  <p id="net-peer-state" role="status">Off · QR and relay play stay local.</p>
+  <label id="net-peer-auto-row" class="net-peer-toggle" hidden><input type="checkbox" id="net-peer-auto"> Automatically reconnect to PeerJS lobbies</label>
   <div id="net-peer-session" class="net-buttons" hidden>
    <output id="net-peer-code" aria-label="PeerJS join code" hidden></output><button id="net-peer-copy-code" hidden>Copy join code</button>
    <button id="net-peer-new-code" hidden>New join code</button><button id="net-peer-close-code" hidden>Close invites</button>
@@ -493,11 +547,14 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  </section>
  <section id="net-relay-panel" class="net-panel" hidden>
   <div class="net-lobby-head"><h2>Lobby relay</h2><button id="net-relay-invite" class="primary">Invite device</button></div>
-  <p>Keep this tab open. Invite players on other devices using QR or sound. To connect from another tab in this browser, use relay tab code <strong id="net-relay-tab-code"></strong>.</p>
+  <p>Keep this tab open. Invite players on other devices using QR. To connect from another tab in this browser, use relay tab code <strong id="net-relay-tab-code"></strong>.</p>
   <ul id="net-relay-roster" aria-label="Relay players"></ul>
  </section>
  <section id="net-lobby" class="net-panel" hidden>
-  <div class="net-lobby-head"><h2 id="net-lobby-title">Lobby</h2><button id="net-invite" hidden>Show invite QR</button></div>
+  <div class="net-lobby-head"><h2 id="net-lobby-title">Lobby</h2></div>
+  <div class="net-buttons" id="net-host-invites" hidden>
+   <button id="net-invite">Invite by QR</button><button id="net-attach-relay">Connect a relay</button><button id="net-detach-relay" hidden>Disconnect relay</button>
+  </div>
   <details id="net-member-details" hidden><summary id="net-member-count"></summary><ul id="net-member-list"></ul></details>
   <ul id="net-roster" aria-label="Players"></ul>
   <label class="net-driver">Driver name<input id="net-name" maxlength="22" autocomplete="nickname"></label>
@@ -547,221 +604,6 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 </main>
 <div id="net-announcements" aria-live="polite"></div>
 <div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div><div id="modal-actions" hidden></div></section></div>
-<script id="tnt-sound-pairing">
-/* Optional local sound signaling. Remove this script to keep QR and paste only. */
-(() => {
-  'use strict';
-  const symbolSeconds=.024,probeSeconds=.008,syncHz=625,firstHz=1000,gapHz=125;
-  const maxBytes=1024,listenSeconds=62;
-  let active=null,playButton,listenButton,feedback,level,clock,phase;
-
-  function checksum(bytes) {
-    let crc=0xffff;
-    for(const byte of bytes) {
-      crc^=byte<<8;
-      for(let bit=0;bit<8;bit++) crc=((crc&0x8000)?(crc<<1)^0x1021:crc<<1)&0xffff;
-    }
-    return crc;
-  }
-  function packetSamples(bytes,rate) {
-    if(!bytes.length||bytes.length>maxBytes) throw Error('This code is too long for sound. Use the QR or paste the code.');
-    const packet=new Uint8Array(bytes.length+6);
-    packet.set([0x54,0x4e,bytes.length>>8,bytes.length&255]);
-    packet.set(bytes,4);
-    const crc=checksum(packet.subarray(0,-2));
-    packet.set([crc>>8,crc&255],packet.length-2);
-    const sync=Math.round(rate*.22),gap=Math.round(rate*.15);
-    const boundary=slot=>gap+sync+Math.round(rate*symbolSeconds*slot);
-    const samples=new Float32Array(boundary(packet.length*2)+gap);
-    const ramp=Math.max(1,Math.round(rate*.002));
-    const tone=(start,length,hz)=>{
-      const phase=2*Math.PI*hz/rate;
-      for(let i=0;i<length;i++) samples[start+i]=.43*Math.min(1,i/ramp,(length-1-i)/ramp)*Math.sin(i*phase);
-    };
-    tone(gap,sync,syncHz);
-    for(let i=0;i<packet.length;i++) {
-      const left=boundary(2*i),middle=boundary(2*i+1),right=boundary(2*i+2);
-      tone(left,middle-left,firstHz+(packet[i]>>4)*gapHz);
-      tone(middle,right-middle,firstHz+(packet[i]&15)*gapHz);
-    }
-    return samples;
-  }
-  function packetListener(rate,done,update=()=>{}) {
-    const windowSize=Math.round(rate*probeSeconds),step=Math.round(rate*.004);
-    const cell=rate*symbolSeconds,samples=new Float32Array(Math.ceil(rate*listenSeconds));
-    const coefficients=[syncHz,...Array.from({length:16},(_,i)=>firstHz+i*gapHz)]
-      .map(hz=>2*Math.cos(2*Math.PI*hz/rate));
-    let used=0,cursor=0,sync=0,slot=-1,origin=0,high=0,expected=0;
-    const packet=new Uint8Array(maxBytes+6);
-    const energy=at=>{
-      let sum=0;
-      for(let i=at;i<at+windowSize;i++) sum+=samples[i]**2;
-      return sum;
-    };
-    const power=(at,c)=>{
-      let prev=0,before=0;
-      for(let i=at;i<at+windowSize;i++) {
-        const next=samples[i]+c*prev-before;
-        before=prev;prev=next;
-      }
-      return Math.max(0,prev*prev+before*before-c*prev*before);
-    };
-    const reset=(at,reason)=>{
-      update(reason,0);cursor=at;sync=0;slot=-1;expected=0;
-    };
-    return chunk=>{
-      const length=Math.min(chunk.length,samples.length-used);
-      samples.set(chunk.subarray(0,length),used);used+=length;
-      while(true) {
-        const at=slot<0?cursor:Math.round(origin+slot*cell+(cell-windowSize)/2);
-        if(at+windowSize>used) return used>=samples.length;
-        const total=energy(at)*windowSize;
-        if(slot<0) {
-          if(total>.015&&power(at,coefficients[0])>total*.28) sync++;
-          else {
-            if(sync>=Math.floor(.1*rate/step)) {origin=at+Math.round(windowSize/2);slot=0;update('signal',0);}
-            sync=0;
-          }
-          cursor+=step;
-          continue;
-        }
-        let best=0,second=0,value=0;
-        for(let i=0;i<16;i++) {
-          const strength=power(at,coefficients[i+1]);
-          if(strength>best) {second=best;best=strength;value=i;}
-          else if(strength>second) second=strength;
-        }
-        if(total<=.015||best<total*.14||best<second*1.5) {reset(at+step,'incomplete');continue;}
-        if(slot%2===0) high=value<<4;
-        else {
-          const index=slot>>1;
-          packet[index]=high|value;
-          if(index===0&&packet[0]!==0x54||index===1&&packet[1]!==0x4e) {reset(at+step,'invalid');continue;}
-          if(index===3) {
-            const size=packet[2]*256+packet[3];
-            if(!size||size>maxBytes) {reset(at+step,'invalid');continue;}
-            expected=size+6;
-          }
-          if(expected&&index===expected-1) {
-            const crc=packet[expected-2]*256+packet[expected-1];
-            if(crc===checksum(packet.subarray(0,expected-2))) {
-              done(packet.slice(4,expected-2));return true;
-            }
-            reset(at+step,'checksum');continue;
-          }
-        }
-        if(expected&&slot%12===0) update('receiving',Math.min(99,Math.floor((slot>>1)*100/expected)));
-        slot++;
-      }
-    };
-  }
-
-  function stop() {
-    const job=active;active=null;
-    if(playButton) playButton.textContent='Play code sound';
-    if(listenButton) listenButton.textContent='Listen for code';
-    if(!job) return;
-    clearTimeout(job.timer);clearInterval(job.ticker);
-    if(feedback) feedback.hidden=true;
-    for(const track of job.stream?.getTracks()||[]) track.stop();
-    if(job.processor) {job.processor.onaudioprocess=null;job.processor.disconnect();}
-    job.source?.disconnect();
-    if(job.context?.state!=='closed') job.context?.close().catch(()=>{});
-  }
-  function mount(ui) {
-    if(!playButton) {
-      playButton=document.createElement('button');playButton.textContent='Play code sound';
-      listenButton=document.createElement('button');listenButton.textContent='Listen for code';
-      playButton.type=listenButton.type='button';
-      ui.playArea.append(playButton);ui.listenArea.append(listenButton);
-      feedback=document.createElement('div');feedback.hidden=true;feedback.id='net-sound-feedback';
-      const label=document.createElement('label');label.textContent='Microphone level ';
-      level=document.createElement('meter');level.min=0;level.max=1;level.value=0;
-      level.setAttribute('aria-label','Microphone input level');label.append(level);
-      clock=document.createElement('span');phase=document.createElement('p');phase.setAttribute('role','status');
-      const tip=document.createElement('p');
-      tip.textContent='Start around 10% volume. Hold the sending speaker close to the receiving microphone opening.';
-      feedback.append(label,clock,phase,tip);ui.listenArea.after(feedback);
-    }
-    const Audio=window.AudioContext||window.webkitAudioContext;
-    playButton.hidden=!Audio||!ui.hasCode;
-    listenButton.hidden=!Audio||!navigator.mediaDevices?.getUserMedia||!ui.canRead;
-    if(!playButton.hidden) ui.playArea.hidden=false;
-    playButton.onclick=async()=>{
-      if(active?.kind==='play') {stop();ui.status('Sound stopped. The QR is still available.');return;}
-      ui.stopScan();
-      const job={kind:'play'};active=job;
-      try {
-        const ctx=job.context=new Audio();
-        const samples=packetSamples(ui.getBytes(),ctx.sampleRate);
-        await ctx.resume();
-        if(active!==job) return;
-        const sound=ctx.createBuffer(1,samples.length,ctx.sampleRate);
-        sound.copyToChannel(samples,0);
-        const source=job.source=ctx.createBufferSource();source.buffer=sound;
-        source.connect(ctx.destination);
-        source.onended=()=>{if(active===job) {stop();ui.status('Playback complete. Check the listening device for confirmation.');}};
-        playButton.textContent='Stop sound';
-        ui.status('Playing pairing code · about '+Math.ceil(sound.duration)+' seconds.');
-        source.start();
-      } catch(error) {if(active===job) {stop();ui.status(error.message||'Sound playback failed. Use the QR.');}}
-    };
-    listenButton.onclick=async()=>{
-      if(active?.kind==='listen') {stop();ui.status('Listening stopped. You can scan the QR.');return;}
-      ui.stopScan();
-      const job={kind:'listen'};active=job;
-      try {
-        const ctx=job.context=new Audio();
-        const resumed=ctx.resume();resumed.catch(()=>{});
-        listenButton.textContent='Stop listening';
-        const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
-        if(active!==job) {for(const track of stream.getTracks()) track.stop();return;}
-        job.stream=stream;
-        await resumed;
-        if(active!==job) return;
-        const source=job.source=ctx.createMediaStreamSource(stream),processor=job.processor=ctx.createScriptProcessor(4096,1,1);
-        feedback.hidden=false;level.value=0;phase.textContent='Listening for the opening tone';
-        const deadline=performance.now()+listenSeconds*1000;
-        const updateTimer=()=>{clock.textContent=Math.max(0,Math.ceil((deadline-performance.now())/1000))+' s left';};
-        updateTimer();job.ticker=setInterval(updateTimer,250);
-        const messages={
-          signal:'Pairing signal detected',
-          incomplete:'Signal cut out or was unclear. Replay the code from the start.',
-          invalid:'Tones heard, but the code header could not be read. Try again.',
-          checksum:'The full code arrived with errors. Replay it or use QR.'
-        };
-        const receive=packetListener(ctx.sampleRate,bytes=>{
-          if(active===job) {stop();ui.receiveBytes(bytes);}
-        },(state,progress)=>{
-          job.signal=state;
-          phase.textContent=state==='receiving'?'Receiving code · '+progress+'%':messages[state];
-        });
-        processor.onaudioprocess=event=>{
-          if(active!==job) return;
-          const samples=event.inputBuffer.getChannelData(0);
-          let sum=0;
-          for(const sample of samples) sum+=sample*sample;
-          const input=Math.sqrt(sum/samples.length);
-          level.value=Math.min(1,Math.max(input*3,level.value*.77));
-          job.heard||=input>.008;
-          receive(samples);
-        };
-        const silent=ctx.createGain();silent.gain.value=0;
-        source.connect(processor);processor.connect(silent);silent.connect(ctx.destination);
-        job.timer=setTimeout(()=>{
-          if(active!==job) return;
-          const reason=job.signal?messages[job.signal]||'The code was incomplete. Replay it from the start.':
-            job.heard?'Microphone heard audio, but no pairing tone was detected.':'No audio reached the microphone. Check the input device.';
-          stop();ui.status(reason+' QR is available.');
-
-        },listenSeconds*1000);
-        ui.status('Listening locally. Play the code on the other device.');
-      } catch {if(active===job) {stop();ui.status('Microphone unavailable. Scan the QR or paste the code.');}}
-    };
-  }
-  window.tntSoundPairing={mount,stop};
-})();
-</script>
 <script>
 'use strict';
 /*
@@ -2567,9 +2409,9 @@ function panel(ctx,cx,cy,w,h,index,damage,color,r=2.5) {
   }
   ctx.restore();
 }
-function racingTyre(ctx,x,y,w,h,stage=0,truck=false) {
+function racingTyre(ctx,x,y,w,h,stage=0,truck=false,steer=0) {
   if(stage===4) {rounded(ctx,x-2,y-2,4,4,1,'#746f58');return;}
-  const twist=(stage%2?.06:-.05)*stage;
+  const twist=(stage%2?.06:-.05)*stage+steer;
   ctx.save();ctx.translate(x,y);ctx.rotate(twist);
   rounded(ctx,-w/2,-h/2,w,h,truck?3.4:2.5,hex('#364d49',-stage*.07));
   rounded(ctx,-w*.30,-h*.46,w*.60,h*.13,1,'#6c8174');
@@ -2578,6 +2420,7 @@ function racingTyre(ctx,x,y,w,h,stage=0,truck=false) {
   ctx.restore();
 }
 function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
+  const tyre=(x,y,w,h,stage,truck)=>racingTyre(ctx,x,y,w,h,stage,truck,x>0?options.wheelAngle||0:0);
   const spec=vehicles[type], l=spec.length, w=spec.width, ghost=options.ghost||false;
   const side=hex(color,-.19), hi=hex(color,.14), pale=hex(color,.33), glass='#4a716c', light='#8bb4a7';
   ctx.save();ctx.translate(x,y);ctx.rotate(a);
@@ -2592,8 +2435,8 @@ function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
   };
   if(type===0) {
     for(const [px,s1,s2] of [[14,3,6],[-15,5,8]]) {
-      racingTyre(ctx,px,-10.4,9,6,sectionStage(damage[s1]));
-      racingTyre(ctx,px,10.4,9,6,sectionStage(damage[s2]));
+      tyre(px,-10.4,9,6,sectionStage(damage[s1]));
+      tyre(px,10.4,9,6,sectionStage(damage[s2]));
       rounded(ctx,px-1.2,-9.8,2.4,19.6,1,'#66796a');
     }
     polygon(ctx,[[-20,-3.5],[-9,-5.4],[1,-4.8],[20,-1.8],[22,1.8],[1,4.8],[-9,5.4],[-20,3.5]],side);
@@ -2609,8 +2452,8 @@ function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
     }
   } else if(type===1) {
     for(const [px,left,right] of [[13,3,6],[-13,5,8]]) {
-      racingTyre(ctx,px,-10.35,9.4,5.5,sectionStage(damage[left]));
-      racingTyre(ctx,px,10.35,9.4,5.5,sectionStage(damage[right]));
+      tyre(px,-10.35,9.4,5.5,sectionStage(damage[left]));
+      tyre(px,10.35,9.4,5.5,sectionStage(damage[right]));
     }
     polygon(ctx,[[-21,-9.4],[-16,-11],[16,-11],[22,-8.6],[23,7.5],[17,10.5],[-16,11],[-21,9.4]],side);
     sidePanels([12,0,-12],9.1,[11,12.2,11],[4.2,4.4,4.2]);
@@ -2629,8 +2472,8 @@ function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
     if(sectionStage(damage[10])<4) rounded(ctx,-22,-8,2.6,16,1,side);
   } else if(type===2) {
     for(const [px,left,right] of [[14,3,6],[-14,5,8]]) {
-      racingTyre(ctx,px,-12.8,13.6,9.3,sectionStage(damage[left]),true);
-      racingTyre(ctx,px,12.8,13.6,9.3,sectionStage(damage[right]),true);
+      tyre(px,-12.8,13.6,9.3,sectionStage(damage[left]),true);
+      tyre(px,12.8,13.6,9.3,sectionStage(damage[right]),true);
       rounded(ctx,px-1.3,-12,2.6,24,1,'#687a68');
     }
     rounded(ctx,-21,-6.3,42,12.6,2.5,side);
@@ -2646,8 +2489,8 @@ function drawVehicle(ctx,x,y,a,type,color,damage,options={}) {
       for(let i=0;i<3;i++) rounded(ctx,-17+i*2.4,-2.9,.8,5.8,.3,hi);
     }
   } else if(type===3) {
-    racingTyre(ctx,18.1,0,11.5,6.3,sectionStage(damage[1]));
-    racingTyre(ctx,-18.2,0,12.1,7.2,sectionStage(damage[10]));
+    tyre(18.1,0,11.5,6.3,sectionStage(damage[1]));
+    tyre(-18.2,0,12.1,7.2,sectionStage(damage[10]));
     rounded(ctx,-14,-2.4,28,4.8,2.1,side);
     sidePanels([8.8,0,-8.8],3.65,[5.1,6.4,5.1],[2.6,2.8,2.5]);
     put(11.3,3.8,4.4,2.2,0,pale);put(11.3,-3.8,4.4,2.2,2,pale);
@@ -2877,6 +2720,7 @@ function drawTimberAt(ctx,y,length) {
   ctx.save();ctx.translate(0,y);drawTimber(ctx,length,5.1);ctx.restore();
 }
 function drawFleetBody(ctx,spec,color,damage,options) {
+  const tyre=(x,y,w,h,stage,truck)=>racingTyre(ctx,x,y,w,h,stage,truck,x>0?options.wheelAngle||0:0);
   const {style,length:l,width:w}=spec;
   const hi=hex(color,.21), shade=hex(color,-.24), glass='#426663', shine='#89afa1';
   if(spec.trailers) drawTrailers(ctx,spec,color,damage,options);
@@ -2900,9 +2744,9 @@ function drawFleetBody(ctx,spec,color,damage,options) {
   } else {
     const chunky=style==='rally'||style==='tractor'||style==='logging';
     for(const [x,left,right] of [[l*.28,3,6],[-l*.30,5,8]]) {
-      for(const [side,i] of [[-1,left],[1,right]]) racingTyre(ctx,x,side*w*.41,chunky?10.8:8.7,chunky?6.6:5.1,sectionStage(damage[i]),chunky);
+      for(const [side,i] of [[-1,left],[1,right]]) tyre(x,side*w*.41,chunky?10.8:8.7,chunky?6.6:5.1,sectionStage(damage[i]),chunky);
     }
-    if(style==='tractor'||style==='logging') for(const y of [-1,1]) racingTyre(ctx,-l*.07,y*w*.41,8.5,6.1,0,true);
+    if(style==='tractor'||style==='logging') for(const y of [-1,1]) tyre(-l*.07,y*w*.41,8.5,6.1,0,true);
   }
   const bodyW=w*(tracked?.6:style==='hotrod'?.59:.76);
   const nose=l*(style==='dozer'?.31:.45);
@@ -2941,7 +2785,7 @@ function drawFleetBody(ctx,spec,color,damage,options) {
     rounded(ctx,-l*.448,y*bodyW*.32-1.25,2,2.5,.65,'#f08266');
   }
   if(style==='rally') {
-    for(const y of [-1,1]) racingTyre(ctx,-l*.23,y*bodyW*.23,9,7.1,0,true);
+    for(const y of [-1,1]) tyre(-l*.23,y*bodyW*.23,9,7.1,0,true);
     for(const y of [-1,1]) oval(ctx,l*.466,y*bodyW*.21,1.65,1.6,'#ffe8a5');
   } else if(style==='hotrod') {
     rounded(ctx,3,-4,11,8,1.2,'#96a098');
@@ -2995,9 +2839,30 @@ const DAMAGE_STEPS=[...originalDamageSteps,125,150,175,200,225,250,275,300];
 const timingSteps=Object.fromEntries(Object.entries(timeControls).map(([key,[,,min,max,step]])=>[
   key,doubleSteps(Array.from({length:(max-min)/step+1},(_,i)=>min+i*step),0)
 ]));
+const bonusControls={
+  bonusBoost:['Boost speed',35,5,100,5,'%'],
+  bonusBoostTime:['Boost duration',3,.5,15,.5,'s'],
+  bonusRepair:['Repair kit damage restored',9,1,100,1,'pts'],
+  bonusSlow:['Full repair speed penalty',50,0,90,5,'%'],
+  bonusSlowTime:['Full repair penalty duration',2,.5,12,.5,'s'],
+  bonusOilTime:['Oil spill duration',9,1,30,1,'s'],
+  bonusCrate:['Small crate score',100,10,1000,10,'pts'],
+  bonusJackpot:['Large crate score',300,10,3000,10,'pts'],
+  bonusArmour:['Damage blocked',55,0,95,5,'%'],
+  bonusArmourTime:['Damage resistance duration',6,.5,30,.5,'s'],
+  bonusInvulnerableTime:['Invulnerability duration',3,.5,15,.5,'s'],
+  bonusPhaseTime:['Pass-through duration',6,.5,30,.5,'s'],
+  bonusCloakTime:['Invisibility duration',5,.5,20,.5,'s']
+};
+function bonusValues(source) {
+  return Object.fromEntries(Object.entries(bonusControls).map(([key,[,value,min,max,step]])=>[
+    key,Number.isFinite(source?.[key])?clamp(min+Math.round((source[key]-min)/step)*step,min,max):value
+  ]));
+}
 const defaultTuning=Object.fromEntries([
   ...Object.entries(damageControls).map(([key,[,value]])=>[key,value]),
-  ...Object.entries(timeControls).map(([key,[,value]])=>[key,value])
+  ...Object.entries(timeControls).map(([key,[,value]])=>[key,value]),
+  ...Object.entries(bonusValues())
 ]);
 let tuning={...defaultTuning};
 const damageFactor=(game,key)=>game.rules[key]/100;
@@ -3005,7 +2870,7 @@ function damageMode(config) {
   return config.damage===false||config.damage==='off'?'off':config.damage==='open'?'open':'total';
 }
 function tuningId(rules) {
-  return Object.keys(defaultTuning).map(key=>{
+  const base=Object.keys(defaultTuning).filter(key=>!Object.hasOwn(bonusControls,key)).map(key=>{
     const value=rules[key];
     if(!Object.hasOwn(damageControls,key)) return value.toString(36);
     const originalIndex=originalDamageSteps.indexOf(value);
@@ -3013,6 +2878,8 @@ function tuningId(rules) {
     const previousIndex=previousDamageSteps.indexOf(value);
     return previousIndex>=0?'+'+previousIndex.toString(36):'%'+value;
   }).join('.');
+  const amounts=Object.entries(bonusValues(rules));
+  return amounts.some(([key,value])=>value!==defaultTuning[key])?base+'.bonus.'+amounts.map(([,value])=>value).join('_'):base;
 }
 function closestStep(steps,value) {
   return steps.reduce((closest,point)=>Math.abs(point-value)<Math.abs(closest-value)?point:closest,steps[0]);
@@ -3039,12 +2906,33 @@ function addTuningRows(controls,title,definitions,isDamage) {
     update();controls.append(label);
   }
 }
+function addBonusTuningRows(controls) {
+  const heading=document.createElement('h3');
+  heading.textContent='Bonus item effects';controls.append(heading);
+  for(const [key,[name,,min,max,step,unit]] of Object.entries(bonusControls)) {
+    const label=document.createElement('label'),caption=document.createElement('span'),input=document.createElement('input'),output=document.createElement('output');
+    caption.textContent=name;
+    Object.assign(input,{type:'range',min,max,step,value:tuning[key]});
+    input.setAttribute('aria-label',name);
+    const update=()=>{output.textContent=tuning[key]+' '+unit;input.setAttribute('aria-valuetext',output.textContent);};
+    input.addEventListener('input',()=>{tuning[key]=Number(input.value);update();});
+    input.addEventListener('change',()=>{
+      const room=networkRoom;
+      if(room?.host&&room.phase==='lobby'&&room.turn===room.id) {
+        manageNetworkLobby(room,'host',{kind:'settings',settings:{...room.settings,bonusTuning:bonusValues(tuning)}});
+      }
+      renderSetup();
+    });
+    update();label.append(caption,input,output);controls.append(label);
+  }
+}
 function openTuning() {
   openModal('tuning','Development tuning',body=>{
     const controls=document.createElement('div');
     controls.id='tuning-controls';
     addTuningRows(controls,'Damage',damageControls,true);
     addTuningRows(controls,'Timing',timeControls,false);
+    addBonusTuningRows(controls);
     body.append(controls);
     setModalActions(button('Copy or paste settings',exchangeSettings),button('Done',closeModal,'primary'));
   });
@@ -3071,7 +2959,7 @@ function applyTuningText(text) {
         closestStep(timingSteps[key],value);
     }
   }
-  tuning=next;
+  tuning={...next,...bonusValues({...next,...Object.fromEntries(Object.entries(data.tuning).filter(([key,value])=>Object.hasOwn(bonusControls,key)&&Number.isFinite(value)))})};
   const s=data.setup;
   if(s) {
     const course=courses.findIndex(c=>c.id===s.course);
@@ -3396,16 +3284,16 @@ const mainCtx = $('track').getContext('2d', {alpha:false});
 
 // Bonus items: rules, authoritative spawn and collection, and canvas presentation.
 const pickupTypes={
-  boost:{name:'Speed boost',color:'#ebbb5d',symbol:'boost',effect:'35% more top speed for 3 seconds.'},
-  repair:{name:'Repair kit',color:'#a6d494',symbol:'cross',effect:'Repairs 9 damage points.'},
-  overhaul:{name:'Full repair',color:'#70c6b5',symbol:'tool',effect:'Repairs all damage. Top speed halves for 2 seconds.'},
-  oil:{name:'Oil drop',color:'#b09bbf',symbol:'drop',effect:'Drops oil behind your car for 9 seconds.'},
-  crate:{name:'Points crate · 100',color:'#d6a976',symbol:'crate',effect:'Adds 100 bonus points.'},
-  jackpot:{name:'Points crate · 300',color:'#eac56c',symbol:'crate',effect:'Adds 300 bonus points.'},
-  armour:{name:'Damage resistance',color:'#8abdd1',symbol:'shield',effect:'Takes 55% less damage for 6 seconds.'},
-  invulnerable:{name:'Invulnerability',color:'#efdb88',symbol:'star',effect:'Prevents new damage for 3 seconds.'},
-  phase:{name:'Pass-through',color:'#baa6e3',symbol:'cars',effect:'Ignores car-to-car contact for 6 seconds.'},
-  cloak:{name:'Invisibility cloak',color:'#9ac8be',symbol:'eye',effect:'Hides you from other drivers for 5 seconds. Your tracks stay visible.'}
+  boost:{name:'Speed boost',color:'#ebbb5d',symbol:'boost'},
+  repair:{name:'Repair kit',color:'#a6d494',symbol:'cross'},
+  overhaul:{name:'Full repair',color:'#70c6b5',symbol:'tool'},
+  oil:{name:'Oil drop',color:'#b09bbf',symbol:'drop'},
+  crate:{name:'Small points crate',color:'#d6a976',symbol:'crate'},
+  jackpot:{name:'Large points crate',color:'#eac56c',symbol:'crate'},
+  armour:{name:'Damage resistance',color:'#8abdd1',symbol:'shield'},
+  invulnerable:{name:'Invulnerability',color:'#efdb88',symbol:'star'},
+  phase:{name:'Pass-through',color:'#baa6e3',symbol:'cars'},
+  cloak:{name:'Invisibility cloak',color:'#9ac8be',symbol:'eye'}
 };
 const pickupSchedules={once:'Initial only',fixed:'Fixed interval',random:'Random interval',after:'After collection'};
 function normalizePickupRules(source) {
@@ -3426,10 +3314,11 @@ function pickupRuleSignature(rules) {
 }
 const effectClock=game=>game.networkRound?.elapsed??game.raceClock??game.elapsed;
 const effectActive=(game,key)=>!!game.power&&game.power[key]>effectClock(game);
-const effectiveDamage=(game,amount)=>effectActive(game,'invulnerable')?0:amount*(effectActive(game,'armour')?.45:1);
+const bonusAmount=(game,key)=>game.rules?.[key]??defaultTuning[key];
+const effectiveDamage=(game,amount)=>effectActive(game,'invulnerable')?0:amount*(effectActive(game,'armour')?(100-bonusAmount(game,'bonusArmour'))/100:1);
 function updateSpeedLimits(game,ratings) {
-  const boost=effectActive(game,'boost')?1.35:1;
-  const speedScale=effectActive(game,'slow')?.5:boost;
+  const boost=effectActive(game,'boost')?1+bonusAmount(game,'bonusBoost')/100:1;
+  const speedScale=effectActive(game,'slow')?(100-bonusAmount(game,'bonusSlow'))/100:boost;
   return {max:ratings.max*speedScale,accel:ratings.accel*boost};
 }
 function createPickupField(rules) {
@@ -3486,7 +3375,7 @@ function releaseOil(game,field,now) {
     if(course.openYard&&!course.arenaEdges&&(x<yard.left+9||x>yard.right-9||y<yard.top+9||y>yard.bottom-9)) continue;
     const p=course.openYard?null:projectRoad(course,x,y,car.index,Math.max(13,Math.ceil(behind/course.step)+4),car.branch);
     if(p&&(routeLevelAt(course,p.index)!==level||dist(p,{x,y})>routeRoadWidth(course,p,p.d>=0?1:-1)-7)) continue;
-    field.oils.push({x,y,index:p?.index??0,level,a:car.a,rx:25,ry:12,until:now+9,by:game.networkId||'solo',safe:now+.65});
+    field.oils.push({x,y,index:p?.index??0,level,a:car.a,rx:25,ry:12,until:now+bonusAmount(game,'bonusOilTime'),by:game.networkId||'solo',safe:now+.65});
     if(field.oils.length>12) field.oils.shift();
     break;
   }
@@ -3495,21 +3384,21 @@ function collectPickup(game,id,field,now) {
   const set=(key,seconds)=>{game.power[key]=now+seconds;};
   switch(id) {
     case 'boost':
-      set('boost',3);
-      if(game.flick) game.flick.speed*=1.35;
+      set('boost',bonusAmount(game,'bonusBoostTime'));
+      if(game.flick) game.flick.speed*=1+bonusAmount(game,'bonusBoost')/100;
       break;
-    case 'repair': repairDamage(game.car,9);break;
+    case 'repair': repairDamage(game.car,bonusAmount(game,'bonusRepair'));break;
     case 'overhaul':
-      repairDamage(game.car,Infinity);set('slow',2);
+      repairDamage(game.car,Infinity);set('slow',bonusAmount(game,'bonusSlowTime'));
       game.car.speed=Math.min(game.car.speed,driveRatings(game).max);
       break;
     case 'oil': releaseOil(game,field,now);break;
-    case 'crate': game.bonusPoints+=100;break;
-    case 'jackpot': game.bonusPoints+=300;break;
-    case 'armour': set('armour',6);break;
-    case 'invulnerable': set('invulnerable',3);break;
-    case 'phase': set('phase',6);break;
-    case 'cloak': set('cloak',5);break;
+    case 'crate': game.bonusPoints+=bonusAmount(game,'bonusCrate');break;
+    case 'jackpot': game.bonusPoints+=bonusAmount(game,'bonusJackpot');break;
+    case 'armour': set('armour',bonusAmount(game,'bonusArmourTime'));break;
+    case 'invulnerable': set('invulnerable',bonusAmount(game,'bonusInvulnerableTime'));break;
+    case 'phase': set('phase',bonusAmount(game,'bonusPhaseTime'));break;
+    case 'cloak': set('cloak',bonusAmount(game,'bonusCloakTime'));break;
   }
   game.pickupNotice={id,until:now+2.1};
 }
@@ -5257,16 +5146,34 @@ function choosePickerCategory(category) {
   } else setCourse(category==='damage'?damageCourse:category?trainingCourse:raceCourse);
 }
 function carouselNeighbours(list,index) {
-  return [...new Set([-1,1,2].filter(offset=>list.length>1).map(offset=>list[mod(index+offset,list.length)]))]
-    .filter(candidate=>candidate!==list[index]);
+  return [...new Set([-1,0,1,2].map(offset=>list[mod(Math.max(index,0)+offset,list.length)]))];
 }
-function animatePicker(canvas,backwards=false) {
-  if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  canvas.getAnimations?.().forEach(animation=>animation.cancel());
-  canvas.animate?.([
-    {transform:'translateY('+(backwards?-13:13)+'px) scale(.97)',opacity:.64},
-    {transform:'translateY(0) scale(1)',opacity:1}
-  ],{duration:170,easing:'ease-out'});
+const reducedPickerMotion=matchMedia('(prefers-reduced-motion: reduce)');
+function capturePickerArt(canvas) {
+  if(reducedPickerMotion.matches||!canvas) return null;
+  const rect=canvas.getBoundingClientRect();
+  if(!rect.width||!rect.height) return null;
+  const copy=canvas.cloneNode();
+  copy.removeAttribute('id');copy.className='picker-transfer';copy.setAttribute('aria-hidden','true');
+  copy.getContext('2d').drawImage(canvas,0,0);
+  return {copy,rect};
+}
+function flyPickerArt(art,target,entering) {
+  const rect=target?.getBoundingClientRect();
+  if(!art||!rect?.width||!rect.height) return;
+  const {copy,rect:start}=art;
+  Object.assign(copy.style,{left:start.left+'px',top:start.top+'px',width:start.width+'px',height:start.height+'px'});
+  document.body.append(copy);
+  const animation=copy.animate([
+    {opacity:entering?1:.87,transform:'translate(0,0) scale(1)'},
+    {opacity:entering?1:0,transform:'translate('+(rect.left-start.left)+'px,'+(rect.top-start.top)+'px) scale('+rect.width/start.width+','+rect.height/start.height+')'}
+  ],{duration:240,easing:'cubic-bezier(.2,.7,.24,1)'});
+  animation.finished.then(()=>copy.remove(),()=>copy.remove());
+}
+function animatePickerCards(hero,strip,selector,previous,incoming,outgoing) {
+  const oldTile=strip.querySelector(selector+'="'+CSS.escape(String(previous))+'"] canvas');
+  flyPickerArt(outgoing,oldTile||strip.querySelector('canvas'),false);
+  flyPickerArt(incoming,hero,true);
 }
 function pickerCourseGroup(course) {
   if(course.arena) return 'Open arenas';
@@ -5322,17 +5229,18 @@ function renderCoursePicker(course) {
     drawnCourse.readOnly===readOnly&&drawnCourse.inLobby===!!lobbyPicker) return;
   const previous=drawnCourse?.definition;
   drawnCourse={definition,withHazards,readOnly,inLobby:!!lobbyPicker};
-  const canvas=$('preview'),ctx=canvas.getContext('2d');
+  const canvas=$('preview'),ctx=canvas.getContext('2d'),mount=$('courses'),switching=previous&&previous!==definition&&!readOnly;
+  const incoming=switching?capturePickerArt(mount.querySelector('[data-course-tile="'+CSS.escape(definition.id)+'"] canvas')):null;
+  const outgoing=switching?capturePickerArt(canvas):null;
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.save();ctx.scale(.8,.8);drawCoursePreview(ctx,course,true,withHazards);ctx.restore();
-  if(previous&&previous!==definition) animatePicker(canvas,list.indexOf(previous)===mod(index+1,list.length));
-  const mount=$('courses'),focused=document.activeElement?.dataset?.courseTile!=null;
+  const focused=document.activeElement?.dataset?.courseTile!=null;
   mount.replaceChildren();
   if(readOnly) return;
   renderCourseSelect(definition);
   for(const candidate of carouselNeighbours(list,index)) {
     const item=button('',()=>choosePickerCourse(candidate));
-    item.dataset.courseTile=candidate.id;item.title=candidate.name;
+    item.dataset.courseTile=candidate.id;item.title=candidate.name;item.setAttribute('aria-pressed',String(candidate===definition));
     const art=document.createElement('canvas'),name=document.createElement('span');
     art.width=180;art.height=84;art.setAttribute('aria-hidden','true');
     drawCourseTile(art,candidate);
@@ -5340,33 +5248,39 @@ function renderCoursePicker(course) {
     item.append(art,name);mount.append(item);
   }
   $('prev-course').disabled=list.length<2;$('next-course').disabled=list.length<2;
+  if(switching) animatePickerCards(canvas,mount,'[data-course-tile',previous.id,incoming,outgoing);
   if(focused) mount.focus({preventScroll:true});
 }
-function drawPickerVehicle(canvas,type,scale,paint=options.paint) {
+function drawPickerVehicle(canvas,type,scale,paint=options.paint,seconds=null) {
   const ctx=canvas.getContext('2d');
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const spec=vehicles[type], length=rigVisualLength(spec);
   const zoom=Math.min(scale,canvas.width/(length+12),canvas.height/(spec.width+4));
   const offset=(length-spec.length)*.50*zoom;
-  drawVehicle(ctx,canvas.width/2+offset,canvas.height/2-offset*.18,-.18,type,paint,zeroDamage(),{scale:zoom});
+  const wave=seconds===null?0:Math.sin(seconds*(5.4+type*.17))+.36*Math.sin(seconds*9.2+type);
+  drawVehicle(ctx,canvas.width/2+offset+wave*1.4,canvas.height/2-offset*.18+wave*.72,-.18+wave*.018,type,paint,zeroDamage(),
+    {scale:zoom,wheelAngle:wave*.12,time:seconds??0});
 }
 function renderVehiclePicker() {
   const current=options.type, selected=options.paint, key=current+'/'+selected;
   if(key===drawnVehicle) return;
   const previousType=drawnVehicle&&Number(drawnVehicle.split('/')[0]);
   drawnVehicle=key;
-  const list=vehicles.map((_,i)=>i);
-  drawPickerVehicle($('vehicle'),current,3.02);
-  if(Number.isInteger(previousType)&&previousType!==current) animatePicker($('vehicle'),current===mod(previousType-1,vehicles.length));
-  const tiles=$('vehicle-tiles'),focused=document.activeElement?.dataset?.vehicleTile;
+  const list=vehicles.map((_,i)=>i),hero=$('vehicle'),tiles=$('vehicle-tiles');
+  const switching=Number.isInteger(previousType)&&previousType!==current;
+  const incoming=switching?capturePickerArt(tiles.querySelector('[data-vehicle-tile="'+current+'"] canvas')):null;
+  const outgoing=switching?capturePickerArt(hero):null;
+  drawPickerVehicle(hero,current,3.02);
+  const focused=document.activeElement?.dataset?.vehicleTile;
   tiles.replaceChildren(...carouselNeighbours(list,current).map(type=>{
     const tile=button('',()=>choosePickerVehicle(type));
     const art=document.createElement('canvas');art.width=120;art.height=66;
     art.setAttribute('aria-hidden','true');drawPickerVehicle(art,type,1.8);
     tile.dataset.vehicleTile=String(type);tile.title=vehicles[type].name;
-    tile.setAttribute('aria-label',vehicles[type].name);tile.append(art);
+    tile.setAttribute('aria-label',vehicles[type].name);tile.setAttribute('aria-pressed',String(type===current));tile.append(art);
     return tile;
   }));
+  if(switching) animatePickerCards(hero,tiles,'[data-vehicle-tile',previousType,incoming,outgoing);
   if(focused) $('vehicle-carousel').focus({preventScroll:true});
   $('vehicle-name').value=String(current);
   $('vehicle-detail').textContent=vehicles[current].description||'';
@@ -5426,8 +5340,8 @@ function attachCarousel(id,step,enabled=()=>true) {
     if(Math.abs(distance)>=38) step(distance<0?1:-1);
   });
   node.addEventListener('pointercancel',reset);
-  node.addEventListener('lostpointercapture',reset);
-  node.addEventListener('pointerleave',()=>{if(gesture&&!gesture.dragging) reset();});
+  node.addEventListener('lostpointercapture',e=>{if(e.target===node) reset();});
+
   node.addEventListener('click',e=>{
     if(!blockNextClick||e.detail===0) return;
     blockNextClick=false;e.preventDefault();e.stopImmediatePropagation();
@@ -5513,7 +5427,7 @@ function changePickupRule(id,key,value) {
     syncPickupControls();
     return;
   }
-  const rules={...pickupRulesNow()},current=rules[id]||{enabled:false,initial:true,schedule:'after',interval:12,randomPosition:true};
+  const rules={...pickupRulesNow()},current=rules[id]||{enabled:false,...pickupBatch};
   rules[id]={...current,[key]:value};
   const next=normalizePickupRules(rules);
   if(lobbyPicker&&networkRoom&&!networkRoom.host) networkRoom.pickupDraft=next;
@@ -5523,7 +5437,7 @@ function syncPickupControls() {
   if(modalType!=='pickups') return;
   const rules=pickupRulesNow(),readOnly=lobbyPicker?.canChoose===false;
   for(const row of $('pickup-rule-grid').children) {
-    const id=row.dataset.pickupRow,current=rules[id]||{enabled:false,initial:true,schedule:'after',interval:12,randomPosition:true};
+    const id=row.dataset.pickupRow,current=rules[id]||{enabled:false,...pickupBatch};
     for(const control of row.querySelectorAll('[data-pickup-key]')) {
       const key=control.dataset.pickupKey;
       if(control.type==='checkbox') control.checked=current[key];
@@ -5531,9 +5445,33 @@ function syncPickupControls() {
       // Read-only rows accept suggestions, while the committed values stay visible.
       control.setAttribute('aria-disabled',String(readOnly));
       control.disabled=id==='phase'&&(!lobbyPicker||lobbyPicker.ruleConfig.carsHit===false)||
-        key==='interval'&&current.schedule==='once'||key==='initial'&&current.schedule==='once';
+        !current.enabled&&key!=='enabled'||(key==='interval'||key==='initial')&&current.schedule==='once';
     }
   }
+}
+const pickupDefaults={initial:true,schedule:'after',interval:12,randomPosition:true};
+let pickupBatch={...pickupDefaults};
+function pickupEffectCopy(id) {
+  const b=bonusValues(lobbyPicker?lobbyPicker.ruleConfig.bonusTuning:tuning);
+  return ({
+    boost:'+'+b.bonusBoost+'% top speed and acceleration for '+b.bonusBoostTime+' s',
+    repair:'Restores '+b.bonusRepair+' damage points',
+    overhaul:'Full repair · '+b.bonusSlow+'% slower for '+b.bonusSlowTime+' s',
+    oil:'Drops an oil patch for '+b.bonusOilTime+' s',
+    crate:'+'+b.bonusCrate+' points',jackpot:'+'+b.bonusJackpot+' points',
+    armour:b.bonusArmour+'% less damage for '+b.bonusArmourTime+' s',
+    invulnerable:'Prevents damage for '+b.bonusInvulnerableTime+' s',
+    phase:'Ignores car contact for '+b.bonusPhaseTime+' s',
+    cloak:'Hidden from other drivers for '+b.bonusCloakTime+' s · tracks stay visible'
+  })[id];
+}
+function applyPickupBatch() {
+  if(lobbyPicker?.canChoose===false) {requestRuleSuggestion({pickups:'all:Use shared spawn settings'});return;}
+  const rules=Object.fromEntries(Object.entries(pickupRulesNow()).map(([id,rule])=>[id,{...rule,...pickupBatch}]));
+  if(!Object.keys(rules).length) return;
+  const next=normalizePickupRules(rules);
+  if(lobbyPicker&&networkRoom&&!networkRoom.host) networkRoom.pickupDraft=next;
+  changePickerRules({pickups:next});syncPickupControls();
 }
 function openPickupRules() {
   openModal('pickups','Bonus items',body=>{
@@ -5545,34 +5483,46 @@ function openPickupRules() {
       for(const [value,label] of entries) node.add(new Option(label,value));
       return node;
     };
+    const field=(key,name,control,apply)=>{
+      const label=document.createElement('label');label.append(document.createTextNode(name),control);
+      control.addEventListener('change',()=>{
+        const value=control.type==='checkbox'?control.checked:key==='randomPosition'?control.value==='true':
+          key==='interval'?clamp(Math.round(Number(control.value))||12,3,120):control.value;
+        apply(value);
+      });
+      return label;
+    };
+    const spawnFields=()=>[
+      ['initial','Start on course',toggle()],
+      ['schedule','Spawn timing',select(Object.entries(pickupSchedules))],
+      ['randomPosition','Position',select([[true,'Random position'],[false,'Rotating positions']])],
+      ['interval','Interval (s)',Object.assign(document.createElement('input'),{type:'number',min:3,max:120,step:1})]
+    ];
+    const bulk=document.createElement('details');bulk.className='pickup-bulk';bulk.open=true;
+    const summary=document.createElement('summary');summary.textContent='Shared spawn settings';bulk.append(summary);
+    const batchFields=document.createElement('div');batchFields.className='pickup-fields';
+    for(const [key,name,control] of spawnFields()) {
+      if(control.type==='checkbox') control.checked=pickupBatch[key];else control.value=String(pickupBatch[key]);
+      batchFields.append(field(key,name,control,value=>{pickupBatch[key]=value;syncPickupControls();}));
+    }
+    bulk.append(batchFields,button('Apply to enabled items',applyPickupBatch));
+    body.append(bulk);
     for(const [id,item] of Object.entries(pickupTypes)) {
       const row=document.createElement('div');row.className='pickup-row';row.dataset.pickupRow=id;
       const icon=document.createElement('canvas');icon.width=40;icon.height=38;
       icon.setAttribute('aria-hidden','true');drawPickup(icon.getContext('2d'),id,20,18,1.35);
-      const input=Object.assign(document.createElement('input'),{type:'number',min:3,max:120,step:1});
-      const choices=[
-        ['enabled',item.name,toggle(),icon],
-        ['initial','Start on course',toggle()],
-        ['schedule','Spawn timing',select(Object.entries(pickupSchedules))],
-        ['randomPosition','Position',select([[true,'Random position'],[false,'Rotating positions']])],
-        ['interval','Interval (s)',input]
-      ];
-      for(const [key,name,control,art] of choices) {
-        const label=document.createElement('label');
-        if(art) label.append(art);
-        label.append(document.createTextNode(name),control);
-        control.setAttribute('aria-label',(key==='enabled'?'Enable ':name+' for ')+item.name);
-        control.dataset.pickupKey=key;
-        control.addEventListener('change',()=>{
-          const value=control.type==='checkbox'?control.checked:
-            key==='randomPosition'?control.value==='true':key==='interval'?clamp(Number(control.value)||12,3,120):control.value;
-          changePickupRule(id,key,value);
-        });
-        row.append(label);
+      const enabled=toggle();enabled.dataset.pickupKey='enabled';enabled.setAttribute('aria-label','Enable '+item.name);
+      const name=field('enabled',item.name,enabled,value=>changePickupRule(id,'enabled',value));name.prepend(icon);
+      const detail=document.createElement('details');detail.className='pickup-item-settings';
+      const title=document.createElement('summary');title.textContent='Spawn settings';detail.append(title);
+      const fields=document.createElement('div');fields.className='pickup-fields';
+      for(const [key,label,control] of spawnFields()) {
+        control.dataset.pickupKey=key;control.setAttribute('aria-label',label+' for '+item.name);
+        fields.append(field(key,label,control,value=>changePickupRule(id,key,value)));
       }
-      const legend=document.createElement('small');
-      legend.textContent=item.effect+(id==='phase'?' Available when Cars hit Cars is on.':'');
-      row.append(legend);grid.append(row);
+      detail.append(fields);
+      const legend=document.createElement('small');legend.textContent=pickupEffectCopy(id)+(id==='phase'?' · Cars hit Cars required':'');
+      row.append(name,detail,legend);grid.append(row);
     }
     body.append(grid);setModalActions(button('Back to race rules',openRaceRules,'primary'));
   },openRaceRules);
@@ -18016,7 +17966,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: offline pairing codes and WebRTC data channels.
-const multiplayerVersion='0.17';
+const multiplayerVersion='0.18';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -18219,6 +18169,18 @@ class DirectRoomConnection {
   }
 }
 
+class HostLobbyConnection extends DirectRoomConnection {
+  send(id,packet) {
+    if(id?.startsWith('peer-')) this.peerLink?.send(id,packet);
+    else super.send(id,packet);
+  }
+  remove(id,reason='',notify=false) {
+    if(id?.startsWith('peer-')) this.peerLink?.remove(id,reason,notify);
+    else super.remove(id,reason,notify);
+  }
+  close() {super.close();this.peerLink?.close();}
+}
+
 // multiplayer/gameplay.js
 // Multiplayer gameplay: lobby rules, authoritative simulation, input and snapshots.
 const networkRaceLimit=15*60;
@@ -18240,7 +18202,7 @@ function networkSettings(value) {
     value.event==='one-hit'?'one-hit':value.event==='damage'&&damage!=='off'?'damage':'race';
   return {course:course.id,courseFile:imported||undefined,laps:clamp(Math.round(finite(value.laps,1,10,3)),1,10),
     event,drag:value.drag==='free'?'free':'trace',lastCar:value.lastCar===true,carsHit:value.carsHit!==false,pickups:normalizePickupRules(value.pickups),damage:course.damageEvent&&damage==='off'?'open':damage,
-    hazards:!!course.hazards?.length&&value.hazards===true,music:musicChoice(value.music)};
+    hazards:!!course.hazards?.length&&value.hazards===true,music:musicChoice(value.music),bonusTuning:bonusValues(value.bonusTuning)};
 }
 function networkCourse(settings) {
   if(settings.courseFile) return prepareDefinition(courseFromFile(settings.courseFile));
@@ -18249,7 +18211,7 @@ function networkCourse(settings) {
 function networkSeedSettings() {
   const course=courses[options.course].training?networkCourseOptions()[0]:courses[options.course];
   return networkSettings({course:course.id,courseFile:course.courseFile,laps:options.laps,event:options.mode,
-    drag:options.drag,damage:options.damage,hazards:hazardsEnabled(course),music:options.music,pickups:options.pickups});
+    drag:options.drag,damage:options.damage,hazards:hazardsEnabled(course),music:options.music,pickups:options.pickups,bonusTuning:bonusValues(tuning)});
 }
 function networkStartGrid(game,slot) {
   const course=game.course, car=game.car;
@@ -18361,7 +18323,7 @@ class NetworkRound {
       damage:settings.damage,drag:networkSteering(settings,player),hazards:settings.hazards,music:settings.music};
     const game=makeRun(config,null,this.course);
     Object.assign(game,{network:true,networkId:player.id,networkRemote:true,tune:this.tune,
-      rules:{...defaultTuning},started:true,networkResult:null});
+      rules:{...defaultTuning,...bonusValues(settings.bonusTuning)},started:true,networkResult:null});
     networkStartGrid(game,slot);
     game.networkRound=this;
     return game;
@@ -18491,7 +18453,7 @@ function deviceAlias(peer) {
 }
 function memberDevices(lobby) {
   if(lobby.kind==='host') return lobby.members.filter(member=>lobbyToken(member.device)).map(member=>({...member,role:'Guest'}));
-  return lobbyToken(lobby.hostDevice)?[{device:lobby.hostDevice,name:lobby.hostName||'Host',seen:lobby.seen,role:'Host'}]:[];
+  return lobbyToken(lobby.hostDevice)?[{device:lobby.hostDevice,name:lobby.hostName||'Host',seen:lobby.seen,role:'Host',method:lobby.lastMethod}]:[];
 }
 function deviceConnected(device) {
   return !!networkRoom?.players.some(player=>player.device===device);
@@ -18520,7 +18482,12 @@ function renderKnownDevices() {
     const status=connected?'Connected':lastDeviceContact(peer.seen??entries[0].lobby?.seen);
     state.textContent=status+' · ID '+shortNetworkId(peer.device)+' · '+(joined.length?joined.map(({lobby,peer:p})=>
       lobby.name+' ('+p.role+')').join(', '):peer.kind==='Relay'?'Relay tab':'No saved lobby');
-    details.append(name,state);row.append(details,button('Rename',()=>{
+    const latest=[...joined].sort((a,b)=>(b.peer.seen||b.lobby.seen||0)-(a.peer.seen||a.lobby.seen||0))[0];
+    if(latest) state.textContent+=' · '+methodLabel(latest.peer.method||latest.lobby.lastMethod);
+    details.append(name,state);row.append(details);
+    if(connected&&networkRoom) row.append(button('Return to lobby',reenterLobby));
+    else if(latest) row.append(button('Last lobby',()=>selectSavedLobby(latest.lobby.id)));
+    row.append(button('Rename',()=>{
       openModal('net-rename-device','Name this device',body=>{
         const input=document.createElement('input');input.value=name.textContent;input.maxLength=22;input.setAttribute('aria-label','Device name');
         body.append(input);
@@ -18553,57 +18520,194 @@ function writeSavedLobby(lobby,id=lobby.id) {
     return false;
   }
 }
+const lobbyMethods={direct:'Direct QR',relay:'Relay',peer:'PeerJS'};
+let pendingLobbySwitch=null,lobbySwitchTimer=null;
+function methodLabel(method) {
+  return lobbyMethods[method]||({Direct:'Direct QR','Relay tab':'Relay',PeerJS:'PeerJS'})[method]||'Direct QR';
+}
+function setLobbyMethod(room,method,played=false) {
+  if(!room?.lobby) return;
+  room.lobby.lastMethod=method;
+  if(played) room.lobby.lastPlayed=Date.now();
+  writeSavedLobby(room.lobby);
+}
+function lobbyNameFor(room) {return room?.lobby?.name||'Current lobby';}
+function reenterLobby() {
+  networkWaiting=false;
+  if($('net-pair').dataset.reopen==='true') $('net-pair').hidden=false;
+  renderNetworkLobby();
+}
+function selectSavedLobby(id) {
+  const lobby=savedLobbies().find(item=>item.id===id);
+  if(networkRoom&&(networkRoom.lobby?.id||'@active')===id) {reenterLobby();return;}
+  if(!lobby) return;
+  if(!networkRoom) {openLobbyConnection(lobby);return;}
+  if(pendingLobbySwitch!==id) {
+    pendingLobbySwitch=id;clearTimeout(lobbySwitchTimer);renderSavedLobbies();
+    const card=$('net-saved-list').querySelector('[data-lobby="'+id+'"]');
+    card?.focus({preventScroll:true});
+    lobbySwitchTimer=setTimeout(()=>{pendingLobbySwitch=null;if(!$('net-entry').hidden) renderSavedLobbies();},4500);
+    return;
+  }
+  exitLobbyTo(()=>openLobbyConnection(lobby));
+}
+function exitLobbyTo(action) {
+  const room=networkRoom;
+  if(!room) {action();return;}
+  pendingLobbySwitch=null;clearTimeout(lobbySwitchTimer);
+  if(room.host) {
+    transmitNetwork(room,{kind:'room-ended'});room.closing=true;
+    netStatus('Leaving '+lobbyNameFor(room)+'…');
+    setTimeout(()=>{
+      if(networkRoom!==room) return;
+      leaveNetworkRoom();action();
+    },200);
+  } else {
+    if(room.transport==='peer') room.link.send(room.hostId,{kind:'peer-leaving'});
+    leaveNetworkRoom();action();
+  }
+}
+function confirmLobbyChange(action) {
+  if(!networkRoom) {action();return;}
+  openModal('net-switch','Leave current lobby?',body=>{
+    body.append(paragraph(lobbyNameFor(networkRoom)));
+    setModalActions(button('Cancel',closeModal),button('Leave and continue',()=>exitLobbyTo(action),'primary'));
+  },closeModal);
+}
+function openLobbyConnection(lobby,showChoices=false) {
+  const savedMethod=lobby.lastMethod||(lobby.peer?'peer':'direct');
+  if(!showChoices&&lobby.kind==='guest'&&savedMethod==='peer'&&peerMode) {openPeerRoom(false,lobby);return;}
+  openModal('net-lobby-method',lobby.name,body=>{
+    const peers=lobby.kind==='host'?lobby.members:lobby.roster||memberDevices(lobby);
+    const info=document.createElement('details'),summary=document.createElement('summary');
+    summary.textContent='Lobby details';info.append(summary);
+    info.append(paragraph('Last connection · '+methodLabel(savedMethod)),
+      paragraph('Last played · '+(lobby.lastPlayed?new Date(lobby.lastPlayed).toLocaleString():'No races recorded')));
+    if(peers.length) {
+      const list=document.createElement('ul');
+      for(const peer of peers) {
+        const row=document.createElement('li');
+        const used=Object.keys(lobbyMethods).filter(method=>peer.connections?.[method]).map(methodLabel);
+        row.textContent=deviceAlias(peer)+(lobbyToken(peer.device)?' · Device '+shortNetworkId(peer.device):'')+
+          ' · '+(used.length?used.join(', '):methodLabel(peer.method));
+        list.append(row);
+      }
+      info.append(list);
+    }
+    body.append(info);
+    const select=method=>()=>lobby.kind==='host'?
+      (method==='peer'?openPeerRoom(true,lobby):method==='relay'?beginRelayRace(true,lobby):openSavedHost(lobby)):
+      (method==='peer'?openPeerRoom(false,lobby):method==='relay'?beginRelayRace(false,lobby):beginNetworkJoin(lobby,true));
+    const methods=['direct','relay','peer'].sort((a,b)=>Number(b===savedMethod)-Number(a===savedMethod));
+    const actions=methods.map(method=>{
+      const name=(lobby.kind==='host'?'Host via ':'Join via ')+methodLabel(method);
+      const action=button(name,select(method),method===savedMethod?'primary':'');
+      if(method==='peer'&&!peerMode) {action.disabled=true;action.title='Enable PeerJS at the top of Multiplayer';}
+      return action;
+    });
+    setModalActions(...actions,button('Cancel',closeModal));
+  },closeModal);
+}
+function lobbyRemoveControl(lobby) {
+  const remove=button('×',()=>{},'lobby-remove');
+  remove.title='Hold for one second to remove '+lobby.name;
+  remove.setAttribute('aria-label',remove.title);
+  let timer=null,start=null;
+  const stop=()=>{
+    clearTimeout(timer);timer=null;start=null;remove.classList.remove('holding');
+  };
+  const begin=()=>{
+    if(timer) return;
+    remove.classList.add('holding');
+    timer=setTimeout(()=>{
+      stop();
+      if(!remove.isConnected||$('net-entry').hidden) return;
+      if(networkRoom?.lobby?.id===lobby.id) {netStatus('Leave the lobby before removing it.');return;}
+      if(writeSavedLobby(null,lobby.id)) {
+        netStatus('Removed '+lobby.name+'.');renderSavedLobbies();renderKnownDevices();
+      }
+    },1000);
+  };
+  remove.addEventListener('pointerdown',event=>{
+    if(event.button!==0) return;
+    start={x:event.clientX,y:event.clientY};begin();
+    try {remove.setPointerCapture(event.pointerId);} catch {}
+  });
+  remove.addEventListener('pointermove',event=>{
+    if(start&&Math.hypot(start.x-event.clientX,start.y-event.clientY)>15) stop();
+  });
+  for(const event of ['pointerup','pointercancel','lostpointercapture','blur']) remove.addEventListener(event,stop);
+  remove.addEventListener('keydown',event=>{
+    if(event.key===' '||event.key==='Enter') {event.preventDefault();begin();}
+  });
+  remove.addEventListener('keyup',stop);
+  remove.addEventListener('contextmenu',event=>event.preventDefault());
+  return remove;
+}
 function renderSavedLobbies() {
   const items=savedLobbies(),list=$('net-saved-list');
+  const activeId=networkRoom&&(networkRoom.lobby?.id||'@active');
+  if(activeId&&!items.some(item=>item.id===activeId)) items.unshift({id:activeId,name:lobbyNameFor(networkRoom),temporary:true});
   $('net-saved-empty').hidden=!!items.length;
   list.replaceChildren(...items.map(lobby=>{
-    const row=document.createElement('li'),details=document.createElement('div'),name=document.createElement('strong');
-    name.textContent=lobby.name;
-    const role=document.createElement('small');
-    const count=lobby.kind==='host'?1+lobby.members.length:lobby.roster?.length||2;
-    const current=networkRoom?.lobby?.id===lobby.id?networkRoom.players.length:0;
-    role.textContent=(lobby.kind==='host'?'Created by you':'Joined')+' · '+count+' known · '+current+' connected';
-    const methods=document.createElement('small');
-    methods.textContent=window.tntSoundPairing?'Direct QR or sound · Relay tab':'Direct QR · Relay tab';
-    details.append(name,role,methods);
-    const withCurrent=action=>()=>{
-      if(networkRoom?.lobby?.id===lobby.id&&networkRoom.id) {$('net-return-session').click();return;}
-      if(networkRoom?.id) {netStatus('Leave the current lobby before switching to another one.');return;}
-      const current=savedLobbies().find(item=>item.id===lobby.id);
-      if(current) action(current);else {renderSavedLobbies();netStatus('This lobby was removed.');}
-    };
-    const relay=button('Via relay',withCurrent(current=>beginRelayRace(current.kind==='host',current)));
-    const repair=withCurrent(current=>current.kind==='host'?openSavedHost(current,true):beginNetworkJoin(current,true));
-    row.append(details,button('Open direct',withCurrent(current=>current.kind==='host'?openSavedHost(current):beginNetworkJoin(current)),'primary'),
-      relay,button('Repair connection',repair),button('Remove',()=>{
-        openModal('net-forget','Remove saved lobby?',body=>{
-          body.append(paragraph('Remove “'+lobby.name+'” from this browser?'));
-          setModalActions(button('Cancel',closeModal),button('Remove lobby',()=>{
-            if(writeSavedLobby(null,lobby.id)) netStatus('Saved lobby removed.');
-            closeModal();renderSavedLobbies();
-          },'race-cancel'));
-        },closeModal);
-      }));
-    if(peerMode) {
-      row.append(button(lobby.kind==='host'?'Host with PeerJS':'Reconnect with PeerJS',withCurrent(current=>
-        openPeerRoom(current.kind==='host',current))));
+    const row=document.createElement('li'),card=button('',()=>selectSavedLobby(lobby.id),'lobby-card');
+    card.dataset.lobby=lobby.id;
+    const active=lobby.id===activeId;
+    row.classList.toggle('active-lobby',active);
+    const name=document.createElement('strong'),role=document.createElement('small');
+    name.textContent=pendingLobbySwitch===lobby.id&&!active?'Leave '+lobbyNameFor(networkRoom)+' and open '+lobby.name:lobby.name;
+    const saved=lobby.lastMethod||(lobby.peer?'peer':'direct');
+    const count=active?networkRoom.players.length:lobby.kind==='host'?1+lobby.members.length:lobby.roster?.length||2;
+    role.textContent=active?count+' connected · Return to lobby':(lobby.kind==='host'?'Created by you':'Joined')+' · '+count+' known';
+    const methods=document.createElement('span');methods.className='lobby-methods';
+    for(const [id,label] of Object.entries(lobbyMethods)) {
+      const badge=document.createElement('span');badge.textContent=label;
+      badge.dataset.last=String(id===saved);
+      if(id==='peer'&&!peerMode) badge.classList.add('muted-method');
+      methods.append(badge);
     }
+    card.append(name,role,methods);row.append(card);
+    if(!lobby.temporary) row.append(lobbyRemoveControl(lobby));
     return row;
   }));
 }
-function createSavedLobby() {
+function createSavedLobby(initial='direct') {
   openModal('net-create-lobby','Create lobby',body=>{
     const label=document.createElement('label'),input=document.createElement('input');
     label.className='net-driver';input.maxLength=40;input.placeholder='Family Racing';label.append('Lobby name',input);
-    body.append(label);
-    const create=(viaRelay=false)=>{
-      const lobby={id:networkToken(),name:lobbyName(input.value)||'Family Racing',kind:'host',members:[],settings:networkSeedSettings()};
+    const methods=document.createElement('label'),select=document.createElement('select');
+    methods.className='net-driver';methods.append('Invite method',select);
+    for(const [id,name] of Object.entries(lobbyMethods)) {
+      const option=new Option(name,id);
+      if(id==='peer'&&!peerMode) option.disabled=true;
+      select.add(option);
+    }
+    select.value=initial;body.append(label,methods);
+    const create=()=>{
+      const method=select.value;
+      const lobby={id:networkToken(),name:lobbyName(input.value)||'Family Racing',kind:'host',members:[],settings:networkSeedSettings(),lastMethod:method};
       const saved=writeSavedLobby(lobby);
-      if(viaRelay) beginRelayRace(true,lobby);else openSavedHost(lobby);
+      if(method==='peer') openPeerRoom(true,lobby);
+      else if(method==='relay') beginRelayRace(true,lobby);
+      else openSavedHost(lobby);
       if(!saved) netStatus('This browser could not save the lobby. You can still play this session.');
     };
     input.addEventListener('keydown',event=>{if(event.key==='Enter') create();});
-    setModalActions(button('Cancel',closeModal),button('Create via relay',()=>create(true)),button('Create lobby',()=>create(),'primary'));
+    setModalActions(button('Cancel',closeModal),button('Create lobby',create,'primary'));
+  },closeModal);
+}
+function openJoinMethods() {
+  openModal('net-join-method','Join a lobby',body=>{
+    body.append(paragraph('Choose the invite method your host is using.'));
+    const code=document.createElement('input');
+    code.placeholder='PeerJS join code';code.maxLength=12;code.autocomplete='off';code.setAttribute('aria-label','PeerJS join code');code.disabled=!peerMode;
+    body.append(code);
+    const join=()=>{if(peerMode) joinPeerCode(code);};
+    code.addEventListener('input',()=>code.setCustomValidity(''));
+    code.addEventListener('keydown',event=>{if(event.key==='Enter') join();});
+    const actions=[button('Scan QR',()=>beginNetworkJoin()),button('Join via relay',()=>beginRelayRace(false))];
+    const peer=button('Join with code',join,'primary');peer.disabled=!peerMode;
+    setModalActions(...actions,peer,button('Cancel',closeModal));
   },closeModal);
 }
 function openSavedHost(lobby,repair=false) {
@@ -18616,7 +18720,6 @@ function beginNetworkJoin(lobby=null,repair=false,save=true,relayRequest=null) {
   const room=makeNetworkRoom(false,{lobby,save,repair,relayRequest});
   const title=relayRequest?'Join a relay tab':lobby?'Join '+lobby.name:save?'Join a saved lobby':'Quick QR join';
   const steps=relayRequest?'Scan the relay tab’s invite. You can also find a relay in another tab on this device.':
-    window.tntSoundPairing?'Scan the host’s invite or listen for its sound. Then show or play your reply to the host.':
     'Scan the host’s invite or paste its code, then show your reply to the host.';
   showNetworkPair(title,steps,'','offer');
   if(!save&&!relayRequest) scanNetworkCamera();
@@ -18627,21 +18730,23 @@ function rememberLobbyMember(room,id,packet,driver) {
   if(!lobby||packet.save!==true) return null;
   if(packet.lobbyId&&packet.lobbyId!==lobby.id) throw Error('That invite belongs to another saved lobby.');
   const device=lobbyToken(packet.device)&&packet.device!==networkDeviceId?packet.device:null;
+  if(device&&room.players.some(player=>player.device===device)) throw Error('That device has already joined.');
   let entry=lobby.members.find(member=>member.ticket===packet.ticket||!packet.lobbyId&&device&&member.device===device);
-  if(room.transport==='peer'&&!packet.lobbyId&&entry) entry.ticket=networkToken();
+  if(packet.peerVerified===true&&!packet.lobbyId&&entry) entry.ticket=networkToken();
   if(packet.lobbyId&&!entry&&!(packet.repair===true&&room.repair))
-    throw Error('This browser’s saved pairing has changed. Use Repair connection on both devices.');
+    throw Error('This browser’s saved pairing has changed. Open the saved lobby and exchange a new Direct QR invite.');
   if(entry&&[...room.memberTickets.values()].includes(entry.ticket)) throw Error('That device has already joined.');
   if(!entry) {
     entry={ticket:networkToken(),name:driver.name||'Driver'};
     lobby.members.push(entry);
   } else if(driver.name) entry.name=driver.name;
   if(device) {entry.device=device;rememberNetworkDevice(device,driver.name);}
-  entry.method=room.transport==='peer'?'PeerJS':room.relayRequest?'Relay tab':'Direct';
+  entry.method=packet.peerVerified?'peer':room.relayPeerIds.has(id)?'relay':'direct';
   entry.seen=Date.now();
+  entry.connections={...entry.connections,[entry.method]:entry.seen};
   room.memberTickets.set(id,entry.ticket);
   writeSavedLobby(lobby);
-  return {id:lobby.id,name:lobby.name,ticket:entry.ticket,hostDevice:networkDeviceId,hostName:room.players[0]?.name};
+  return {id:lobby.id,name:lobby.name,ticket:entry.ticket,hostDevice:networkDeviceId,hostName:room.players[0]?.name,method:entry.method};
 }
 function rememberJoinedLobby(room,info) {
   if(!room.save) return;
@@ -18652,14 +18757,15 @@ function rememberJoinedLobby(room,info) {
   if(savedLobbies().some(item=>item.id===info.id&&item.kind==='host')) return;
   room.lobby={...room.lobby,id:info.id,name:lobbyName(info.name),ticket:info.ticket,kind:'guest',
     hostDevice:lobbyToken(info.hostDevice)?info.hostDevice:null,hostName:networkName(info.hostName),seen:Date.now(),
-    peer:room.transport==='peer'||!!room.lobby?.peer};
+    peer:room.transport==='peer'||!!room.lobby?.peer,
+    lastMethod:room.joinMethod};
   if(room.lobby.hostDevice) rememberNetworkDevice(room.lobby.hostDevice,room.lobby.hostName);
   writeSavedLobby(room.lobby);
   if(room.transport==='peer') localWrite(peerAutoKey,room.lobby.id);
 }
 
 // multiplayer/peerjs.js
-// Optional Internet signaling. Keep this module independent of QR and sound.
+// Optional Internet signaling. Keep this module independent of QR.
 const peerScriptUrl='https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js';
 const peerScriptIntegrity='sha384-x0YgkOr/3UOZP2CRDxGW9e0Q+2Qjyr3uJrm4xU32Y7ZCNAo7Cc7bjhrZMi/dwczu';
 const peerJoinAlphabet='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
@@ -18669,7 +18775,7 @@ const peerCodec=new TextEncoder();
 const peerAutoKey='tnt-peerjs-auto-v1';
 const peerRetryPreference='tnt-peerjs-reconnect-v1';
 const peerResumeMs=30000;
-let peerMode=false,peerLoading=null,peerConsentGeneration=0;
+let peerMode=false,peerEnabling=false,peerLoading=null,peerConsentGeneration=0;
 const peerRoute=(type,id)=>peerIdPrefix+'-'+type+'-'+id.toLowerCase();
 const peerRoomCode=()=>Array.from(crypto.getRandomValues(new Uint8Array(8)),byte=>peerJoinAlphabet[byte&31]).join('');
 const peerReadable=code=>code.slice(0,4)+'-'+code.slice(4);
@@ -18995,6 +19101,7 @@ class PeerJSRoomConnection {
         },peerResumeMs));
       }
     } else if(racing&&this.room.lobby?.ticket) {
+      if(localRead(peerRetryPreference)==='off') {this.fail('PeerJS connection lost. Open the saved lobby to reconnect.');return;}
       this.target=peerRoute('room',this.room.lobby.id);
       this.deadline=Date.now()+peerResumeMs-1500;
       this.events.recovering(id,true);
@@ -19015,8 +19122,14 @@ class PeerJSRoomConnection {
   }
   fail(message) {
     if(this.closed) return;
-    if(networkRoom===this.room) {leaveNetworkRoom(message);if($('multiplayer').hidden) openMultiplayer();}
-    else this.close();
+    if(networkRoom===this.room&&this.host) {
+      disableLobbyPeer(this.room,message);
+    } else if(networkRoom===this.room) {
+      const waiting=!this.room.id&&this.room.lobby;
+      leaveNetworkRoom(message);
+      if($('multiplayer').hidden) openMultiplayer();
+      if(waiting) openLobbyConnection(waiting,true);
+    } else this.close();
   }
   remove(id,reason='',notify=false) {
     this.detach(this.peers.get(id));clearTimeout(this.reserved.get(id));this.reserved.delete(id);
@@ -19037,54 +19150,87 @@ const peerDenials={
   busy:'The host is racing, at capacity, or this device is already connected.',
   decline:'The connection was declined.'
 };
+function peerLinkFor(room) {
+  return room?.host?room.link.peerLink:room?.transport==='peer'?room.link:null;
+}
+function enableLobbyPeer(room,invite=false) {
+  if(!peerMode||room!==networkRoom||!room?.host||!room.lobby) return;
+  let link=peerLinkFor(room);
+  if(!link) {
+    link=room.link.peerLink=new PeerJSRoomConnection(room,room.link.events,window.Peer);
+    try {link.start();} catch {link.fail('PeerJS could not start. QR is available.');return;}
+    setLobbyMethod(room,'peer');
+  }
+  if(invite) link.rotateCode();
+  renderPeerPanel();
+}
+function disableLobbyPeer(room,message='PeerJS disabled. QR and relay invitations are available.') {
+  const peer=peerLinkFor(room);
+  if(!peer) return;
+  const ids=room.players.filter(player=>player.method==='peer').map(player=>player.id);
+  room.link.peerLink=null;
+  if(room.lobby.lastMethod==='peer') setLobbyMethod(room,room.relay?.connected?'relay':'direct');
+  peer.close();
+  for(const id of ids) networkDeparture(room,id,'PeerJS closed.');
+  netStatus(message);renderNetworkLobby();
+}
 function openPeerRoom(host,lobby=null,code=null) {
-  if(!peerMode||typeof window.Peer!=='function'||networkRoom||localLobbyRelay) return;
-  const room=makeNetworkRoom(host,{lobby,save:true,transport:'peer'});
-  netStatus(host?'Opening the PeerJS lobby…':'Looking for the host…');
-  try {room.link.start(code);}
-  catch {room.link.fail('PeerJS could not start. Use QR or try again.');}
+  if(!peerMode||typeof window.Peer!=='function'||networkRoom||localLobbyRelay||(!lobby&&!code)) return;
+  const room=makeNetworkRoom(host,{lobby,save:true,transport:host?'direct':'peer'});
+  if(host) enableLobbyPeer(room,!lobby?.members.length);
+  else {
+    netStatus('Looking for the host…');
+    try {room.link.start(code);} catch {room.link.fail('PeerJS could not start. Use QR or try again.');}
+  }
   renderPeerPanel();
 }
 async function togglePeerMode(enable) {
   const generation=++peerConsentGeneration;
+  peerEnabling=enable;
   if(!enable) {
     peerMode=false;
-    if(networkRoom?.transport==='peer') {
-      const room=networkRoom;
-      if(room.host) transmitNetwork(room,{kind:'room-ended'});
-      else room.link.send(room.hostId,{kind:'peer-leaving'});
-      leaveNetworkRoom('PeerJS disabled. You can still use QR and sound.');
+    if(networkRoom?.host) disableLobbyPeer(networkRoom);
+    else if(networkRoom?.transport==='peer') {
+      networkRoom.link.send(networkRoom.hostId,{kind:'peer-leaving'});
+      leaveNetworkRoom();
     }
+    netStatus('PeerJS off. Local QR and relay are available.');
     renderNetworkLobby();
-    netText('net-peer-state','Off · QR, sound and relay play stay local.');return;
+    netText('net-peer-state','Off · QR and relay play stay local.');return;
   }
   if(!crypto.subtle||typeof RTCPeerConnection!=='function') {
-    $('net-peer-enable').checked=false;netStatus('PeerJS requires WebRTC and Web Crypto. Quick QR is available.');return;
+    peerEnabling=false;renderPeerPanel();netStatus('PeerJS requires WebRTC and Web Crypto. Quick QR is available.');return;
   }
-  $('net-peer-enable').checked=true;
-  netText('net-peer-state','Loading PeerJS…');
+  if(navigator.onLine===false) {
+    peerEnabling=false;renderPeerPanel();netStatus('PeerJS unavailable while offline. Local play is available.');return;
+  }
+  renderPeerPanel();netStatus('Loading PeerJS…');
   try {
     await loadPeerJS();
     if(generation!==peerConsentGeneration) return;
-    peerMode=true;renderNetworkLobby();
+    peerMode=true;peerEnabling=false;renderNetworkLobby();netStatus('PeerJS on for this tab.');
     const last=localRead(peerRetryPreference)==='off'?'':localRead(peerAutoKey),lobby=savedLobbies().find(item=>item.id===last&&item.kind==='guest'&&item.peer);
     if(lobby&&!networkRoom&&!localLobbyRelay) openPeerRoom(false,lobby);
   } catch(error) {
     if(generation!==peerConsentGeneration) return;
-    $('net-peer-enable').checked=false;
-    netText('net-peer-state',error.message);
+    peerEnabling=false;renderPeerPanel();netStatus(error.message);
   }
 }
 function renderPeerPanel() {
-  const room=networkRoom?.transport==='peer'?networkRoom:null;
-  const link=room?.link;
-  $('net-peer-panel').hidden=!!localLobbyRelay||!!networkRoom&&!room&&!networkWaiting;
-  $('net-peer-actions').hidden=!peerMode||!!networkRoom;
-  $('net-peer-auto-row').hidden=!peerMode||!!networkRoom;
+  const room=networkRoom;
+  const link=peerLinkFor(room);
+  $('net-peer-panel').hidden=!!localLobbyRelay||!!room&&!networkWaiting&&!link&&!(room.host&&peerMode&&room.lobby);
+  $('net-peer-auto-row').hidden=!peerMode||!!localLobbyRelay;
   $('net-peer-auto').checked=localRead(peerRetryPreference)!=='off';
-  $('net-peer-enable').checked=peerMode||(!!peerLoading&&$('net-peer-enable').checked);
-  $('net-peer-session').hidden=!room;
-  $('net-peer-new-code').hidden=!room?.host;
+  const toggle=$('net-peer-enable'),offline=navigator.onLine===false;
+  toggle.hidden=!!localLobbyRelay;
+  toggle.disabled=offline&&!peerMode&&!peerEnabling;
+  toggle.setAttribute('aria-pressed',String(peerMode||peerEnabling));
+  toggle.textContent=peerEnabling?'PeerJS connecting…':offline?'PeerJS offline':peerMode?'PeerJS on':'PeerJS off';
+  toggle.title=toggle.disabled?'Internet unavailable · QR and relay remain available':toggle.textContent;
+  $('net-peer-session').hidden=!link&&!(room?.host&&peerMode&&room.lobby);
+  $('net-peer-new-code').hidden=!room?.host||!room.lobby||!peerMode||room.phase!=='lobby';
+  netText('net-peer-new-code',link?.code?'New join code':'Invite via PeerJS');
   $('net-peer-close-code').hidden=!link?.code;
   $('net-peer-code').hidden=!link?.inviteReady;
   $('net-peer-copy-code').hidden=!link?.inviteReady;
@@ -19104,28 +19250,12 @@ function renderPeerPanel() {
   }
   pending.replaceChildren(...rows);
   pending.hidden=!rows.length;
-  if(!peerLoading||peerMode) netText('net-peer-state',room?.host?
-    (link?.inviteReady?'New players can enter this join code for 10 minutes.':link?.code?'Reserving the join code…':'Saved players can rejoin when you open this lobby.'):
-    peerMode?'Enabled for this tab.':'Off · QR, sound and relay play stay local.');
+  netText('net-peer-state',peerEnabling?'Loading PeerJS…':offline?'Internet unavailable.':room?.host&&peerMode?
+    (link?.inviteReady?'New players can enter this join code for 10 minutes.':link?.code?'Reserving the join code…':'Create a join code to invite players through PeerJS.'):
+    peerMode?'Enabled for this tab.':'Off · QR and relay play stay local.');
 }
-function createPeerLobby() {
-  if(!peerMode||networkRoom) return;
-  openModal('net-create-peer','Host with PeerJS',body=>{
-    const label=document.createElement('label'),input=document.createElement('input');
-    label.className='net-driver';label.append('Lobby name',input);input.maxLength=40;input.placeholder='Family Racing';
-    body.append(label);
-    const host=()=>{
-      const lobby={id:networkToken(),name:lobbyName(input.value)||'Family Racing',kind:'host',members:[],settings:networkSeedSettings()};
-      writeSavedLobby(lobby);
-      openPeerRoom(true,lobby);
-      if(networkRoom?.transport==='peer') networkRoom.link.rotateCode();
-    };
-    input.addEventListener('keydown',event=>{if(event.key==='Enter') host();});
-    setModalActions(button('Cancel',closeModal),button('Open lobby',host,'primary'));
-  },closeModal);
-}
-function joinPeerCode() {
-  const input=$('net-peer-join-code'),code=normalizePeerCode(input.value);
+function joinPeerCode(input) {
+  const code=normalizePeerCode(input.value);
   if(!code) {input.setCustomValidity('Enter the eight-character join code shown by the host.');input.reportValidity();return;}
   openPeerRoom(false,null,code);
 }
@@ -19212,7 +19342,7 @@ class LocalLobbyRelay {
     if(id===this.host) {
       this.host=null;this.lobbyId=null;
       for(const other of this.members.keys()) {
-        this.send(other,{kind:'relay-ended',text:'The player host left the relay.'});
+        this.send(other,{kind:'relay-ended',text:'The player host left the relay.',allowRace:true});
         setTimeout(()=>this.remove(other),260);
       }
     } else if(wasMember&&this.host) this.send(this.host,{kind:'relay-peer-left',id});
@@ -19281,7 +19411,9 @@ class RelayRaceClient {
       this.raceConnected();
       this.connected=true;this.relayDevice=lobbyToken(packet.relayDevice)?packet.relayDevice:null;
       if(this.relayDevice) rememberNetworkDevice(this.relayDevice,'Lobby relay','Relay');
-      $('net-pair').hidden=true;stopNetworkScan();renderNetworkLobby();
+      if(room.host) setLobbyMethod(room,'relay');
+      if($('net-pair').dataset.method==='relay') {$('net-pair').hidden=true;stopNetworkScan();}
+      renderNetworkLobby();
       netStatus(room.host?(packet.waiting?packet.waiting+' players waiting. Connecting them…':'Relay connected. Guests can now join through it.'):
         'Connected to the relay. Waiting for the player host…');
       return;
@@ -19300,7 +19432,7 @@ class RelayRaceClient {
         try {
           const offer=await room.link.offer(false);
           if(this.closed||this.routes.get(packet.id)!==route) {room.link.remove(offer.id);return;}
-          route.id=offer.id;
+          route.id=offer.id;room.relayPeerIds.add(offer.id);
           route.timer=setTimeout(()=>{if(!room.players.some(p=>p.id===offer.id)) this.removeRoute(packet.id);},22000);
           this.send({kind:'relay-signal',to:packet.id,signal:'offer',code:offer.code});
         } catch(error) {this.removeRoute(packet.id);throw error;}
@@ -19320,14 +19452,17 @@ class RelayRaceClient {
     const route=this.routes.get(member);
     if(!route) return;
     this.routes.delete(member);clearTimeout(route.timer);
-    if(route.id) this.room.link.remove(route.id,'Player left the lobby relay.',true);
+    if(route.id&&!this.room.players.some(player=>player.id===route.id))
+      this.room.link.remove(route.id,'Player left the lobby relay.',true);
   }
-  ended(message,allowRace) {
+  ended(message,allowRace,notifyRelay=false) {
     if(this.closed||networkRoom!==this.room) return;
     const room=this.room;
-    if(allowRace&&room.id&&(room.host?room.players.length>1:true)) {
-      this.close(false);room.relay=null;room.relayRequest=null;renderNetworkLobby();
-      netStatus(message+' Current race links are still open.');
+    if(room.host||allowRace&&room.id) {
+      this.close(notifyRelay);room.relay=null;room.relayRequest=null;
+      if(room.host&&room.lobby?.lastMethod==='relay') setLobbyMethod(room,peerLinkFor(room)?'peer':'direct');
+      if($('net-pair').dataset.method==='relay') {$('net-pair').hidden=true;stopNetworkScan();}
+      renderNetworkLobby();netStatus(message);
     } else leaveNetworkRoom(message);
   }
   close(notify=true) {
@@ -19383,11 +19518,18 @@ async function makeRelayInvite(replace=false) {
   finally {relay.busy=false;if(localLobbyRelay===relay) renderLocalRelay();}
 }
 function beginRelayRace(host,lobby=null) {
-  const room=makeNetworkRoom(host,{relayRequest:host?'host':'guest',lobby,save:!host});
+  const room=makeNetworkRoom(host,{lobby,save:!host});
+  attachLobbyRelay(room);
+  return room;
+}
+function attachLobbyRelay(room) {
+  if(!room||room.relay) return;
+  room.relayRequest=room.host?'host':'guest';
+  if(!room.host) room.joinMethod='relay';
   room.relay=new RelayRaceClient(room);
   $('net-relay-digits').value='';
-  showNetworkPair('Connect to the lobby relay','Find or open a relay in this browser. For a relay on another device, use its invite.','','offer');
-  return room;
+  showNetworkPair('Connect to the lobby relay','Find or open a relay in this browser. For a relay on another device, use its invite.','','offer','relay');
+  renderNetworkLobby();
 }
 function openRelayTab() {
   const url=new URL(location.href);url.hash='lobby-relay';
@@ -19421,7 +19563,7 @@ function closeMultiplayer() {
 function leaveNetworkRoom(message='') {
   if(modalType.startsWith('net-')||lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
   stopNetworkScan();
-  const room=networkRoom;networkRoom=null;networkWaiting=false;
+  const room=networkRoom;networkRoom=null;networkWaiting=false;pendingLobbySwitch=null;clearTimeout(lobbySwitchTimer);
   if(room) {clearTimeout(room.readyTimer);clearTimeout(room.endTimer);room.relay?.close();room.link?.close();}
   if(run?.network) leaveNetworkRace();
   $('net-pair').hidden=true;
@@ -19436,7 +19578,7 @@ function localNetworkDriver() {
 }
 function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null,transport='direct'}={}) {
   leaveNetworkRoom();
-  const room={host,lobby,transport,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
+  const room={host,lobby,transport,joinMethod:transport,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),relayPeerIds:new Set(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
     readyRevision:0,readyUntil:0,recovering:new Set(),suggestions:new Map()};
   if(host) {
     room.phase='lobby';room.players.push({id:'host',device:lobby?networkDeviceId:null,...room.draft,name:room.draft.name||'Host',ready:false});
@@ -19450,7 +19592,7 @@ function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=n
     leave:(id,reason)=>{if(networkRoom===room) networkDeparture(room,id,reason);},
     recovering:(id,active)=>{if(networkRoom===room) networkRecovery(room,id,active);}
   };
-  room.link=transport==='peer'?new PeerJSRoomConnection(room,events,window.Peer):new DirectRoomConnection(events);
+  room.link=host?new HostLobbyConnection(events):transport==='peer'?new PeerJSRoomConnection(room,events,window.Peer):new DirectRoomConnection(events);
   networkWaiting=false;networkRoom=room;openMultiplayer();
   return room;
 }
@@ -19483,7 +19625,7 @@ function networkDeparture(room,id,reason) {
     if(racing) openMultiplayer();
     return;
   }
-  room.recovering.delete(id);room.memberTickets.delete(id);
+  room.recovering.delete(id);room.memberTickets.delete(id);room.relayPeerIds.delete(id);
   const player=room.players.find(p=>p.id===id);
   if(!player) {renderNetworkLobby();netStatus(reason||'Pairing ended.');return;}
   room.players=room.players.filter(p=>p.id!==id);
@@ -19506,7 +19648,7 @@ function openEndMultiplayer() {
   if(localLobbyRelay) {closeLocalRelay();return;}
   const room=networkRoom;
   if(!room) return;
-  if(!room.id||room.relayRequest&&!room.relay?.connected) {leaveNetworkRoom('Connection cancelled.');return;}
+  if(!room.id) {leaveNetworkRoom('Connection cancelled.');return;}
   const action=button('× Leave lobby',()=>{
     if(room.host) {closeModal();endNetworkRoom(room,true);}
     else {
@@ -19533,7 +19675,7 @@ function transmitNetwork(room,packet) {
 function sendNetworkLobby(room) {
   transmitNetwork(room,{kind:'lobby',players:room.players,turn:room.turn,controller:room.controller,settings:room.settings,phase:room.phase,
     savedRoster:room.lobby?[{name:room.players[0]?.name||'Host',device:networkDeviceId,role:'Host'},
-      ...room.lobby.members.map(p=>({name:p.name,device:p.device,role:'Guest',seen:p.seen}))]:null,
+      ...room.lobby.members.map(p=>({name:p.name,device:p.device,role:'Guest',seen:p.seen,method:p.method,connections:p.connections}))]:null,
     readyRevision:room.readyRevision,readyWait:Math.max(0,room.readyUntil-performance.now())});
   renderNetworkLobby();
 }
@@ -19566,7 +19708,7 @@ function endNetworkRoom(room,toMenu=false) {
 function manageNetworkLobby(room,id,packet) {
   const player=room.players.find(p=>p.id===id);
   if(packet.kind==='hello') {
-    const resuming=room.transport==='peer'&&packet.peerVerified===true&&!!player&&room.memberTickets.get(id)===packet.ticket;
+    const resuming=packet.peerVerified===true&&!!player&&room.memberTickets.get(id)===packet.ticket;
     const error=packet.version!==multiplayerVersion?'Both devices must use Track N Trace v'+multiplayerVersion+'.':
       room.phase!=='lobby'&&!resuming?'A race is running. Ask for an invite when the lobby reopens.':
       room.players.length>=maxNetworkPlayers&&!player?'The room is full.':'';
@@ -19582,7 +19724,7 @@ function manageNetworkLobby(room,id,packet) {
       catch(error) {
         room.link.send(id,{kind:'reject',error:error.message});setTimeout(()=>room.link.remove(id),250);return;
       }
-      room.players.push({...driver,id,device:room.lobby&&lobbyToken(packet.device)?packet.device:null,name:driver.name||'Driver '+(room.players.length+1),ready:false});
+      room.players.push({...driver,id,method:packet.peerVerified?'peer':room.relayPeerIds.has(id)?'relay':'direct',device:room.lobby&&lobbyToken(packet.device)?packet.device:null,name:driver.name||'Driver '+(room.players.length+1),ready:false});
       resetNetworkReady(room);
     }
     if(resuming) membership={id:room.lobby.id,name:room.lobby.name,ticket:packet.ticket,hostDevice:networkDeviceId,hostName:room.players[0]?.name};
@@ -19596,7 +19738,9 @@ function manageNetworkLobby(room,id,packet) {
         broadcastNetworkSnapshot(room);
       }
     }
-    if(!room.link.pending) {$('net-pair').hidden=true;$('net-pair').dataset.reopen='false';stopNetworkScan();}
+    if(!room.link.pending&&$('net-pair').dataset.method!=='relay') {
+      $('net-pair').hidden=true;$('net-pair').dataset.reopen='false';stopNetworkScan();
+    }
     sendNetworkLobby(room);netStatus(resuming?'Player reconnected.':'Player joined.');
     return;
   }
@@ -19664,7 +19808,10 @@ function manageNetworkLobby(room,id,packet) {
 }
 function networkMessage(room,id,packet) {
   if(room.closing) return;
-  if(room.host) {manageNetworkLobby(room,id,packet);return;}
+  if(room.host) {
+    if(packet.kind==='hello'&&!id.startsWith('peer-')) delete packet.peerVerified;
+    manageNetworkLobby(room,id,packet);return;
+  }
   if(room.hostId!==id) return;
   if(packet.kind==='reject') {
     leaveNetworkRoom(packet.error);
@@ -19728,7 +19875,7 @@ function suggestedRule(field,value) {
     case 'music': return value==null?null:musicChoice(value)??undefined;
     case 'drag': return ['trace','free'].includes(value)?value:undefined;
     case 'pickups':
-      return typeof value==='string'&&Object.hasOwn(pickupTypes,value.split(':')[0])&&value.length<=52?value:undefined;
+      return typeof value==='string'&&(value.split(':')[0]==='all'||Object.hasOwn(pickupTypes,value.split(':')[0]))&&value.length<=52?value:undefined;
     default: return typeof value==='boolean'?value:undefined;
   }
 }
@@ -19736,7 +19883,7 @@ function describeRuleSuggestion(field,value) {
   const label=suggestionLabels[field];
   if(field==='pickups') {
     const [id,choice]=value.split(':');
-    return pickupTypes[id].name+(choice?' · '+choice:'');
+    return (pickupTypes[id]?.name||'All bonus items')+(choice?' · '+choice:'');
   }
   const detail=field==='mode'?eventNames[value]:
     field==='damage'?damageNames[value]:
@@ -19815,11 +19962,11 @@ function drawNetworkQR(canvas,value) {
   for(let y=0;y<count;y++) for(let x=0;x<count;x++)
     if(code.isDark(y,x)) ctx.fillRect((x+4)*cell,(y+4)*cell,cell,cell);
 }
-function showNetworkPair(title,text,code='',action='') {
+function showNetworkPair(title,text,code='',action='',method='') {
   stopNetworkScan();netText('net-pair-title',title);netText('net-pair-help',text);
-  $('net-pair').hidden=false;$('net-pair').dataset.action=action;
-  $('net-hide-pair').hidden=!localLobbyRelay&&(!networkRoom?.host||!!networkRoom.relayRequest);
-  $('net-same-device-relay').hidden=action!=='offer'||!networkRoom?.relayRequest;
+  $('net-pair').hidden=false;$('net-pair').dataset.action=action;$('net-pair').dataset.method=method;
+  $('net-hide-pair').hidden=!localLobbyRelay&&!networkRoom?.host;
+  $('net-same-device-relay').hidden=action!=='offer'||method!=='relay';
   $('net-relay-label').hidden=$('net-find-relay').hidden=typeof BroadcastChannel!=='function';
   $('net-device-id').open=false;
   netText('net-device-digits',shortNetworkId(networkDeviceId));
@@ -19840,56 +19987,50 @@ function showNetworkPair(title,text,code='',action='') {
       netText('net-pair-help',text+' This code is too large for a QR. Copy it instead.');
     }
   }
-  window.tntSoundPairing?.mount({
-    playArea:$('net-qr-actions'),listenArea:$('net-scan-actions'),hasCode:!!code,canRead:!!action,
-    getBytes:()=>pairingFromBase45(code.slice(pairingHeader.length,-1)),
-    receiveBytes:bytes=>applyNetworkCode(pairingHeader+pairingToBase45(bytes)+':',true),
-    stopScan:stopNetworkScan,status:netStatus
-  });
   $('net-pair').scrollIntoView?.({block:'nearest'});
 }
 async function makeNetworkInvite(replace=false) {
   const room=networkRoom;
   if(!room?.host||room.busy||room.phase!=='lobby') return;
+  room.repair=true;
   try {
     room.busy=true;renderNetworkLobby();netStatus('Making an invite…');
     const code=await room.link.invite(replace);
     if(networkRoom!==room||room.phase!=='lobby') return;
     netStatus('');
     if(!$('multiplayer').hidden) {
+      setLobbyMethod(room,'direct');
       const entry=room.lobby?'Have the guest open the saved lobby or tap Join lobby.':'Have the guest choose Join multiplayer under Quick QR play.';
-      const method=window.tntSoundPairing?' Scan each other’s QR or play the invite and reply sounds.':' Scan the invite and reply on each other’s screens.';
-      showNetworkPair('Invite a player',entry+method,code,'answer');
+      showNetworkPair('Invite a player',entry+' Scan the invite and reply on each other’s screens.',code,'answer','direct');
     }
   } catch(error) {if(networkRoom===room) netStatus(error.message);}
   finally {room.busy=false;if(networkRoom===room) renderNetworkLobby();}
 }
-async function applyNetworkCode(input,bySound=false) {
+async function applyNetworkCode(input) {
   const target=localLobbyRelay||networkRoom,action=$('net-pair').dataset.action;
   const current=()=>target===(localLobbyRelay||networkRoom);
   const code=input.trim();
   if(!target||!action||target.busy||!code) return;
-  const link=target.relay?.link||target.link;
+  const link=$('net-pair').dataset.method==='relay'?target.relay?.link:target.link;
+  if(!link) return;
   stopNetworkScan();target.busy=true;netStatus('Connecting…');
   try {
     if(action==='offer') {
       const reply=await link.answer(code);
       if(!current()) return;
-      showNetworkPair('Reply to the host',window.tntSoundPairing?'Have the host scan the QR or listen for your reply sound.':
-        'Have the host scan the QR or paste the reply code.',reply);
-      netStatus((bySound?'Sound code accepted. ':'')+'Waiting for the host to accept your reply…');
+      showNetworkPair('Reply to the host','Have the host scan the QR or paste the reply code.',reply);
+      netStatus('Waiting for the host to accept your reply…');
     } else {
       await link.accept(code);
       if(current()) {
         $('net-pair').hidden=true;
-        if($('net-status').textContent==='Connecting…') netStatus((bySound?'Sound code accepted. ':'')+'Waiting for the guest to connect…');
+        if($('net-status').textContent==='Connecting…') netStatus('Waiting for the guest to connect…');
       }
     }
-  } catch(error) {if(current()) netStatus((bySound?'Sound code could not be used. ':'')+error.message);}
+  } catch(error) {if(current()) netStatus(error.message);}
   finally {target.busy=false;if(current()) renderNetworkLobby();}
 }
 function stopNetworkScan() {
-  window.tntSoundPairing?.stop();
   for(const track of networkScanner?.stream?.getTracks()||[]) track.stop();
   networkScanner=null;
   const video=$('net-video');
@@ -19950,18 +20091,18 @@ function renderNetworkLobby() {
   netText('net-open',room||localLobbyRelay?'Return to multiplayer':'Multiplayer');
   $('net-entry').hidden=!!localLobbyRelay||!!room&&!networkWaiting;
   $('net-lobbies-back').hidden=!room||networkWaiting;
-  $('net-return-session').hidden=!room;
+  netText('net-heading',$('net-entry').hidden?'Multiplayer':'Multiplayer: Lobby list');
   if(room&&!networkWaiting) $('net-pair').dataset.reopen='false';
   if(!$('net-entry').hidden&&!$('multiplayer').hidden) {renderSavedLobbies();renderKnownDevices();}
   renderPeerPanel();
   $('net-link-state').hidden=!room?.recovering.size;
   const sidelined=room?.phase==='race'&&networkRaceView?.inLobby;
-  $('net-lobby').hidden=networkWaiting||!room?.id||!!room.relayRequest&&!room.relay?.connected||room.phase!=='lobby'&&!sidelined;
+  $('net-lobby').hidden=networkWaiting||!room?.id||room.phase!=='lobby'&&!sidelined;
   $('net-leave').hidden=!room&&!localLobbyRelay;
   $('net-back').hidden=!!localLobbyRelay;
   $('net-relay-panel').hidden=!localLobbyRelay;
   if(localLobbyRelay) {netText('net-leave','Close relay');renderLocalRelay();}
-  else if(room?.relayRequest&&!room.relay?.connected||room&&!room.id) netText('net-leave','Cancel connection');
+  else if(room&&!room.id) netText('net-leave','Cancel connection');
   if($('multiplayer').hidden||$('net-lobby').hidden) {
     mountLobbyPickers(null);
     return;
@@ -20061,7 +20202,9 @@ function renderNetworkLobby() {
   netText('net-start',paused?'▶ Continue race':sidelined?'Return everyone to lobby':'Start race');
   $('net-start').disabled=paused?!networkRaceView.snapshot.pauseRoster.every(p=>!p.required||p.ready):
     !sidelined&&(settling||room.recovering.size>0||room.players.length<2||!room.players.every(p=>p.ready));
-  $('net-invite').hidden=!room.host||room.transport==='peer'||!!sidelined||!!room.relayRequest;
+  $('net-host-invites').hidden=!room.host||!!sidelined;
+  $('net-attach-relay').hidden=!!room.relay;
+  $('net-detach-relay').hidden=!room.relay;
   $('net-invite').disabled=room.busy||room.players.length>=maxNetworkPlayers;
   $('net-refresh-invite').disabled=room.busy;
 }
@@ -20126,6 +20269,7 @@ function networkRoundPacket(round) {
   return {kind:'round',id:round.id,settings:round.settings,players:round.players,tune:round.tune,snapshot:round.snapshot()};
 }
 function enterNetworkRace(room,packet,hostGame=null) {
+  setLobbyMethod(room,room.host?(room.lobby?.lastMethod||'direct'):room.joinMethod,true);
   networkWaiting=false;stopNetworkScan();$('net-pair').hidden=true;closeModal();audio.unlock();
   const course=hostGame?.course||networkCourse(packet.settings);
   const player=packet.players.find(p=>p.id===room.id), settings=packet.settings;
@@ -20133,7 +20277,7 @@ function enterNetworkRace(room,packet,hostGame=null) {
   const config={type:player.type,color:player.color,laps:settings.laps,mode:settings.event,
     damage:settings.damage,drag:networkSteering(settings,player),hazards:settings.hazards};
   const game=hostGame||makeRun(config,null,course);
-  Object.assign(game,{network:true,networkId:room.id,networkRemote:false,started:true,tune:packet.tune,
+  Object.assign(game,{network:true,networkId:room.id,networkRemote:false,started:true,tune:packet.tune,rules:{...defaultTuning,...bonusValues(settings.bonusTuning)},
     networkPlayers:packet.players});
   networkRaceView={id:packet.id,players:packet.players,settings,snapshot:packet.snapshot,prev:null,entered:performance.now(),
     inputs:[],flushAt:0,seenImpact:null,done:false,notified:new Set(),menuPause:false};
@@ -20478,8 +20622,9 @@ function networkExitControls(requestPause=true) {
     },'race-continue');ready.id='pause-ready-action';
     const resume=button('▶ Continue race',()=>localNetworkAction({kind:'resume-round'}),'race-continue');
     resume.id='pause-resume-action';
-    const full=button('⛶',fullscreen,'race-fullscreen');
-    full.setAttribute('aria-label','Fullscreen');full.title='Fullscreen';
+    const full=button('⛶',toggleFullscreen,'race-fullscreen');
+    const fullLabel=document.fullscreenElement||document.webkitFullscreenElement?'Exit fullscreen':'Fullscreen';
+    full.setAttribute('aria-label',fullLabel);full.title=fullLabel;
     const buttons=[ready,resume,full];
     buttons.push(button('Inspect vehicle',inspectCar));
     const returnButton=button('Return to lobby',()=>{
@@ -20516,38 +20661,38 @@ function initializeMultiplayer() {
     renderNetworkLobby();
   };
   on('net-lobbies-back','click',showWaiting);
-  on('net-return-session','click',()=>{
-    networkWaiting=false;
-    if($('net-pair').dataset.reopen==='true') $('net-pair').hidden=false;
-    renderNetworkLobby();
+  on('net-peer-enable','click',()=>togglePeerMode(!peerMode&&!peerEnabling));
+  for(const event of ['online','offline']) window.addEventListener(event,()=>{
+    renderPeerPanel();
+    if(!$('multiplayer').hidden) netStatus(event==='offline'?'Internet unavailable. QR and relay are available.':'Internet connection available.');
   });
-  on('net-peer-enable','change',event=>togglePeerMode(event.target.checked));
   on('net-peer-auto','change',event=>localWrite(peerRetryPreference,event.target.checked?'':'off'));
-  on('net-peer-host','click',createPeerLobby);
-  on('net-peer-join','click',joinPeerCode);
-  on('net-peer-join-code','input',event=>event.target.setCustomValidity(''));
-  on('net-peer-join-code','keydown',event=>{if(event.key==='Enter') joinPeerCode();});
-  on('net-peer-new-code','click',()=>networkRoom?.link.rotateCode());
-  on('net-peer-close-code','click',()=>{networkRoom?.link.stopInvites();renderPeerPanel();});
+  on('net-peer-new-code','click',()=>enableLobbyPeer(networkRoom,true));
+  on('net-peer-close-code','click',()=>{peerLinkFor(networkRoom)?.stopInvites();renderPeerPanel();});
   on('net-peer-copy-code','click',async()=>{
     try {await navigator.clipboard.writeText($('net-peer-code').textContent);netStatus('Join code copied.');}
     catch {netStatus('Read the join code displayed above to your guest.');}
   });
   on('net-leave','click',openEndMultiplayer);
-  on('net-full','click',fullscreen);
+  on('net-full','click',toggleFullscreen);
   on('net-free-lock','click',()=>changePickerRules({drag:networkRoom.settings.drag==='free'?'trace':'free'}));
   on('net-car-contact','click',()=>changePickerRules({carsHit:!networkRoom.settings.carsHit}));
   on('net-watch','click',watchRound);
   onSegment('net-personal-steering',steering=>{
     options.networkSteering=steering;saveOptions();submitNetworkDriver();
   },false);
-  on('net-host-direct','click',()=>{
+  on('net-host-direct','click',()=>confirmLobbyChange(()=>{
     makeNetworkRoom(true);makeNetworkInvite();
-  });
-  on('net-join-direct','click',()=>beginNetworkJoin(null,false,false));
-  on('net-create-saved','click',createSavedLobby);
-  on('net-join-saved','click',()=>beginNetworkJoin());
+  }));
+  on('net-join-direct','click',()=>confirmLobbyChange(()=>beginNetworkJoin(null,false,false)));
+  on('net-create-saved','click',()=>confirmLobbyChange(createSavedLobby));
+  on('net-join-saved','click',()=>confirmLobbyChange(openJoinMethods));
   on('net-invite','click',()=>makeNetworkInvite());
+  on('net-attach-relay','click',()=>attachLobbyRelay(networkRoom));
+  on('net-detach-relay','click',()=>{
+    const room=networkRoom;
+    if(room?.host) room.relay?.ended('Relay disconnected. Existing players can keep racing.',true,true);
+  });
   on('net-refresh-invite','click',()=>localLobbyRelay?makeRelayInvite(true):makeNetworkInvite(true));
   on('net-relay-open','click',openRelayTab);
   on('net-start-relay-tab','click',()=>{
@@ -20556,8 +20701,8 @@ function initializeMultiplayer() {
     if(openRelayTab()&&typeof BroadcastChannel==='function') {stopNetworkScan();client.findTab();}
   });
   on('net-relay-invite','click',()=>makeRelayInvite());
-  on('net-relay-host','click',()=>beginRelayRace(true));
-  on('net-relay-join','click',()=>beginRelayRace(false));
+  on('net-relay-host','click',()=>confirmLobbyChange(()=>beginRelayRace(true)));
+  on('net-relay-join','click',()=>confirmLobbyChange(()=>beginRelayRace(false)));
   on('net-find-relay','click',()=>{
     const client=networkRoom?.relay;
     if(!client||networkRoom.busy||client.link.peers.size) return;
@@ -20795,6 +20940,11 @@ function onSegment(id,change,refresh=true) {
 function applyLap(delta,cycle=false) {
   const laps=lobbyPicker?.ruleConfig.laps??options.laps;
   changePickerRules({laps:cycle?1+mod(laps-1+delta,10):clamp(laps+delta,1,10)});
+}
+function toggleFullscreen() {
+  if(!(document.fullscreenElement||document.webkitFullscreenElement)) return fullscreen();
+  const close=document.exitFullscreen||document.webkitExitFullscreen;
+  try {return Promise.resolve(close?.call(document)).catch(()=>{});} catch {return Promise.resolve();}
 }
 function fullscreen() {
   if(document.fullscreenElement||document.webkitFullscreenElement) return Promise.resolve();
@@ -21247,7 +21397,7 @@ onSegment('event-select',mode=>changePickerRules({mode}),false);
 onSegment('drag-select',drag=>changePickerRules({drag}),false);
 onSegment('damage-select',damage=>changePickerRules({damage}),false);
 onSegment('last-car-select',value=>{if(lobbyPicker) changePickerRules({lastCar:value==='on'});},false);
-$('race-full').addEventListener('click',fullscreen);
+$('race-full').addEventListener('click',toggleFullscreen);
 $('tuning-open').addEventListener('click',openTuning);
 $('less-laps').addEventListener('click',()=>applyLap(-1));
 $('more-laps').addEventListener('click',()=>applyLap(1));
@@ -21255,7 +21405,7 @@ $('laps-value').addEventListener('click',()=>applyLap(1,true));
 $('sound').addEventListener('click',()=>{
   audio.unlock();const order=Object.keys(audioStates);audio.setMode(order[mod(order.indexOf(audio.mode)+1,order.length)]);renderSetup();
 });
-$('full').addEventListener('click',()=>{audio.unlock();fullscreen();});
+$('full').addEventListener('click',()=>{audio.unlock();toggleFullscreen();});
 $('pause').addEventListener('click',()=>run?.network?networkExitControls():run?.paused?resumeGame():pauseGame());
 $('resume').addEventListener('click',resumeGame);
 $('inspect').addEventListener('click',inspectCar);$('inspect-car').addEventListener('click',inspectCar);
@@ -21292,17 +21442,28 @@ window.addEventListener('keydown',e=>{
 const windowChanged=()=>{if(run&&!run.finished) placeStage(run);};
 window.addEventListener('resize',windowChanged);
 window.addEventListener('orientationchange',windowChanged);
-document.addEventListener('fullscreenchange',windowChanged);
+function fullscreenChanged() {
+  const label=document.fullscreenElement||document.webkitFullscreenElement?'Exit fullscreen':'Fullscreen';
+  for(const node of document.querySelectorAll('#full,#net-full,#race-full,.race-fullscreen')) {
+    node.setAttribute('aria-label',label);node.title=label;
+  }
+  windowChanged();
+}
+document.addEventListener('fullscreenchange',fullscreenChanged);
+document.addEventListener('webkitfullscreenchange',fullscreenChanged);
 screen.orientation?.addEventListener('change',windowChanged);
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden) window.tntSoundPairing?.stop();
   if(run?.network) setNetworkPause('background',document.hidden);
   else if(document.hidden) pauseGame();
 });
 
-let lastTick=performance.now();
+let lastTick=performance.now(),pickerFrame=0;
 function animate(now) {
   const duration=clamp((now-lastTick)/1000,0,.23);lastTick=now;
+  if(now>=pickerFrame&&!document.hidden&&!reducedPickerMotion.matches&&(!$('setup').hidden||!$('multiplayer').hidden&&!$('net-lobby').hidden)) {
+    pickerFrame=now+62;
+    drawPickerVehicle($('vehicle'),options.type,3.02,options.paint,now/1000);
+  }
   if(run) {
     const steps=Math.max(1,Math.ceil(duration/.0125)),dt=duration/steps,priorDistance=run.totalDistance;
     if(run.network) updateNetworkRace(duration);
