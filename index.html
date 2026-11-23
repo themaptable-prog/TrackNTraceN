@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.15</title>
+<title>Track’n’Trace’n v0.16</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -196,14 +196,17 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 @media(min-width:720px){#net-pair[data-action=answer] #net-pair-steps{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
 #net-code-entry{min-width:0}
 #net-code-out{overflow-wrap:anywhere}
+#net-same-device-relay{display:grid;gap:7px;margin:8px 0}
+#net-relay-digits{max-width:8em;padding:6px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:var(--cream)}
+#net-device-digits,#net-relay-tab-code{font-variant-numeric:tabular-nums;color:var(--cream)}
 #net-sound-feedback{background:#18302b;margin:8px 0;padding:8px;border-radius:7px;font-size:13px}
 #net-sound-feedback label{margin-right:12px}
 #net-sound-feedback meter{width:min(28vw,170px);vertical-align:middle}
 #net-sound-feedback p{padding-top:4px}
-#net-saved-list,#net-relay-roster,#net-known-list,#net-lan-invitations{padding:0;display:grid;gap:8px;list-style:none;margin:0}
+#net-saved-list,#net-relay-roster,#net-known-list{padding:0;display:grid;gap:8px;list-style:none;margin:0}
 #net-saved-list:empty,#net-relay-roster:empty{display:none}
-#net-saved-list li,#net-relay-roster li,#net-known-list li,#net-lan-invitations li{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:9px;background:#19322d;border-radius:8px}
-#net-saved-list li>div,#net-relay-roster li>strong,#net-known-list li>div,#net-lan-invitations li>strong{margin-right:auto}
+#net-saved-list li,#net-relay-roster li,#net-known-list li{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:9px;background:#19322d;border-radius:8px}
+#net-saved-list li>div,#net-relay-roster li>strong,#net-known-list li>div{margin-right:auto}
 #net-saved-list small,#net-known-list small{display:block;color:var(--muted);margin-top:3px}
 #net-relay-options p{margin:7px 0}
 #net-video{display:block;width:min(100%,480px);max-height:45vh;object-fit:cover;margin:8px auto}
@@ -309,7 +312,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.15</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.16</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -431,27 +434,23 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  </div>
 </main>
 <main id="multiplayer" hidden>
- <header class="net-header"><button id="net-back">Back to menu</button><button id="net-lobbies-back" hidden>Back to lobbies</button><h1>Multiplayer</h1><button id="net-lan-alert" hidden>Requests</button><button id="net-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button><button id="net-leave" hidden>Leave multiplayer</button></header>
+ <header class="net-header"><button id="net-back">Back to menu</button><button id="net-lobbies-back" hidden>Back to lobbies</button><h1>Multiplayer</h1><button id="net-full" class="icon" aria-label="Fullscreen" title="Fullscreen">⛶</button><button id="net-leave" hidden>Leave multiplayer</button></header>
  <p id="net-status" role="status" aria-live="polite"></p>
  <p id="net-link-state" role="status" hidden>Wi-Fi interrupted. Waiting for the connection to recover…</p>
  <section id="net-entry" class="net-panel">
   <h2>Waiting Room</h2>
   <button id="net-return-session" class="primary" hidden>Return to current lobby</button>
-  <section id="net-lan-requests" hidden><h3>Connection requests</h3><ul id="net-lan-invitations"></ul></section>
   <h3>Saved lobbies</h3>
   <p id="net-saved-empty">Create a lobby or join one on the same Wi-Fi. A saved lobby can race with any two to four players.</p>
   <ul id="net-saved-list" aria-label="Saved lobbies"></ul>
   <div class="net-buttons"><button id="net-create-saved" class="primary">Create lobby</button><button id="net-join-saved">Join lobby</button></div>
   <details id="net-known"><summary>Known devices</summary><p id="net-known-empty">Devices appear here after pairing with a saved lobby.</p><ul id="net-known-list"></ul></details>
-  <details><summary>Local network helper</summary>
-   <p id="net-lan-status" role="status">LAN helper optional. QR and sound work on their own.</p>
-   <div class="net-buttons"><button id="net-lan-setup">Set up LAN helper</button><button id="net-lan-download">Download LAN helper</button></div>
-  </details>
   <details><summary>Quick QR play</summary><div class="net-buttons"><button id="net-host-direct">Host multiplayer</button><button id="net-join-direct">Join multiplayer</button></div></details>
   <details id="net-relay-options"><summary>Lobby relay tab</summary><div class="net-buttons"><button id="net-relay-open">Open relay tab</button><button id="net-relay-host">Host a race via relay</button><button id="net-relay-join">Join a race via relay</button></div></details>
  </section>
  <section id="net-pair" class="net-panel" hidden>
   <div class="net-lobby-head"><h2 id="net-pair-title"></h2><button id="net-hide-pair" hidden>Hide invite</button></div><p id="net-pair-help"></p>
+  <details id="net-device-id"><summary>Show device ID</summary><p>Your device reference is <strong id="net-device-digits"></strong>. Use it to identify this device.</p></details>
   <div id="net-pair-steps">
    <div id="net-qr-wrap" hidden>
     <canvas id="net-qr" role="img" aria-label="Multiplayer pairing QR"></canvas>
@@ -460,7 +459,10 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
    </div>
    <div id="net-code-entry" hidden>
     <div class="net-buttons" id="net-scan-actions"><button id="net-camera" class="primary">Scan QR</button><label class="net-file">Read QR photo<input type="file" id="net-image" accept="image/*"></label></div>
-    <button id="net-find-relay" hidden>Find relay in another tab</button>
+    <div id="net-same-device-relay" hidden>
+     <label id="net-relay-label">Relay tab code <input id="net-relay-digits" inputmode="numeric" autocomplete="off" maxlength="3" size="3" placeholder="Optional"></label>
+     <div class="net-buttons"><button id="net-find-relay">Find relay in another tab</button><button id="net-start-relay-tab">Open relay tab</button></div>
+    </div>
     <video id="net-video" playsinline muted hidden></video><canvas id="net-scan-canvas" hidden></canvas>
     <details><summary>Paste pairing code</summary><textarea id="net-code" rows="3" placeholder="TNT:…" aria-label="Paste pairing code"></textarea><button id="net-scan-code">Use code</button></details>
    </div>
@@ -468,13 +470,12 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
  </section>
  <section id="net-relay-panel" class="net-panel" hidden>
   <div class="net-lobby-head"><h2>Lobby relay</h2><button id="net-relay-invite" class="primary">Invite device</button></div>
-  <p>Keep this tab open. One connected player hosts the race. Up to four players can use the relay.</p>
+  <p>Keep this tab open. Invite players on other devices using QR or sound. To connect from another tab in this browser, use relay tab code <strong id="net-relay-tab-code"></strong>.</p>
   <ul id="net-relay-roster" aria-label="Relay players"></ul>
  </section>
  <section id="net-lobby" class="net-panel" hidden>
   <div class="net-lobby-head"><h2 id="net-lobby-title">Lobby</h2><button id="net-invite" hidden>Show invite QR</button></div>
   <details id="net-member-details" hidden><summary id="net-member-count"></summary><ul id="net-member-list"></ul></details>
-  <button id="net-enable-lan" hidden>Enable LAN reconnect</button>
   <ul id="net-roster" aria-label="Players"></ul>
   <label class="net-driver">Driver name<input id="net-name" maxlength="22" autocomplete="nickname"></label>
   <p id="net-turn"></p>
@@ -523,222 +524,6 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 </main>
 <div id="net-announcements" aria-live="polite"></div>
 <div id="modal" class="modal-layer" hidden><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="dialog-header"><h2 id="modal-title"></h2><button id="close-modal" aria-label="Close">✕</button></div><div id="modal-body"></div><div id="modal-actions" hidden></div></section></div>
-<script type="text/plain" id="tnt-lan-helper">
-#!/usr/bin/env python3
-"""Optional Track N Trace LAN signaling. Run with Python 3.9+ on one device."""
-import argparse
-import base64
-import hashlib
-import hmac
-import ipaddress
-import json
-import re
-import secrets
-import socket
-import struct
-import threading
-import time
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import urlsplit
-
-DEVICE = re.compile(r"[a-f0-9]{24}\Z")
-LIMIT = 32000
-SLOTS = threading.BoundedSemaphore(32)
-LOCK = threading.Lock()
-PEERS = {}
-WAITING = {}
-GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-
-
-def is_lan(address):
-    ip = ipaddress.ip_address(address)
-    return ip.is_loopback or any(
-        ip in ipaddress.ip_network(block)
-        for block in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16")
-    )
-
-
-def encode_frame(opcode, data):
-    size = len(data)
-    header = bytes((128 | opcode, size)) if size < 126 else struct.pack("!BBH", 128 | opcode, 126, size)
-    return header + data
-
-
-class Handler(BaseHTTPRequestHandler):
-    protocol_version = "HTTP/1.1"
-
-    def setup(self):
-        super().setup()
-        self.connection.settimeout(38)
-        self.out_lock = threading.Lock()
-
-    def log_message(self, *_):
-        pass
-
-    def do_GET(self):
-        self.close_connection = True
-        if not is_lan(self.client_address[0]):
-            self.send_error(403)
-            return
-        path = urlsplit(self.path).path
-        if path == "/":
-            data = b"Track N Trace LAN helper is running. Open your local index.html and paste the setup address in Multiplayer.\n"
-            self.send_response(200)
-            self.send_header("Content-Type", "text/plain; charset=utf-8")
-            self.send_header("Content-Length", str(len(data)))
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            self.wfile.write(data)
-            return
-
-        key = self.headers.get("Sec-WebSocket-Key", "")
-        try:
-            key_valid = len(base64.b64decode(key, validate=True)) == 16
-        except ValueError:
-            key_valid = False
-        if (
-            not hmac.compare_digest(path.encode(), ("/ws/" + self.server.access_key).encode())
-            or not key_valid
-            or self.headers.get("Upgrade", "").lower() != "websocket"
-            or "upgrade" not in {word.strip() for word in self.headers.get("Connection", "").lower().split(",")}
-            or self.headers.get("Sec-WebSocket-Version") != "13"
-        ):
-            self.send_error(404)
-            return
-        if not SLOTS.acquire(blocking=False):
-            self.send_error(503)
-            return
-        self.device = None
-        try:
-            accept = base64.b64encode(hashlib.sha1((key + GUID).encode()).digest()).decode()
-            self.send_response(101)
-            self.send_header("Connection", "Upgrade")
-            self.send_header("Upgrade", "websocket")
-            self.send_header("Sec-WebSocket-Accept", accept)
-            self.end_headers()
-            self.exchange()
-        except (OSError, ValueError, EOFError, UnicodeError):
-            pass
-        finally:
-            with LOCK:
-                if PEERS.get(self.device) is self:
-                    del PEERS[self.device]
-            SLOTS.release()
-
-    def exact(self, count):
-        chunk = self.rfile.read(count)
-        if len(chunk) != count:
-            raise EOFError
-        return chunk
-
-    def frame(self):
-        first, second = self.exact(2)
-        opcode, size = first & 15, second & 127
-        if first != 128 | opcode or not second & 128 or size == 127:
-            raise ValueError("Unsupported frame")
-        if size == 126:
-            size = struct.unpack("!H", self.exact(2))[0]
-        if size > LIMIT or (opcode >= 8 and size > 125):
-            raise ValueError("Frame too large")
-        mask = self.exact(4)
-        payload = self.exact(size)
-        return opcode, bytes(byte ^ mask[index % 4] for index, byte in enumerate(payload))
-
-    def send_frame(self, opcode, data):
-        with self.out_lock:
-            self.wfile.write(encode_frame(opcode, data))
-
-    def send_packet(self, packet):
-        try:
-            self.send_frame(1, json.dumps(packet, separators=(",", ":")).encode())
-        except OSError:
-            pass
-
-    def exchange(self):
-        while True:
-            opcode, data = self.frame()
-            if opcode == 8:
-                self.send_frame(8, b"")
-                return
-            if opcode == 9:
-                self.send_frame(10, data)
-                continue
-            if opcode != 1:
-                raise ValueError("Expected text")
-            message = json.loads(data)
-            if not isinstance(message, dict):
-                raise ValueError("Expected object")
-            if self.device is None:
-                device = message.get("device")
-                if message.get("kind") != "hello" or not isinstance(device, str) or not DEVICE.fullmatch(device):
-                    return
-                with LOCK:
-                    if device in PEERS:
-                        return
-                    PEERS[device] = self
-                    self.device = device
-                    queued = WAITING.pop(device, [])
-                self.send_packet({"kind": "hello"})
-                for expires, packet in queued:
-                    if expires >= time.monotonic():
-                        self.send_packet(packet)
-            elif message.get("kind") == "presence":
-                with LOCK:
-                    online = list(PEERS)
-                self.send_packet({"kind": "presence", "online": online})
-            elif message.get("kind") == "forward":
-                target = message.get("to")
-                box = message.get("box")
-                if not isinstance(target, str) or not DEVICE.fullmatch(target) or not isinstance(box, str) or len(box) > 29000:
-                    continue
-                packet = {"kind": "signal", "from": self.device, "box": box}
-                with LOCK:
-                    recipient = PEERS.get(target)
-                    if recipient is None and len(box) <= 1024:
-                        now = time.monotonic()
-                        for device in list(WAITING):
-                            WAITING[device] = [row for row in WAITING[device] if row[0] >= now]
-                            if not WAITING[device]:
-                                del WAITING[device]
-                        if target in WAITING or len(WAITING) < 32:
-                            queue = WAITING.setdefault(target, [])
-                            if len(queue) < 6:
-                                queue.append((now + 55, packet))
-                if recipient:
-                    recipient.send_packet(packet)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--key", help="Reuse your original 32 hexadecimal characters when restarting")
-    options = parser.parse_args()
-    key = options.key or secrets.token_hex(16)
-    if not re.fullmatch(r"[a-f0-9]{32}", key):
-        parser.error("--key must be 32 lowercase hexadecimal characters")
-    server = ThreadingHTTPServer(("0.0.0.0", options.port), Handler)
-    server.access_key = key
-    try:
-        addresses = sorted({
-            item[4][0] for item in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)
-            if is_lan(item[4][0]) and not item[4][0].startswith("127.")
-        })
-    except OSError:
-        addresses = []
-    if not addresses:
-        print("Use ipconfig (Windows) or your Wi-Fi settings to find this device's IPv4 address.", flush=True)
-    print("Track N Trace LAN helper. Keep this window open.", flush=True)
-    print("Reuse this address and key for returning devices. Restart with --key " + key, flush=True)
-    for address in addresses or ["YOUR-LAN-IP"]:
-        print(f"LAN setup address: http://{address}:{options.port}/#tnt-lan={key}", flush=True)
-    print(f"On this device: http://127.0.0.1:{options.port}/#tnt-lan={key}", flush=True)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
-</script>
 <script id="tnt-sound-pairing">
 /* Optional local sound signaling. Remove this script to keep QR and paste only. */
 (() => {
@@ -871,7 +656,9 @@ if __name__ == "__main__":
       level=document.createElement('meter');level.min=0;level.max=1;level.value=0;
       level.setAttribute('aria-label','Microphone input level');label.append(level);
       clock=document.createElement('span');phase=document.createElement('p');phase.setAttribute('role','status');
-      feedback.append(label,clock,phase);ui.listenArea.after(feedback);
+      const tip=document.createElement('p');
+      tip.textContent='Start around 10% volume. Hold the sending speaker close to the receiving microphone opening.';
+      feedback.append(label,clock,phase,tip);ui.listenArea.after(feedback);
     }
     const Audio=window.AudioContext||window.webkitAudioContext;
     playButton.hidden=!Audio||!ui.hasCode;
@@ -18206,7 +17993,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: offline pairing codes and WebRTC data channels.
-const multiplayerVersion='0.15';
+const multiplayerVersion='0.16';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -18653,9 +18440,6 @@ function networkResults(snapshot,settings,players) {
 }
 
 // multiplayer/saved-lobbies.js
-// multiplayer/lan-discovery.js
-// Only uses a user-configured private IPv4 address. WebRTC still carries the race.
-const lanSettingsKey='tnt-lan-helper-v1';
 const knownDevicesKey='tnt-known-devices-v1';
 function rememberedDevices() {
   try {
@@ -18670,222 +18454,32 @@ function rememberNetworkDevice(device,name,kind='Player') {
   else list.push({device,name:networkName(name)||kind,kind,seen:Date.now()});
   localWrite(knownDevicesKey,JSON.stringify(list.slice(-100)));
 }
-const lanDeviceKey='tnt-lan-device-v1';
+const deviceStorageKey='tnt-lan-device-v1'; // Preserve device identities from v0.15.
 function localRead(key) {try {return localStorage.getItem(key)||'';} catch {return '';}}
 function localWrite(key,value) {
   try {if(value) localStorage.setItem(key,value);else localStorage.removeItem(key);}
   catch {}
 }
-const storedLanDevice=localRead(lanDeviceKey);
-const lanDevice=/^[a-f0-9]{24}$/.test(storedLanDevice)?storedLanDevice:networkToken();
-localWrite(lanDeviceKey,lanDevice);
-let lanSocket=null,lanPresence=new Set(),lanRetry=0,lanHeartbeat=0,lanConnectTimer=0;
-const lanInvites=new Map(),lanAttempts=new Map(),lanSeen=new Map(),lanReplay=new Map();
-const lanConfig=()=>readLanAddress(localRead(lanSettingsKey));
-
-function readLanAddress(value) {
-  try {
-    const url=new URL(value);
-    const ip=url.hostname.split('.').map(Number), [a,b]=ip;
-    const privateIPv4=/^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname)&&ip.every(x=>x>=0&&x<=255)&&
-      (a===10||a===127||a===192&&b===168||a===172&&b>=16&&b<=31||a===169&&b===254);
-    if(url.protocol!=='http:'||!privateIPv4||url.username||url.password||url.search||url.pathname!=='/'||
-      !/^#tnt-lan=[a-f0-9]{32}$/.test(url.hash)) return null;
-    return {url:url.href,socket:'ws://'+url.host+'/ws/'+url.hash.slice(9)};
-  } catch {return null;}
+const storedDeviceId=localRead(deviceStorageKey);
+const networkDeviceId=/^[a-f0-9]{24}$/.test(storedDeviceId)?storedDeviceId:networkToken();
+localWrite(deviceStorageKey,networkDeviceId);
+function deviceAlias(peer) {
+  return networkName(localRead('tnt-device-name-'+peer.device))||peer.name||'Device';
 }
-function setLanAddress(value) {
-  const addr=value.trim()?readLanAddress(value.trim()):null;
-  if(value.trim()&&!addr) {lanUi('Enter the LAN setup address printed by the helper.');return;}
-  localWrite(lanSettingsKey,addr?.url||'');
-  connectLan();
+function memberDevices(lobby) {
+  if(lobby.kind==='host') return lobby.members.filter(member=>lobbyToken(member.device)).map(member=>({...member,role:'Guest'}));
+  return lobbyToken(lobby.hostDevice)?[{device:lobby.hostDevice,name:lobby.hostName||'Host',seen:lobby.seen,role:'Host'}]:[];
 }
-function lanUi(message) {
-  if(message) netText('net-lan-status',message);
-  if(!$('net-entry').hidden&&!$('multiplayer').hidden) {
-    renderSavedLobbies();renderKnownDevices();
-  }
-  renderLanInvites();
-  if(networkRoom&&!$('net-lobby').hidden) renderNetworkLobby();
+function deviceConnected(device) {
+  return !!networkRoom?.players.some(player=>player.device===device);
 }
-function lanSend(packet) {
-  if(lanSocket?.readyState!==WebSocket.OPEN||!lanSocket.lanReady) throw Error('LAN helper unavailable. QR and sound are available.');
-  lanSocket.send(JSON.stringify(packet));
+function lastDeviceContact(seen) {
+  return Number.isFinite(seen)?'Last seen '+new Date(seen).toLocaleString():'Saved';
 }
-function connectLan() {
-  clearTimeout(lanRetry);clearTimeout(lanConnectTimer);clearInterval(lanHeartbeat);
-  if(lanSocket) {lanSocket.onclose=null;lanSocket.close();lanSocket=null;}
-  lanPresence.clear();
-  const config=lanConfig();
-  if(!config) {lanUi('LAN helper optional. QR and sound work on their own.');return;}
-  if(!crypto.subtle||typeof WebSocket!=='function') {
-    lanUi('LAN pairing needs a browser with Web Crypto. Open the downloaded index.html in Chrome or use QR.');return;
-  }
-  let socket;
-  try {socket=lanSocket=new WebSocket(config.socket);}
-  catch {lanUi('This browser could not open the LAN helper. Use QR or sound.');return;}
-  lanUi('Connecting to the LAN helper…');
-  lanConnectTimer=setTimeout(()=>{if(lanSocket===socket&&!socket.lanReady) socket.close();},4400);
-  socket.onopen=()=>socket.send(JSON.stringify({kind:'hello',device:lanDevice}));
-  socket.onmessage=({data})=>{
-    if(lanSocket!==socket) return;
-    const packet=decodeNetworkPacket(data);
-    if(!packet) return;
-    if(packet.kind==='hello'&&!socket.lanReady) {
-      clearTimeout(lanConnectTimer);socket.lanReady=true;
-      lanUi('On the local network · remembered devices can send requests.');
-      lanSend({kind:'presence'});
-      lanHeartbeat=setInterval(()=>{try {lanSend({kind:'presence'});} catch {}},5500);
-    } else if(packet.kind==='presence'&&Array.isArray(packet.online)) {
-      const next=new Set(packet.online.filter(lobbyToken));
-      let changed=next.size!==lanPresence.size;
-      for(const id of next) {changed=changed||!lanPresence.has(id);lanSeen.set(id,Date.now());}
-      lanPresence=next;
-      if(changed) lanUi();
-    } else if(packet.kind==='signal'&&lobbyToken(packet.from)&&typeof packet.box==='string') {
-      receiveLanSignal(packet).catch(()=>{});
-    }
-  };
-  socket.onclose=()=>{
-    if(lanSocket!==socket) return;
-    lanSocket=null;clearInterval(lanHeartbeat);lanPresence.clear();
-    lanUi('LAN helper offline. You can still use QR, sound or a relay tab.');
-    lanRetry=setTimeout(connectLan,10000);
-  };
-}
-function lanPeers(lobby) {
-  if(lobby.kind==='host') return lobby.members.filter(member=>lobbyToken(member.device)&&lobbyToken(member.ticket))
-    .map(member=>({...member,role:'Guest'}));
-  return lobbyToken(lobby.hostDevice)?[{device:lobby.hostDevice,ticket:lobby.ticket,name:lobby.hostName||'Host',role:'Host'}]:[];
-}
-function lanAlias(peer) {return networkName(localRead('tnt-device-name-'+peer.device))||peer.name||'Device';}
-const lanB64=bytes=>btoa(String.fromCharCode(...bytes));
-const lanUn64=text=>Uint8Array.from(atob(text),char=>char.charCodeAt(0));
-const lanEncoding=new TextEncoder();
-const lanContext=(from,to)=>lanEncoding.encode('TNT LAN '+multiplayerVersion+' '+from+' '+to);
-async function lanKey(ticket) {
-  const hash=await crypto.subtle.digest('SHA-256',lanEncoding.encode('Track N Trace lobby '+ticket));
-  return crypto.subtle.importKey('raw',hash,'AES-GCM',false,['encrypt','decrypt']);
-}
-async function sendLanSignal(lobby,peer,fields) {
-  const key=await lanKey(peer.ticket),iv=crypto.getRandomValues(new Uint8Array(12));
-  const payload={...fields,lobby:lobby.id,nonce:networkToken(),issued:Date.now()};
-  const bytes=await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:lanContext(lanDevice,peer.device)},key,lanEncoding.encode(JSON.stringify(payload)));
-  lanSend({kind:'forward',to:peer.device,box:lanB64(iv)+'.'+lanB64(new Uint8Array(bytes))});
-}
-async function receiveLanSignal({from,box}) {
-  if(box.length>29000) return;
-  const [iv,data]=box.split('.');
-  if(!iv||!data) return;
-  for(const lobby of savedLobbies()) for(const peer of lanPeers(lobby).filter(item=>item.device===from)) {
-    let packet;
-    try {
-      const key=await lanKey(peer.ticket);
-      const plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv:lanUn64(iv),additionalData:lanContext(from,lanDevice)},key,lanUn64(data));
-      packet=JSON.parse(new TextDecoder().decode(plaintext));
-    } catch {continue;}
-    if(packet.lobby!==lobby.id||!lobbyToken(packet.nonce)||!lobbyToken(packet.request)||
-      !Number.isFinite(packet.issued)||Math.abs(Date.now()-packet.issued)>120000||lanReplay.has(packet.nonce)) return;
-    lanReplay.set(packet.nonce,Date.now());
-    for(const [id,when] of lanReplay) if(Date.now()-when>240000) lanReplay.delete(id);
-    await handleLanSignal(lobby,peer,packet);
-    return;
-  }
-}
-function ensureLanRoom(lobby,host) {
-  const existing=networkRoom;
-  if(existing?.host===host&&existing.lobby?.id===lobby.id&&(!existing.id||existing.phase==='lobby')&&!existing.relayRequest) {
-    networkWaiting=false;openMultiplayer();return existing;
-  }
-  if(run||existing?.id) throw Error('Leave the current race or lobby before accepting a different one.');
-  return makeNetworkRoom(host,{lobby,save:true});
-}
-function trackLanAttempt(request,entry) {
-  lanAttempts.set(request,entry);
-  entry.timer=setTimeout(()=>{
-    if(lanAttempts.get(request)!==entry) return;
-    lanAttempts.delete(request);
-    if(entry.peerId&&entry.room?.link.peers.get(entry.peerId)?.channel?.readyState!=='open') entry.room.link.remove(entry.peerId);
-    lanUi('The LAN request expired. Try again or use QR.');
-  },65000);
-}
-async function askLan(lobby,peer) {
-  try {
-    const request=networkToken();
-    await sendLanSignal(lobby,peer,{kind:'request',request});
-    trackLanAttempt(request,{lobby:lobby.id,device:peer.device});
-    lanUi(lanPresence.has(peer.device)?'Request sent to '+lanAlias(peer)+'.':'Request sent. The other player can receive it if they open the game in the next minute.');
-  } catch(error) {lanUi(error.message);}
-}
-async function sendLanOffer(lobby,peer,request) {
-  const room=ensureLanRoom(lobby,true),offer=await room.link.offer(false);
-  room.lanPeers.add(peer.device);
-  const previous=lanAttempts.get(request);
-  if(previous) clearTimeout(previous.timer);
-  trackLanAttempt(request,{lobby:lobby.id,device:peer.device,room,peerId:offer.id});
-  try {await sendLanSignal(lobby,peer,{kind:'offer',request,code:offer.code});}
-  catch(error) {room.link.remove(offer.id);throw error;}
-  netStatus('Waiting for '+lanAlias(peer)+' to connect…');
-}
-async function handleLanSignal(lobby,peer,packet) {
-  if(packet.kind==='request') {
-    if(lanInvites.size>=24) lanInvites.delete(lanInvites.keys().next().value);
-    lanInvites.set(packet.request,{lobby,peer,expires:Date.now()+65000});
-    renderLanInvites();renderLaneLabel();
-    setTimeout(()=>{renderLanInvites();renderLaneLabel();},66000);
-    return;
-  }
-  const pending=lanAttempts.get(packet.request);
-  if(!pending||pending.lobby!==lobby.id||pending.device!==peer.device) return;
-  if(packet.kind==='accept'&&lobby.kind==='host'&&!pending.room) {
-    await sendLanOffer(lobby,peer,packet.request);
-  } else if(packet.kind==='offer'&&lobby.kind==='guest'&&typeof packet.code==='string'&&!pending.room) {
-    const room=ensureLanRoom(lobby,false);
-    pending.room=room;
-    try {
-      const reply=await room.link.answer(packet.code);
-      await sendLanSignal(lobby,peer,{kind:'answer',request:packet.request,code:reply});
-      netStatus('Opening the direct race connection…');
-    } catch(error) {if(networkRoom===room) leaveNetworkRoom(error.message);}
-  } else if(packet.kind==='answer'&&pending.room?.host&&pending.room===networkRoom&&typeof packet.code==='string') {
-    await pending.room.link.accept(packet.code,pending.peerId);
-    clearTimeout(pending.timer);lanAttempts.delete(packet.request);
-  }
-}
-async function acceptLan(request) {
-  const invite=lanInvites.get(request);
-  if(!invite||invite.expires<Date.now()) {lanInvites.delete(request);renderLanInvites();return;}
-  const {lobby,peer}=invite;
-  try {
-    if(lobby.kind==='host') await sendLanOffer(lobby,peer,request);
-    else {
-      if(run||networkRoom?.id&&networkRoom.lobby?.id!==lobby.id) throw Error('Leave the current race or lobby first.');
-      if(networkRoom?.id&&networkRoom.lobby?.id===lobby.id) throw Error('You are already connected to this lobby.');
-      trackLanAttempt(request,{lobby:lobby.id,device:peer.device});
-      await sendLanSignal(lobby,peer,{kind:'accept',request});
-      lanUi('Accepted. Waiting for the host to open the connection…');
-    }
-    lanInvites.delete(request);renderLanInvites();renderLaneLabel();
-  } catch(error) {lanUi(error.message);}
-}
-function renderLanInvites() {
-  const list=$('net-lan-invitations');
-  for(const [id,invite] of lanInvites) if(invite.expires<Date.now()) lanInvites.delete(id);
-  list.replaceChildren(...[...lanInvites].map(([id,{lobby,peer}])=>{
-    const row=document.createElement('li'),label=document.createElement('strong');
-    label.textContent=lanAlias(peer)+' · '+lobby.name;
-    row.append(label,button(lobby.kind==='host'?'Accept and host':'Accept invite',()=>acceptLan(id),'primary'),
-      button('Dismiss',()=>{lanInvites.delete(id);renderLanInvites();renderLaneLabel();}));
-    return row;
-  }));
-  $('net-lan-requests').hidden=!list.children.length;
-  $('net-lan-alert').hidden=!list.children.length||networkWaiting||!networkRoom;
-  netText('net-lan-alert',list.children.length===1?'1 request':list.children.length+' requests');
-}
-function renderLaneLabel() {netText('net-open',lanInvites.size?'Multiplayer · request':networkRoom?'Return to multiplayer':'Multiplayer');}
+const shortNetworkId=id=>String(parseInt(id.slice(-6),16)%1000).padStart(3,'0');
 function renderKnownDevices() {
   const rows=new Map();
-  for(const lobby of savedLobbies()) for(const peer of lanPeers(lobby)) {
+  for(const lobby of savedLobbies()) for(const peer of memberDevices(lobby)) {
     if(!rows.has(peer.device)) rows.set(peer.device,[]);
     rows.get(peer.device).push({lobby,peer});
   }
@@ -18897,13 +18491,12 @@ function renderKnownDevices() {
   $('net-known-empty').hidden=!!rows.size;
   list.replaceChildren(...[...rows].map(([device,entries])=>{
     const {peer}=entries[0],row=document.createElement('li'),details=document.createElement('div'),name=document.createElement('strong'),state=document.createElement('small');
-    name.textContent=peer.kind==='Relay'?(localRead('tnt-device-name-'+device)||peer.name):lanAlias(peer);
-    const seen=lanSeen.get(device)||peer.seen||entries[0].lobby?.seen;
+    name.textContent=localRead('tnt-device-name-'+device)||peer.name||'Device';
     const joined=entries.filter(entry=>entry.lobby);
-    const status=peer.kind==='Relay'&&networkRoom?.relay?.relayDevice===peer.device?'Connected':
-      lanPresence.has(device)?'Online':seen?'Last seen '+new Date(Number(seen)).toLocaleString():'Presence unknown';
-    state.textContent=status+' · '+(joined.length?joined.map(({lobby,peer:p})=>lobby.name+' ('+p.role+')').join(', '):
-      peer.kind==='Relay'?'Relay tab':'No saved lobby');
+    const connected=peer.kind==='Relay'?networkRoom?.relay?.relayDevice===peer.device:deviceConnected(peer.device);
+    const status=connected?'Connected':lastDeviceContact(peer.seen??entries[0].lobby?.seen);
+    state.textContent=status+' · ID '+shortNetworkId(peer.device)+' · '+(joined.length?joined.map(({lobby,peer:p})=>
+      lobby.name+' ('+p.role+')').join(', '):peer.kind==='Relay'?'Relay tab':'No saved lobby');
     details.append(name,state);row.append(details,button('Rename',()=>{
       openModal('net-rename-device','Name this device',body=>{
         const input=document.createElement('input');input.value=name.textContent;input.maxLength=22;input.setAttribute('aria-label','Device name');
@@ -18913,30 +18506,9 @@ function renderKnownDevices() {
         },'primary'));
       },closeModal);
     }));
-    for(const {lobby,peer:p} of joined) row.append(button('Request · '+lobby.name,()=>askLan(lobby,p)));
     return row;
   }));
 }
-function showLanSetup() {
-  openModal('net-lan-setup','LAN helper setup',body=>{
-    body.append(paragraph('Run the downloaded helper with Python 3.9 or newer on one device. Copy the LAN setup address from its window. Enter the address here. Guests can enable it after their first saved-lobby QR pairing.'));
-    const input=document.createElement('input');input.type='text';input.value=lanConfig()?.url||'';input.setAttribute('aria-label','LAN setup address');
-    input.placeholder='http://192.168.1.20:8765/#tnt-lan=…';input.style.width='100%';
-    body.append(input);
-    setModalActions(button('Cancel',closeModal),button('Save address',()=>{
-      if(input.value.trim()&&!readLanAddress(input.value.trim())) {input.setCustomValidity('Use the private LAN setup address printed by the helper.');input.reportValidity();return;}
-      closeModal();setLanAddress(input.value);
-    },'primary'));
-    input.addEventListener('input',()=>input.setCustomValidity(''));
-  },closeModal);
-}
-function downloadLanHelper() {
-  const source=$('tnt-lan-helper').textContent.trimStart();
-  const url=URL.createObjectURL(new Blob([source],{type:'text/x-python'}));
-  const link=document.createElement('a');link.href=url;link.download='track-n-trace-lan.py';link.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-}
-
 const savedLobbiesKey='tnt-saved-lobbies-v1';
 const lobbyToken=value=>typeof value==='string'&&/^[a-f0-9]{24}$/.test(value);
 const lobbyName=value=>typeof value==='string'?value.trim().slice(0,40):'';
@@ -18965,14 +18537,12 @@ function renderSavedLobbies() {
     const row=document.createElement('li'),details=document.createElement('div'),name=document.createElement('strong');
     name.textContent=lobby.name;
     const role=document.createElement('small');
-    const peers=lanPeers(lobby),online=peers.filter(peer=>lanPresence.has(peer.device)).length;
     const count=lobby.kind==='host'?1+lobby.members.length:lobby.roster?.length||2;
     const current=networkRoom?.lobby?.id===lobby.id?networkRoom.players.length:0;
-    role.textContent=(lobby.kind==='host'?'Created by you':'Joined')+' · '+count+' known · '+online+' peers online · '+current+' connected';
+    role.textContent=(lobby.kind==='host'?'Created by you':'Joined')+' · '+count+' known · '+current+' connected';
     const methods=document.createElement('small');
-    methods.textContent='Direct QR / Sound · Relay tab'+(peers.length?' · LAN reconnect':'');
-    details.append(methods);
-    details.append(name,role);
+    methods.textContent=window.tntSoundPairing?'Direct QR or sound · Relay tab':'Direct QR · Relay tab';
+    details.append(name,role,methods);
     const withCurrent=action=>()=>{
       if(networkRoom?.lobby?.id===lobby.id&&networkRoom.id) {$('net-return-session').click();return;}
       if(networkRoom?.id) {netStatus('Leave the current lobby before switching to another one.');return;}
@@ -18991,7 +18561,6 @@ function renderSavedLobbies() {
           },'race-cancel'));
         },closeModal);
       }));
-    for(const peer of peers) row.append(button((lobby.kind==='host'?'Invite ':'Request host · ')+lanAlias(peer),()=>askLan(lobby,peer)));
     return row;
   }));
 }
@@ -19030,7 +18599,7 @@ function rememberLobbyMember(room,id,packet,driver) {
   const lobby=room.lobby;
   if(!lobby||packet.save!==true) return null;
   if(packet.lobbyId&&packet.lobbyId!==lobby.id) throw Error('That invite belongs to another saved lobby.');
-  const device=lobbyToken(packet.device)&&packet.device!==lanDevice?packet.device:null;
+  const device=lobbyToken(packet.device)&&packet.device!==networkDeviceId?packet.device:null;
   let entry=lobby.members.find(member=>member.ticket===packet.ticket||!packet.lobbyId&&device&&member.device===device);
   if(packet.lobbyId&&!entry&&!(packet.repair===true&&room.repair))
     throw Error('This browser’s saved pairing has changed. Use Repair connection on both devices.');
@@ -19040,13 +18609,11 @@ function rememberLobbyMember(room,id,packet,driver) {
     lobby.members.push(entry);
   } else if(driver.name) entry.name=driver.name;
   if(device) {entry.device=device;rememberNetworkDevice(device,driver.name);}
-  entry.method=room.relayRequest?'Relay tab':room.lanPeers.has(device)?'LAN helper':'Direct';
+  entry.method=room.relayRequest?'Relay tab':'Direct';
   entry.seen=Date.now();
   room.memberTickets.set(id,entry.ticket);
   writeSavedLobby(lobby);
-  const config=lanConfig();
-  return {id:lobby.id,name:lobby.name,ticket:entry.ticket,hostDevice:lanDevice,hostName:room.players[0]?.name,
-    helper:config&&!config.url.startsWith('http://127.')?config.url:null};
+  return {id:lobby.id,name:lobby.name,ticket:entry.ticket,hostDevice:networkDeviceId,hostName:room.players[0]?.name};
 }
 function rememberJoinedLobby(room,info) {
   if(!room.save) return;
@@ -19058,7 +18625,6 @@ function rememberJoinedLobby(room,info) {
   room.lobby={...room.lobby,id:info.id,name:lobbyName(info.name),ticket:info.ticket,kind:'guest',
     hostDevice:lobbyToken(info.hostDevice)?info.hostDevice:null,hostName:networkName(info.hostName),seen:Date.now()};
   if(room.lobby.hostDevice) rememberNetworkDevice(room.lobby.hostDevice,room.lobby.hostName);
-  room.helperOffer=!lanConfig()?readLanAddress(info.helper)?.url:null;
   writeSavedLobby(room.lobby);
 }
 
@@ -19068,7 +18634,7 @@ const localRelayChannel='track-n-trace-relay-'+multiplayerVersion;
 let localLobbyRelay=null;
 class LocalLobbyRelay {
   constructor() {
-    this.id=networkToken();this.members=new Map();this.host=null;this.lobbyId=null;this.waiting=new Set();this.memberLobbies=new Map();this.tabPorts=new Set();this.closed=false;
+    this.id=networkToken();this.code=shortNetworkId(this.id);this.members=new Map();this.host=null;this.lobbyId=null;this.waiting=new Set();this.memberLobbies=new Map();this.tabPorts=new Set();this.closed=false;
     this.link=new DirectRoomConnection({
       open:()=>{},message:(id,packet)=>this.receive(id,packet),leave:id=>this.remove(id),
       recovering:()=>{}
@@ -19077,7 +18643,9 @@ class LocalLobbyRelay {
       this.channel=new BroadcastChannel(localRelayChannel);
       this.channel.onmessage=({data})=>{
         if(!data||!lobbyToken(data.from)) return;
-        if(data.kind==='find') this.channel.postMessage({kind:'found',from:this.id,to:data.from});
+        if(data.kind==='find'&&(!data.code||data.code===this.code)) {
+          this.channel.postMessage({kind:'found',from:this.id,to:data.from,code:this.code});
+        }
         else if(data.kind==='packet'&&data.to===this.id&&data.packet) {
           if(data.packet.kind==='relay-hello'&&!this.members.has(data.from)&&!this.link.peers.has(data.from)) this.tabPorts.add(data.from);
           if(this.tabPorts.has(data.from)) this.receive(data.from,data.packet);
@@ -19101,7 +18669,7 @@ class LocalLobbyRelay {
       const name=networkDriver({name:packet.name}).name||'Player '+(this.members.size+1);
       this.members.set(id,name);this.memberLobbies.set(id,lobbyToken(packet.lobby)?packet.lobby:null);
       if(packet.host===true) {this.host=id;this.lobbyId=this.memberLobbies.get(id);}
-      this.send(id,{kind:'relay-welcome',host:id===this.host,waiting:this.waiting.size,relayDevice:lanDevice});
+      this.send(id,{kind:'relay-welcome',host:id===this.host,waiting:this.waiting.size,relayDevice:networkDeviceId});
       if(id===this.host) {
         for(const waiting of this.waiting) {
           if(this.lobbyId&&this.memberLobbies.get(waiting)&&this.memberLobbies.get(waiting)!==this.lobbyId) {
@@ -19164,7 +18732,7 @@ class RelayRaceClient {
     this.link=new DirectRoomConnection({
       open:id=>{
         if(this.remote&&this.remote!==id) {this.link.remove(id);return;}
-        this.tab?.close();this.tab=null;clearTimeout(this.findTimer);
+        this.tab?.close();this.tab=null;this.stopFinding();
         this.remote=id;this.hello();
       },
       message:(_,packet)=>this.receive(packet),
@@ -19181,24 +18749,28 @@ class RelayRaceClient {
     if(this.tab&&this.remote) this.tab.postMessage({kind:'packet',from:this.id,to:this.remote,packet});
     else if(this.remote) this.link.send(this.remote,packet);
   }
-  findTab() {
+  findTab(code='') {
     if(this.closed||this.remote||typeof BroadcastChannel!=='function') return;
-    this.tab?.close();clearTimeout(this.findTimer);
+    this.tab?.close();this.stopFinding();
     this.id=networkToken();this.tab=new BroadcastChannel(localRelayChannel);
     this.tab.onmessage=({data})=>{
       if(this.closed||!data||data.to!==this.id||!lobbyToken(data.from)) return;
-      if(data.kind==='found'&&!this.remote) {
-        clearTimeout(this.findTimer);this.remote=data.from;this.hello();
+      if(data.kind==='found'&&!this.remote&&(!code||code===data.code)) {
+        this.stopFinding();this.remote=data.from;this.hello();
       } else if(data.kind==='packet'&&data.from===this.remote&&data.packet) this.receive(data.packet);
     };
+    const find=()=>this.tab.postMessage({kind:'find',from:this.id,code});
     this.findTimer=setTimeout(()=>{
+      this.stopFinding();
       if(this.remote) return;
       this.tab?.close();this.tab=null;
-      netStatus('No relay found in another tab. Use the relay invite QR or sound.');
-    },1700);
-    this.tab.postMessage({kind:'find',from:this.id});
-    netStatus('Looking for a relay in another tab…');
+      const message=code?'No relay with that code in this browser.':'No relay found in another tab.';
+      netStatus(message+' Open a relay tab or use the relay invite.');
+    },3200);
+    this.findInterval=setInterval(find,500);
+    find();netStatus('Looking for a relay in this browser…');
   }
+  stopFinding() {clearTimeout(this.findTimer);clearInterval(this.findInterval);}
   async receive(packet) {
     const room=this.room;
     if(this.closed||networkRoom!==room) return;
@@ -19259,7 +18831,7 @@ class RelayRaceClient {
   close(notify=true) {
     if(this.closed) return;
     if(notify) this.send({kind:'relay-left'});
-    this.closed=true;clearTimeout(this.findTimer);this.raceConnected();
+    this.closed=true;this.stopFinding();this.raceConnected();
     for(const route of this.routes.values()) clearTimeout(route.timer);
     this.tab?.close();this.link.close();
   }
@@ -19274,6 +18846,7 @@ function renderLocalRelay() {
     row.append(label,button('Remove',()=>relay.remove(id,true)));
     return row;
   });
+  netText('net-relay-tab-code',relay.code);
   $('net-relay-roster').replaceChildren(...rows);
   $('net-relay-invite').disabled=!!relay.busy||relay.members.size>=maxNetworkPlayers;
 }
@@ -19310,8 +18883,17 @@ async function makeRelayInvite(replace=false) {
 function beginRelayRace(host,lobby=null) {
   const room=makeNetworkRoom(host,{relayRequest:host?'host':'guest',lobby,save:!host});
   room.relay=new RelayRaceClient(room);
-  showNetworkPair('Connect to the lobby relay','Use the relay tab’s invite or find a relay in another tab on this device.','','offer');
+  $('net-relay-digits').value='';
+  showNetworkPair('Connect to the lobby relay','Find or open a relay in this browser. For a relay on another device, use its invite.','','offer');
   return room;
+}
+function openRelayTab() {
+  const url=new URL(location.href);url.hash='lobby-relay';
+  const tab=window.open(url.href,'_blank');
+  if(tab) tab.opener=null;
+  else if(!networkRoom) startLocalRelay();
+  else netStatus('The relay tab could not open. Allow pop-ups and try again.');
+  return !!tab;
 }
 
 // multiplayer/ui.js
@@ -19338,9 +18920,6 @@ function leaveNetworkRoom(message='') {
   if(modalType.startsWith('net-')||lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
   stopNetworkScan();
   const room=networkRoom;networkRoom=null;networkWaiting=false;
-  if(room) for(const [request,attempt] of lanAttempts) if(attempt.room===room) {
-    clearTimeout(attempt.timer);lanAttempts.delete(request);
-  }
   if(room) {clearTimeout(room.readyTimer);clearTimeout(room.endTimer);room.relay?.close();room.link?.close();}
   if(run?.network) leaveNetworkRace();
   $('net-pair').hidden=true;
@@ -19355,10 +18934,10 @@ function localNetworkDriver() {
 }
 function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null}={}) {
   leaveNetworkRoom();
-  const room={host,lobby,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),lanPeers:new Set(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
+  const room={host,lobby,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
     readyRevision:0,readyUntil:0,recovering:new Set(),suggestions:new Map()};
   if(host) {
-    room.phase='lobby';room.players.push({id:'host',device:lobby?lanDevice:null,...room.draft,name:room.draft.name||'Host',ready:false});
+    room.phase='lobby';room.players.push({id:'host',device:lobby?networkDeviceId:null,...room.draft,name:room.draft.name||'Host',ready:false});
     try {room.settings=lobby?.settings?networkSettings(lobby.settings):networkSeedSettings();}
     catch {room.settings=networkSeedSettings();}
     room.turn='host';
@@ -19376,7 +18955,7 @@ function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=n
 function sendNetworkHello(room,id) {
   room.hostId=id;
   room.link.send(id,{kind:'hello',version:multiplayerVersion,driver:room.draft,save:room.save,
-    lobbyId:room.lobby?.id,ticket:room.lobby?.ticket,repair:room.repair,device:room.save?lanDevice:null});
+    lobbyId:room.lobby?.id,ticket:room.lobby?.ticket,repair:room.repair,device:room.save?networkDeviceId:null});
 }
 function networkRecovery(room,id,active) {
   if(active) room.recovering.add(id);else room.recovering.delete(id);
@@ -19446,7 +19025,7 @@ function transmitNetwork(room,packet) {
 }
 function sendNetworkLobby(room) {
   transmitNetwork(room,{kind:'lobby',players:room.players,turn:room.turn,controller:room.controller,settings:room.settings,phase:room.phase,
-    savedRoster:room.lobby?[{name:room.players[0]?.name||'Host',device:lanDevice,role:'Host'},
+    savedRoster:room.lobby?[{name:room.players[0]?.name||'Host',device:networkDeviceId,role:'Host'},
       ...room.lobby.members.map(p=>({name:p.name,device:p.device,role:'Guest',seen:p.seen}))]:null,
     readyRevision:room.readyRevision,readyWait:Math.max(0,room.readyUntil-performance.now())});
   renderNetworkLobby();
@@ -19581,9 +19160,6 @@ function networkMessage(room,id,packet) {
   if(packet.kind==='welcome') {
     if(packet.version!==multiplayerVersion) {leaveNetworkRoom('Both devices must use Track N Trace v'+multiplayerVersion+'.');return;}
     room.relay?.raceConnected();
-    for(const [request,attempt] of lanAttempts) if(attempt.room===room) {
-      clearTimeout(attempt.timer);lanAttempts.delete(request);
-    }
     try {rememberJoinedLobby(room,packet.membership);}
     catch(error) {leaveNetworkRoom(error.message);return;}
     room.id=packet.id;$('net-pair').hidden=true;$('net-pair').dataset.reopen='false';stopNetworkScan();netStatus('Connected.');
@@ -19725,7 +19301,10 @@ function showNetworkPair(title,text,code='',action='') {
   stopNetworkScan();netText('net-pair-title',title);netText('net-pair-help',text);
   $('net-pair').hidden=false;$('net-pair').dataset.action=action;
   $('net-hide-pair').hidden=!localLobbyRelay&&(!networkRoom?.host||!!networkRoom.relayRequest);
-  $('net-find-relay').hidden=action!=='offer'||!networkRoom?.relayRequest||typeof BroadcastChannel!=='function';
+  $('net-same-device-relay').hidden=action!=='offer'||!networkRoom?.relayRequest;
+  $('net-relay-label').hidden=$('net-find-relay').hidden=typeof BroadcastChannel!=='function';
+  $('net-device-id').open=false;
+  netText('net-device-digits',shortNetworkId(networkDeviceId));
   $('net-code').value='';$('net-code-out').value=code;
   $('net-qr-wrap').hidden=!code;$('net-code-entry').hidden=!action;
   $('net-camera').hidden=!navigator.mediaDevices?.getUserMedia;
@@ -19850,14 +19429,12 @@ async function scanNetworkFile(file) {
 }
 function renderNetworkLobby() {
   const room=networkRoom;
-  renderLaneLabel();
-  if(localLobbyRelay) netText('net-open','Return to multiplayer');
+  netText('net-open',room||localLobbyRelay?'Return to multiplayer':'Multiplayer');
   $('net-entry').hidden=!!localLobbyRelay||!!room&&!networkWaiting;
   $('net-lobbies-back').hidden=!room||networkWaiting;
   $('net-return-session').hidden=!room;
   if(room&&!networkWaiting) $('net-pair').dataset.reopen='false';
   if(!$('net-entry').hidden&&!$('multiplayer').hidden) {renderSavedLobbies();renderKnownDevices();}
-  renderLanInvites();
   $('net-link-state').hidden=!room?.recovering.size;
   const sidelined=room?.phase==='race'&&networkRaceView?.inLobby;
   $('net-lobby').hidden=networkWaiting||!room?.id||!!room.relayRequest&&!room.relay?.connected||room.phase!=='lobby'&&!sidelined;
@@ -19875,16 +19452,13 @@ function renderNetworkLobby() {
   netText('net-lobby-title',room.lobby?.name||'Lobby');
   const roster=room.host?room.lobby?.members:room.lobby?.roster;
   const known=room.host?1+(roster?.length||0):roster?.length||2;
-  const online=roster?.filter(member=>member.device!==lanDevice&&lanPresence.has(member.device)).length||0;
   $('net-member-details').hidden=!room.lobby;
-  $('net-enable-lan').hidden=!room.helperOffer;
-  netText('net-member-count',known+' known · '+online+' peers online via helper · '+room.players.length+' connected · '+room.players.filter(p=>p.ready).length+' ready');
-  $('net-member-list').replaceChildren(...(roster||[]).filter(person=>person.device!==lanDevice).map(person=>{
+  netText('net-member-count',known+' known · '+room.players.length+' connected · '+room.players.filter(p=>p.ready).length+' ready');
+  $('net-member-list').replaceChildren(...(roster||[]).filter(person=>person.device!==networkDeviceId).map(person=>{
     const member=document.createElement('li');
     const connected=room.players.some(player=>person.device&&player.device===person.device||
       room.host&&person.ticket&&room.memberTickets.get(player.id)===person.ticket);
-    member.textContent=lanAlias(person)+' · '+(person.role||'Guest')+' · '+(connected?'Connected':
-      lanPresence.has(person.device)?'Online':person.seen?'Last seen '+new Date(person.seen).toLocaleString():'Presence unknown');
+    member.textContent=deviceAlias(person)+' · '+(person.role||'Guest')+' · '+(connected?'Connected':lastDeviceContact(person.seen));
     return member;
   }));
   if(!own||!room.settings) return;
@@ -20420,17 +19994,10 @@ function initializeMultiplayer() {
     renderNetworkLobby();
   };
   on('net-lobbies-back','click',showWaiting);
-  on('net-lan-alert','click',showWaiting);
   on('net-return-session','click',()=>{
     networkWaiting=false;
     if($('net-pair').dataset.reopen==='true') $('net-pair').hidden=false;
     renderNetworkLobby();
-  });
-  on('net-lan-setup','click',showLanSetup);
-  on('net-lan-download','click',downloadLanHelper);
-  on('net-enable-lan','click',()=>{
-    const address=networkRoom?.helperOffer;
-    if(address) {networkRoom.helperOffer=null;$('net-enable-lan').hidden=true;setLanAddress(address);netStatus('Saved the local reconnect address.');}
   });
   on('net-leave','click',openEndMultiplayer);
   on('net-full','click',fullscreen);
@@ -20448,11 +20015,11 @@ function initializeMultiplayer() {
   on('net-join-saved','click',()=>beginNetworkJoin());
   on('net-invite','click',()=>makeNetworkInvite());
   on('net-refresh-invite','click',()=>localLobbyRelay?makeRelayInvite(true):makeNetworkInvite(true));
-  on('net-relay-open','click',()=>{
-    const url=new URL(location.href);url.hash='lobby-relay';
-    const tab=window.open(url.href,'_blank');
-    if(tab) tab.opener=null;
-    else startLocalRelay();
+  on('net-relay-open','click',openRelayTab);
+  on('net-start-relay-tab','click',()=>{
+    const client=networkRoom?.relay;
+    if(!client||networkRoom.busy||client.link.peers.size||client.remote) return;
+    if(openRelayTab()&&typeof BroadcastChannel==='function') {stopNetworkScan();client.findTab();}
   });
   on('net-relay-invite','click',()=>makeRelayInvite());
   on('net-relay-host','click',()=>beginRelayRace(true));
@@ -20460,7 +20027,9 @@ function initializeMultiplayer() {
   on('net-find-relay','click',()=>{
     const client=networkRoom?.relay;
     if(!client||networkRoom.busy||client.link.peers.size) return;
-    stopNetworkScan();client.findTab();
+    const code=$('net-relay-digits').value.trim();
+    if(code&&!/^\d{3}$/.test(code)) {netStatus('Enter the relay’s three-digit tab code, or leave it blank.');return;}
+    stopNetworkScan();client.findTab(code);
   });
   on('net-scan-code','click',()=>applyNetworkCode($('net-code').value));
   on('net-copy','click',async()=>{
@@ -20482,14 +20051,9 @@ function initializeMultiplayer() {
     else {fullscreen();localNetworkAction({kind:'start'});}
   });
   if(location.hash==='#lobby-relay') startLocalRelay();
-  else if(!lanConfig()&&readLanAddress(location.href)) {
-    const address=location.href;
-    history.replaceState(null,'',location.pathname+location.search);setLanAddress(address);
-  } else connectLan();
   window.addEventListener('pagehide',event=>{
     stopNetworkScan();
     if(!event.persisted) {
-      if(lanSocket) {lanSocket.onclose=null;lanSocket.close();}
       networkRoom?.relay?.close();networkRoom?.link.close();localLobbyRelay?.close();
     }
   });
