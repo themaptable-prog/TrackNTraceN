@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#162c2d">
-<title>Track’n’Trace’n v0.16</title>
+<title>Track’n’Trace’n v0.17</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -196,6 +196,13 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 @media(min-width:720px){#net-pair[data-action=answer] #net-pair-steps{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}}
 #net-code-entry{min-width:0}
 #net-code-out{overflow-wrap:anywhere}
+#net-peer-panel input:not([type=checkbox]){width:10ch;background:var(--field);color:var(--cream);border:1px solid var(--line);border-radius:6px;font:inherit;padding:6px}
+.net-peer-toggle{display:flex;align-items:center;gap:7px}
+#net-peer-code{font:800 2rem ui-monospace,monospace;letter-spacing:.08em;color:#ffe092}
+#net-peer-approvals{list-style:none;display:grid;gap:8px;padding:0;margin:0}
+#net-peer-approvals li{padding:10px;border-radius:7px;background:#19322d}
+#net-peer-approvals p{margin:5px 0 8px}
+#net-peer-approvals button+button{margin-left:6px}
 #net-same-device-relay{display:grid;gap:7px;margin:8px 0}
 #net-relay-digits{max-width:8em;padding:6px;background:var(--field);border:1px solid var(--line);border-radius:6px;color:var(--cream)}
 #net-device-digits,#net-relay-tab-code{font-variant-numeric:tabular-nums;color:var(--cream)}
@@ -312,7 +319,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.16</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.17</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -447,6 +454,22 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
   <details id="net-known"><summary>Known devices</summary><p id="net-known-empty">Devices appear here after pairing with a saved lobby.</p><ul id="net-known-list"></ul></details>
   <details><summary>Quick QR play</summary><div class="net-buttons"><button id="net-host-direct">Host multiplayer</button><button id="net-join-direct">Join multiplayer</button></div></details>
   <details id="net-relay-options"><summary>Lobby relay tab</summary><div class="net-buttons"><button id="net-relay-open">Open relay tab</button><button id="net-relay-host">Host a race via relay</button><button id="net-relay-join">Join a race via relay</button></div></details>
+ </section>
+ <section id="net-peer-panel" class="net-panel" hidden aria-label="PeerJS multiplayer">
+  <div class="net-lobby-head"><h2>PeerJS</h2><label class="net-peer-toggle"><input type="checkbox" id="net-peer-enable"> Enable internet matchmaking</label></div>
+  <p>Loads PeerJS from jsDelivr. The public PeerServer exchanges connection details, and Google STUN helps find a direct route. Race traffic goes directly between players.</p>
+  <p id="net-peer-state" role="status">Off · QR, sound and relay play stay local.</p>
+  <label id="net-peer-auto-row" class="net-peer-toggle" hidden><input type="checkbox" id="net-peer-auto"> Reconnect to the last PeerJS lobby when enabled</label>
+  <div id="net-peer-actions" class="net-buttons" hidden>
+   <button id="net-peer-host">Host with PeerJS</button>
+   <label>Join code <input id="net-peer-join-code" maxlength="12" autocapitalize="characters" autocomplete="off" placeholder="XXXX-XXXX"></label>
+   <button id="net-peer-join">Join</button>
+  </div>
+  <div id="net-peer-session" class="net-buttons" hidden>
+   <output id="net-peer-code" aria-label="PeerJS join code" hidden></output><button id="net-peer-copy-code" hidden>Copy join code</button>
+   <button id="net-peer-new-code" hidden>New join code</button><button id="net-peer-close-code" hidden>Close invites</button>
+  </div>
+  <ul id="net-peer-approvals" aria-label="PeerJS connection approvals" hidden></ul>
  </section>
  <section id="net-pair" class="net-panel" hidden>
   <div class="net-lobby-head"><h2 id="net-pair-title"></h2><button id="net-hide-pair" hidden>Hide invite</button></div><p id="net-pair-help"></p>
@@ -17993,7 +18016,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: offline pairing codes and WebRTC data channels.
-const multiplayerVersion='0.16';
+const multiplayerVersion='0.17';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -18561,6 +18584,10 @@ function renderSavedLobbies() {
           },'race-cancel'));
         },closeModal);
       }));
+    if(peerMode) {
+      row.append(button(lobby.kind==='host'?'Host with PeerJS':'Reconnect with PeerJS',withCurrent(current=>
+        openPeerRoom(current.kind==='host',current))));
+    }
     return row;
   }));
 }
@@ -18601,6 +18628,7 @@ function rememberLobbyMember(room,id,packet,driver) {
   if(packet.lobbyId&&packet.lobbyId!==lobby.id) throw Error('That invite belongs to another saved lobby.');
   const device=lobbyToken(packet.device)&&packet.device!==networkDeviceId?packet.device:null;
   let entry=lobby.members.find(member=>member.ticket===packet.ticket||!packet.lobbyId&&device&&member.device===device);
+  if(room.transport==='peer'&&!packet.lobbyId&&entry) entry.ticket=networkToken();
   if(packet.lobbyId&&!entry&&!(packet.repair===true&&room.repair))
     throw Error('This browser’s saved pairing has changed. Use Repair connection on both devices.');
   if(entry&&[...room.memberTickets.values()].includes(entry.ticket)) throw Error('That device has already joined.');
@@ -18609,7 +18637,7 @@ function rememberLobbyMember(room,id,packet,driver) {
     lobby.members.push(entry);
   } else if(driver.name) entry.name=driver.name;
   if(device) {entry.device=device;rememberNetworkDevice(device,driver.name);}
-  entry.method=room.relayRequest?'Relay tab':'Direct';
+  entry.method=room.transport==='peer'?'PeerJS':room.relayRequest?'Relay tab':'Direct';
   entry.seen=Date.now();
   room.memberTickets.set(id,entry.ticket);
   writeSavedLobby(lobby);
@@ -18623,9 +18651,483 @@ function rememberJoinedLobby(room,info) {
     room.lobby&&room.lobby.id!==info.id) throw Error('The host sent a different saved lobby.');
   if(savedLobbies().some(item=>item.id===info.id&&item.kind==='host')) return;
   room.lobby={...room.lobby,id:info.id,name:lobbyName(info.name),ticket:info.ticket,kind:'guest',
-    hostDevice:lobbyToken(info.hostDevice)?info.hostDevice:null,hostName:networkName(info.hostName),seen:Date.now()};
+    hostDevice:lobbyToken(info.hostDevice)?info.hostDevice:null,hostName:networkName(info.hostName),seen:Date.now(),
+    peer:room.transport==='peer'||!!room.lobby?.peer};
   if(room.lobby.hostDevice) rememberNetworkDevice(room.lobby.hostDevice,room.lobby.hostName);
   writeSavedLobby(room.lobby);
+  if(room.transport==='peer') localWrite(peerAutoKey,room.lobby.id);
+}
+
+// multiplayer/peerjs.js
+// Optional Internet signaling. Keep this module independent of QR and sound.
+const peerScriptUrl='https://cdn.jsdelivr.net/npm/peerjs@1.5.5/dist/peerjs.min.js';
+const peerScriptIntegrity='sha384-x0YgkOr/3UOZP2CRDxGW9e0Q+2Qjyr3uJrm4xU32Y7ZCNAo7Cc7bjhrZMi/dwczu';
+const peerJoinAlphabet='23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+const peerIdPrefix='tnt'+multiplayerVersion.replace('.','');
+const peerLabel='track-n-trace-'+multiplayerVersion;
+const peerCodec=new TextEncoder();
+const peerAutoKey='tnt-peerjs-auto-v1';
+const peerRetryPreference='tnt-peerjs-reconnect-v1';
+const peerResumeMs=30000;
+let peerMode=false,peerLoading=null,peerConsentGeneration=0;
+const peerRoute=(type,id)=>peerIdPrefix+'-'+type+'-'+id.toLowerCase();
+const peerRoomCode=()=>Array.from(crypto.getRandomValues(new Uint8Array(8)),byte=>peerJoinAlphabet[byte&31]).join('');
+const peerReadable=code=>code.slice(0,4)+'-'+code.slice(4);
+function normalizePeerCode(value) {
+  const code=value.toUpperCase().replace(/[\s-]/g,'');
+  return code.length===8&&[...code].every(letter=>peerJoinAlphabet.includes(letter))?code:null;
+}
+function loadPeerJS() {
+  if(typeof window.Peer==='function') return Promise.resolve(window.Peer);
+  if(peerLoading) return peerLoading;
+  const script=document.createElement('script');
+  script.integrity=peerScriptIntegrity;script.crossOrigin='anonymous';script.referrerPolicy='no-referrer';
+  script.src=peerScriptUrl;
+  peerLoading=new Promise((resolve,reject)=>{
+    const finish=error=>{
+      clearTimeout(timer);script.remove();peerLoading=null;
+      if(error||typeof window.Peer!=='function') reject(Error('PeerJS could not load. Check your internet connection or use QR.'));
+      else resolve(window.Peer);
+    };
+    const timer=setTimeout(()=>finish(true),12000);
+    script.onload=()=>finish(false);script.onerror=()=>finish(true);
+    document.head.append(script);
+  });
+  return peerLoading;
+}
+function peerHandshakeContext(state,host) {
+  const pc=state.conn.peerConnection;
+  const fingerprint=description=>{
+    const print=description?.sdp?.match(/^a=fingerprint:sha-256 ((?:[\dA-F]{2}:){31}[\dA-F]{2})\r?$/im)?.[1];
+    if(!print) throw Error('Could not verify this browser’s WebRTC connection.');
+    return print.toLowerCase();
+  };
+  const local=fingerprint(pc.localDescription),remote=fingerprint(pc.remoteDescription);
+  return host?local+' '+remote:remote+' '+local;
+}
+async function peerVerification(context) {
+  const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',peerCodec.encode(peerLabel+' '+context)));
+  return Array.from(digest.slice(0,8),byte=>peerJoinAlphabet[byte&31]).join('');
+}
+async function peerTicketProof(ticket,state,role) {
+  const key=await crypto.subtle.importKey('raw',peerCodec.encode(ticket),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const message=peerLabel+' '+role+' '+state.lobby+' '+state.device+' '+state.guestNonce+' '+state.hostNonce+' '+state.context;
+  return Array.from(new Uint8Array(await crypto.subtle.sign('HMAC',key,peerCodec.encode(message))),
+    value=>value.toString(16).padStart(2,'0')).join('');
+}
+function peerProofMatches(expected,actual) {
+  if(typeof actual!=='string'||actual.length!==expected.length) return false;
+  let diff=0;
+  for(let i=0;i<expected.length;i++) diff|=expected.charCodeAt(i)^actual.charCodeAt(i);
+  return diff===0;
+}
+class PeerJSRoomConnection {
+  constructor(room,events,Peer) {
+    this.room=room;this.events=events;this.Peer=Peer;this.host=room.host;this.closed=false;
+    this.peers=new Map();this.pendingPeers=new Set();this.reserved=new Map();
+  }
+  start(code) {
+    this.target=this.host?null:code?peerRoute('join',code):peerRoute('room',this.room.lobby.id);
+    this.deadline=Date.now()+(code?38000:60000);
+    this.registerMain();
+  }
+  register(id,kind) {
+    const client=new this.Peer(id,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
+      config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}],sdpSemantics:'unified-plan'}});
+    const node={client,kind,id,active:true,attempt:0,ready:false};
+    const valid=()=>node.active&&!this.closed;
+    client.on('open',()=>{
+      if(!valid()) return;
+      clearTimeout(node.retry);node.retry=null;clearTimeout(node.watch);node.attempt=0;node.ready=true;
+      if(kind==='guest') {if(!this.peers.size&&!this.dialing) this.dial();}
+      else if(kind==='code') {this.inviteReady=true;renderPeerPanel();}
+      else {netStatus('Saved lobby open through PeerJS.');renderPeerPanel();}
+    });
+    client.on('connection',conn=>{
+      if(!valid()||!this.host||conn.label!==peerLabel||conn.serialization!=='raw'||this.pendingPeers.size>=4) {conn.close();return;}
+      this.attach(conn,kind==='room');
+    });
+    client.on('disconnected',()=>{
+      if(!valid()) return;
+      node.ready=false;
+      if(kind==='code') {this.inviteReady=false;renderPeerPanel();}
+      this.retryRegistration(node);
+    });
+    client.on('error',error=>{
+      if(!valid()) return;
+      if(error.type==='peer-unavailable'&&kind==='guest') {
+        if(this.dialing) this.detach(this.dialing);
+        this.retryGuest('Waiting for the host to open the lobby…');return;
+      }
+      if(error.type==='unavailable-id') {
+        if(kind==='code'&&this.codeNode===node) {this.rotateCode(this.codeAttempts+1);return;}
+        if(kind==='room') {this.stopNode(node);netStatus('This lobby is already open in another tab or device. Close it there and retry.');renderPeerPanel();return;}
+      }
+      if(['network','socket-error','socket-closed','server-error','disconnected','unavailable-id'].includes(error.type)) {
+        node.ready=false;this.retryRegistration(node);
+      } else this.fail('PeerJS could not start. Use QR or try again.');
+    });
+    node.watch=setTimeout(()=>{
+      if(valid()&&!node.ready) {client.destroy();this.retryRegistration(node);}
+    },12000);
+    return node;
+  }
+  registerMain() {
+    this.main=this.register(this.host?peerRoute('room',this.room.lobby.id):peerRoute('guest',networkToken()),this.host?'room':'guest');
+  }
+  retryRegistration(node) {
+    if(this.closed||!node.active||node.retry) return;
+    if(!this.host&&!this.peers.size&&Date.now()>=this.deadline)
+      return this.fail('PeerJS signaling could not reconnect. Try again or use Quick QR.');
+    if(!this.peers.size) netStatus('PeerJS signaling interrupted. Retrying…');
+    node.retry=setTimeout(()=>{
+      node.retry=null;
+      if(this.closed||!node.active||node.ready) return;
+      try {
+        if(node.client.destroyed) {
+          node.active=false;
+          if(node===this.main) {this.main=this.register(node.id,node.kind);this.main.attempt=node.attempt;}
+          else if(node===this.codeNode) {this.codeNode=this.register(node.id,node.kind);this.codeNode.attempt=node.attempt;}
+        } else if(node.client.disconnected) {node.client.reconnect();this.retryRegistration(node);}
+        else this.retryRegistration(node);
+      } catch {this.retryRegistration(node);}
+    },Math.min(12000,900*2**Math.min(4,node.attempt++)));
+  }
+  stopNode(node) {
+    if(node) {node.active=false;clearTimeout(node.retry);clearTimeout(node.watch);node.client.destroy();}
+  }
+  rotateCode(attempt=0) {
+    if(this.closed||!this.host) return;
+    this.stopInvites();
+    if(attempt>=4) {netStatus('Could not reserve a join code. Try again.');return;}
+    this.codeAttempts=attempt;this.code=peerRoomCode();
+    this.codeNode=this.register(peerRoute('join',this.code),'code');
+    this.codeTimer=setTimeout(()=>{this.stopInvites();renderPeerPanel();},10*60000);
+    renderPeerPanel();
+  }
+  stopInvites() {
+    this.inviteReady=false;this.code=null;clearTimeout(this.codeTimer);
+    const node=this.codeNode;this.codeNode=null;
+    if(!node) return;
+    // An established racer may still be using this peer's data channel.
+    const active=[...this.peers.values()].some(state=>state.conn.provider===node.client);
+    for(const state of this.pendingPeers) if(state.conn.provider===node.client) this.deny(state,'decline');
+    if(active) {
+      node.active=false;clearTimeout(node.retry);clearTimeout(node.watch);node.client.disconnect();
+      (this.retiredNodes??=new Set()).add(node);
+    } else this.stopNode(node);
+  }
+  dial() {
+    if(this.closed||this.dialing||this.peers.size||!this.main?.ready) return;
+    if(Date.now()>=this.deadline) {this.retryGuest('');return;}
+    let conn;
+    try {conn=this.main.client.connect(this.target,{label:peerLabel,serialization:'raw',reliable:true});}
+    catch {this.retryGuest('Waiting for PeerJS signaling…');return;}
+    if(!conn) {this.retryGuest('Waiting for PeerJS signaling…');return;}
+    this.dialing=this.attach(conn,!!this.room.lobby?.ticket);
+  }
+  attach(conn,returning) {
+    const state={conn,returning,stage:'opening',alive:true,queue:Promise.resolve()};
+    this.pendingPeers.add(state);
+    state.timer=setTimeout(()=>this.lost(state,'The connection request timed out.'),returning?11000:16000);
+    conn.on('open',()=>{
+      if(!state.alive||this.closed) return;
+      state.stage=this.host?'intro':'challenge';
+      if(!this.host) {
+        state.device=networkDeviceId;state.guestNonce=networkToken();
+        this.raw(state,{kind:'intro',version:multiplayerVersion,device:state.device,nonce:state.guestNonce,
+          name:this.room.draft.name,returning:state.returning});
+      }
+    });
+    conn.on('data',raw=>{
+      if(!state.alive||typeof raw!=='string'||raw.length>maxNetworkMessage||state.queued>=32) return;
+      const packet=decodeNetworkPacket(raw);
+      if(!packet) return;
+      if(state.stage==='ready') {this.receiveRace(state,packet);return;}
+      if(raw.length>1400) {this.detach(state);return;}
+      state.queued=(state.queued||0)+1;
+      state.queue=state.queue.then(()=>state.alive&&this.handshake(state,packet))
+        .catch(error=>this.deny(state,error.message)).finally(()=>state.queued--);
+    });
+    conn.on('iceStateChanged',status=>{
+      if(!state.alive||state.stage!=='ready') return;
+      if(status==='disconnected'&&!state.stallTimer) {
+        this.events.recovering(state.id,true);
+        state.stallTimer=setTimeout(()=>this.lost(state,'The PeerJS race link timed out.'),5000);
+      } else if(state.stallTimer&&(status==='connected'||status==='completed')) {
+        clearTimeout(state.stallTimer);state.stallTimer=null;this.events.recovering(state.id,false);
+      }
+    });
+    conn.on('close',()=>this.lost(state,'The PeerJS race link disconnected.'));
+    conn.on('error',()=>this.lost(state,'The PeerJS race link failed.'));
+    return state;
+  }
+  async handshake(state,packet) {
+    if(packet.kind==='denied') {if(!this.host) this.fail(peerDenials[packet.reason]||'The host declined this connection.');return;}
+    if(this.host&&state.stage==='intro'&&packet.kind==='intro') {
+      if(packet.version!==multiplayerVersion||!lobbyToken(packet.device)||!lobbyToken(packet.nonce)||
+        (packet.returning===true)!==state.returning) return this.deny(state,'version');
+      state.device=packet.device;state.guestNonce=packet.nonce;state.hostNonce=networkToken();
+      state.id='peer-'+state.device;state.lobby=this.room.lobby.id;
+      state.name=networkName(packet.name)||'Driver';
+      const member=this.room.lobby.members.find(p=>p.device===state.device&&lobbyToken(p.ticket));
+      if(!state.returning&&(this.room.phase!=='lobby'||this.room.players.length>=maxNetworkPlayers)) return this.deny(state,'busy');
+      if(state.returning&&!member) return this.deny(state,'credentials');
+      if(!state.returning&&this.room.players.some(p=>p.device===state.device)) return this.deny(state,'busy');
+      state.context=peerHandshakeContext(state,true);
+      state.stage=state.returning?'proof':'approval';
+      const response={kind:'challenge',lobby:state.lobby,nonce:state.hostNonce};
+      if(state.returning) {
+        state.ticket=member.ticket;response.proof=await peerTicketProof(state.ticket,state,'host');
+      } else {
+        state.check=await peerVerification(state.context);
+        this.approvalTimeout(state);renderPeerPanel();
+      }
+      this.raw(state,response);
+    } else if(!this.host&&state.stage==='challenge'&&packet.kind==='challenge') {
+      if(!lobbyToken(packet.lobby)||!lobbyToken(packet.nonce)||this.room.lobby&&packet.lobby!==this.room.lobby.id)
+        return this.deny(state,'credentials');
+      state.hostNonce=packet.nonce;state.lobby=packet.lobby;
+      state.context=peerHandshakeContext(state,false);
+      if(state.returning) {
+        if(!peerProofMatches(await peerTicketProof(this.room.lobby.ticket,state,'host'),packet.proof)) return this.deny(state,'credentials');
+        state.stage='admission';
+        this.raw(state,{kind:'proof',proof:await peerTicketProof(this.room.lobby.ticket,state,'guest')});
+      } else {
+        state.stage='approval';state.check=await peerVerification(state.context);
+        this.approvalTimeout(state);renderPeerPanel();
+      }
+    } else if(this.host&&state.stage==='proof'&&packet.kind==='proof') {
+      if(!peerProofMatches(await peerTicketProof(state.ticket,state,'guest'),packet.proof)) return this.deny(state,'credentials');
+      this.admit(state);
+    } else if(this.host&&state.stage==='approval'&&packet.kind==='verified') {
+      state.remoteApproved=true;if(state.approved) this.admit(state);
+      else renderPeerPanel();
+    } else if(!this.host&&state.stage==='admission'&&packet.kind==='admitted') {
+      this.markReady(state,'peer-host');
+    } else this.deny(state,'credentials');
+  }
+  approvalTimeout(state) {
+    clearTimeout(state.timer);
+    state.timer=setTimeout(()=>this.lost(state,'The code comparison expired. Try again.'),75000);
+  }
+  approve(state) {
+    if(this.closed||!state.alive||state.stage!=='approval') return;
+    state.approved=true;
+    if(this.host) {
+      if(state.remoteApproved) this.admit(state);
+      else renderPeerPanel();
+    } else {
+      state.stage='admission';this.raw(state,{kind:'verified'});renderPeerPanel();
+    }
+  }
+  admit(state) {
+    if(!state.alive) return;
+    const occupied=this.room.players.some(player=>player.id===state.id);
+    if(!occupied&&(this.room.phase!=='lobby'||this.room.players.length>=maxNetworkPlayers)) return this.deny(state,'busy');
+    if(occupied&&!state.returning) return this.deny(state,'busy');
+    this.raw(state,{kind:'admitted'});
+    this.markReady(state,state.id);
+  }
+  markReady(state,id) {
+    clearTimeout(state.timer);clearTimeout(this.retryTimer);this.pendingPeers.delete(state);
+    if(this.dialing===state) this.dialing=null;
+    const previous=this.peers.get(id);
+    if(previous) this.detach(previous);
+    const hold=this.reserved.get(id);
+    if(hold) {clearTimeout(hold);this.reserved.delete(id);}
+    this.peers.set(id,state);state.id=id;state.stage='ready';this.tries=0;
+    this.events.open(id);
+    if(!this.host&&this.room.recovering.has(id)) this.events.recovering(id,false);
+    renderPeerPanel();
+  }
+  receiveRace(state,packet) {
+    if(this.peers.get(state.id)!==state) return;
+    if(packet.kind==='peer-leaving') {
+      this.detach(state);
+      this.events.leave(state.id,'The player left the lobby.');
+      return;
+    }
+    if(packet.kind==='hello'&&this.host) {
+      if(packet.device!==state.device) return this.deny(state,'credentials');
+      this.events.message(state.id,{...packet,lobbyId:state.returning?state.lobby:null,ticket:state.ticket,peerVerified:true});
+    } else this.events.message(state.id,packet);
+  }
+  raw(state,packet) {
+    if(!state.alive||!state.conn.open) return;
+    try {state.conn.send(JSON.stringify(packet));} catch {}
+  }
+  send(id,packet) {
+    const state=this.peers.get(id);
+    if(!state||(isSnapshot(packet)&&(state.stallTimer||state.conn.dataChannel?.bufferedAmount>24000))) return;
+    const raw=JSON.stringify(packet);
+    if(raw.length>maxNetworkMessage) return;
+    try {state.conn.send(raw);} catch {}
+  }
+  detach(state) {
+    if(!state?.alive) return;
+    state.alive=false;clearTimeout(state.timer);clearTimeout(state.stallTimer);this.pendingPeers.delete(state);
+    if(this.dialing===state) this.dialing=null;
+    if(this.peers.get(state.id)===state) this.peers.delete(state.id);
+    state.conn.close();
+    for(const node of this.retiredNodes||[]) if(![...this.peers.values()].some(peer=>peer.conn.provider===node.client)) {
+      this.stopNode(node);this.retiredNodes.delete(node);
+    }
+  }
+  deny(state,reason) {
+    if(!state.alive) return;
+    if(!this.host) {this.fail(peerDenials[reason]||reason);return;}
+    if(state.stage==='denied') return;
+    state.stage='denied';clearTimeout(state.timer);
+    this.raw(state,{kind:'denied',reason:Object.hasOwn(peerDenials,reason)?reason:'credentials'});
+    state.timer=setTimeout(()=>{this.detach(state);renderPeerPanel();},250);
+    renderPeerPanel();
+  }
+  lost(state,message) {
+    if(this.closed||!state.alive) return;
+    const id=state.id,racing=state.stage==='ready';
+    this.detach(state);
+    if(this.host) {
+      if(racing&&this.room.players.some(player=>player.id===id)&&!this.reserved.has(id)) {
+        this.events.recovering(id,true);
+        this.reserved.set(id,setTimeout(()=>{
+          this.reserved.delete(id);if(!this.closed&&!this.peers.has(id)) this.events.leave(id,message);
+        },peerResumeMs));
+      }
+    } else if(racing&&this.room.lobby?.ticket) {
+      this.target=peerRoute('room',this.room.lobby.id);
+      this.deadline=Date.now()+peerResumeMs-1500;
+      this.events.recovering(id,true);
+      this.retryGuest('Race link interrupted. Reconnecting…');
+    } else if(state.check) this.fail(message);
+    else this.retryGuest('Waiting for the host to open the lobby…');
+    renderPeerPanel();
+  }
+  retryGuest(message) {
+    if(this.closed||this.retryTimer||this.peers.size) return;
+    if(Date.now()>=this.deadline) return this.fail('The host could not be reached. Try the saved lobby again or use Quick QR.');
+    netStatus(message);
+    this.retryTimer=setTimeout(()=>{
+      this.retryTimer=null;
+      if(this.main?.ready) this.dial();else this.retryGuest(message);
+    },Math.min(5000,650*2**Math.min(3,this.tries||0)));
+    this.tries=(this.tries||0)+1;
+  }
+  fail(message) {
+    if(this.closed) return;
+    if(networkRoom===this.room) {leaveNetworkRoom(message);if($('multiplayer').hidden) openMultiplayer();}
+    else this.close();
+  }
+  remove(id,reason='',notify=false) {
+    this.detach(this.peers.get(id));clearTimeout(this.reserved.get(id));this.reserved.delete(id);
+    if(notify&&!this.closed) this.events.leave(id,reason);
+  }
+  close() {
+    if(this.closed) return;
+    this.closed=true;clearTimeout(this.retryTimer);clearTimeout(this.codeTimer);
+    for(const timer of this.reserved.values()) clearTimeout(timer);
+    for(const state of [...this.peers.values(),...this.pendingPeers]) this.detach(state);
+    for(const node of this.retiredNodes||[]) this.stopNode(node);
+    this.stopNode(this.main);this.stopNode(this.codeNode);
+  }
+}
+const peerDenials={
+  credentials:'Saved pairing could not be verified. Use a fresh invite and compare the verification code.',
+  version:'Use Track N Trace v'+multiplayerVersion+' on both devices.',
+  busy:'The host is racing, at capacity, or this device is already connected.',
+  decline:'The connection was declined.'
+};
+function openPeerRoom(host,lobby=null,code=null) {
+  if(!peerMode||typeof window.Peer!=='function'||networkRoom||localLobbyRelay) return;
+  const room=makeNetworkRoom(host,{lobby,save:true,transport:'peer'});
+  netStatus(host?'Opening the PeerJS lobby…':'Looking for the host…');
+  try {room.link.start(code);}
+  catch {room.link.fail('PeerJS could not start. Use QR or try again.');}
+  renderPeerPanel();
+}
+async function togglePeerMode(enable) {
+  const generation=++peerConsentGeneration;
+  if(!enable) {
+    peerMode=false;
+    if(networkRoom?.transport==='peer') {
+      const room=networkRoom;
+      if(room.host) transmitNetwork(room,{kind:'room-ended'});
+      else room.link.send(room.hostId,{kind:'peer-leaving'});
+      leaveNetworkRoom('PeerJS disabled. You can still use QR and sound.');
+    }
+    renderNetworkLobby();
+    netText('net-peer-state','Off · QR, sound and relay play stay local.');return;
+  }
+  if(!crypto.subtle||typeof RTCPeerConnection!=='function') {
+    $('net-peer-enable').checked=false;netStatus('PeerJS requires WebRTC and Web Crypto. Quick QR is available.');return;
+  }
+  $('net-peer-enable').checked=true;
+  netText('net-peer-state','Loading PeerJS…');
+  try {
+    await loadPeerJS();
+    if(generation!==peerConsentGeneration) return;
+    peerMode=true;renderNetworkLobby();
+    const last=localRead(peerRetryPreference)==='off'?'':localRead(peerAutoKey),lobby=savedLobbies().find(item=>item.id===last&&item.kind==='guest'&&item.peer);
+    if(lobby&&!networkRoom&&!localLobbyRelay) openPeerRoom(false,lobby);
+  } catch(error) {
+    if(generation!==peerConsentGeneration) return;
+    $('net-peer-enable').checked=false;
+    netText('net-peer-state',error.message);
+  }
+}
+function renderPeerPanel() {
+  const room=networkRoom?.transport==='peer'?networkRoom:null;
+  const link=room?.link;
+  $('net-peer-panel').hidden=!!localLobbyRelay||!!networkRoom&&!room&&!networkWaiting;
+  $('net-peer-actions').hidden=!peerMode||!!networkRoom;
+  $('net-peer-auto-row').hidden=!peerMode||!!networkRoom;
+  $('net-peer-auto').checked=localRead(peerRetryPreference)!=='off';
+  $('net-peer-enable').checked=peerMode||(!!peerLoading&&$('net-peer-enable').checked);
+  $('net-peer-session').hidden=!room;
+  $('net-peer-new-code').hidden=!room?.host;
+  $('net-peer-close-code').hidden=!link?.code;
+  $('net-peer-code').hidden=!link?.inviteReady;
+  $('net-peer-copy-code').hidden=!link?.inviteReady;
+  netText('net-peer-code',link?.inviteReady?peerReadable(link.code):'');
+  const pending=$('net-peer-approvals'),rows=[];
+  for(const state of link?.pendingPeers||[]) if(state.check&&['approval','admission'].includes(state.stage)) {
+    const row=document.createElement('li'),title=document.createElement('strong'),copy=document.createElement('p');
+    title.textContent=(room.host?state.name+' · ':'')+peerReadable(state.check);
+    copy.textContent=state.approved?'Waiting for the other player to confirm.':'Compare this verification code in person or over a separate call.';
+    row.append(title,copy);
+    if(!state.approved) row.append(button('Codes match',()=>link.approve(state),'primary'));
+    row.append(button(room.host?'Decline':'Cancel',()=>{
+      if(room.host) link.deny(state,'decline');
+      else leaveNetworkRoom('PeerJS pairing cancelled.');
+    }));
+    rows.push(row);
+  }
+  pending.replaceChildren(...rows);
+  pending.hidden=!rows.length;
+  if(!peerLoading||peerMode) netText('net-peer-state',room?.host?
+    (link?.inviteReady?'New players can enter this join code for 10 minutes.':link?.code?'Reserving the join code…':'Saved players can rejoin when you open this lobby.'):
+    peerMode?'Enabled for this tab.':'Off · QR, sound and relay play stay local.');
+}
+function createPeerLobby() {
+  if(!peerMode||networkRoom) return;
+  openModal('net-create-peer','Host with PeerJS',body=>{
+    const label=document.createElement('label'),input=document.createElement('input');
+    label.className='net-driver';label.append('Lobby name',input);input.maxLength=40;input.placeholder='Family Racing';
+    body.append(label);
+    const host=()=>{
+      const lobby={id:networkToken(),name:lobbyName(input.value)||'Family Racing',kind:'host',members:[],settings:networkSeedSettings()};
+      writeSavedLobby(lobby);
+      openPeerRoom(true,lobby);
+      if(networkRoom?.transport==='peer') networkRoom.link.rotateCode();
+    };
+    input.addEventListener('keydown',event=>{if(event.key==='Enter') host();});
+    setModalActions(button('Cancel',closeModal),button('Open lobby',host,'primary'));
+  },closeModal);
+}
+function joinPeerCode() {
+  const input=$('net-peer-join-code'),code=normalizePeerCode(input.value);
+  if(!code) {input.setCustomValidity('Enter the eight-character join code shown by the host.');input.reportValidity();return;}
+  openPeerRoom(false,null,code);
 }
 
 // multiplayer/local-lobby-relay.js
@@ -18932,9 +19434,9 @@ function localNetworkDriver() {
   try {name=localStorage.getItem('tnt-multiplayer-name')||'';} catch {}
   return networkDriver({name,type:options.type,color:vehicles[options.type].palette.indexOf(options.paint),steering:options.networkSteering});
 }
-function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null}={}) {
+function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null,transport='direct'}={}) {
   leaveNetworkRoom();
-  const room={host,lobby,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
+  const room={host,lobby,transport,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
     readyRevision:0,readyUntil:0,recovering:new Set(),suggestions:new Map()};
   if(host) {
     room.phase='lobby';room.players.push({id:'host',device:lobby?networkDeviceId:null,...room.draft,name:room.draft.name||'Host',ready:false});
@@ -18948,14 +19450,14 @@ function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=n
     leave:(id,reason)=>{if(networkRoom===room) networkDeparture(room,id,reason);},
     recovering:(id,active)=>{if(networkRoom===room) networkRecovery(room,id,active);}
   };
-  room.link=new DirectRoomConnection(events);
+  room.link=transport==='peer'?new PeerJSRoomConnection(room,events,window.Peer):new DirectRoomConnection(events);
   networkWaiting=false;networkRoom=room;openMultiplayer();
   return room;
 }
 function sendNetworkHello(room,id) {
   room.hostId=id;
   room.link.send(id,{kind:'hello',version:multiplayerVersion,driver:room.draft,save:room.save,
-    lobbyId:room.lobby?.id,ticket:room.lobby?.ticket,repair:room.repair,device:room.save?networkDeviceId:null});
+    lobbyId:room.lobby?.id,ticket:room.transport==='peer'?undefined:room.lobby?.ticket,repair:room.repair,device:room.save?networkDeviceId:null,round:networkRaceView?.id});
 }
 function networkRecovery(room,id,active) {
   if(active) room.recovering.add(id);else room.recovering.delete(id);
@@ -19007,7 +19509,12 @@ function openEndMultiplayer() {
   if(!room.id||room.relayRequest&&!room.relay?.connected) {leaveNetworkRoom('Connection cancelled.');return;}
   const action=button('× Leave lobby',()=>{
     if(room.host) {closeModal();endNetworkRoom(room,true);}
-    else {leaveNetworkRoom('');closeMultiplayer();}
+    else {
+      if(room.transport==='peer') {
+        room.link.send(room.hostId,{kind:'peer-leaving'});
+      }
+      leaveNetworkRoom('');closeMultiplayer();
+    }
   },'race-cancel');
   openModal('net-leave','Leave lobby?',body=>{
     body.append(paragraph(room.host?'Everyone will disconnect. Your saved lobby will still be available.':'You’ll disconnect and return to the main menu.'));
@@ -19059,8 +19566,9 @@ function endNetworkRoom(room,toMenu=false) {
 function manageNetworkLobby(room,id,packet) {
   const player=room.players.find(p=>p.id===id);
   if(packet.kind==='hello') {
+    const resuming=room.transport==='peer'&&packet.peerVerified===true&&!!player&&room.memberTickets.get(id)===packet.ticket;
     const error=packet.version!==multiplayerVersion?'Both devices must use Track N Trace v'+multiplayerVersion+'.':
-      room.phase!=='lobby'?'A race is running. Ask for an invite when the lobby reopens.':
+      room.phase!=='lobby'&&!resuming?'A race is running. Ask for an invite when the lobby reopens.':
       room.players.length>=maxNetworkPlayers&&!player?'The room is full.':'';
     if(error) {
       room.link.send(id,{kind:'reject',error});
@@ -19077,9 +19585,19 @@ function manageNetworkLobby(room,id,packet) {
       room.players.push({...driver,id,device:room.lobby&&lobbyToken(packet.device)?packet.device:null,name:driver.name||'Driver '+(room.players.length+1),ready:false});
       resetNetworkReady(room);
     }
+    if(resuming) membership={id:room.lobby.id,name:room.lobby.name,ticket:packet.ticket,hostDevice:networkDeviceId,hostName:room.players[0]?.name};
     room.link.send(id,{kind:'welcome',id,version:multiplayerVersion,membership});
+    if(resuming) {
+      room.recovering.delete(id);
+      if(room.phase==='race'&&room.round) {
+        room.round.pause(id,'connection',false);
+        if(packet.round!==room.round.id) room.link.send(id,networkRoundPacket(room.round));
+        else room.link.send(id,room.round.snapshot());
+        broadcastNetworkSnapshot(room);
+      }
+    }
     if(!room.link.pending) {$('net-pair').hidden=true;$('net-pair').dataset.reopen='false';stopNetworkScan();}
-    sendNetworkLobby(room);netStatus('Player joined.');
+    sendNetworkLobby(room);netStatus(resuming?'Player reconnected.':'Player joined.');
     return;
   }
   if(!player) return;
@@ -19435,6 +19953,7 @@ function renderNetworkLobby() {
   $('net-return-session').hidden=!room;
   if(room&&!networkWaiting) $('net-pair').dataset.reopen='false';
   if(!$('net-entry').hidden&&!$('multiplayer').hidden) {renderSavedLobbies();renderKnownDevices();}
+  renderPeerPanel();
   $('net-link-state').hidden=!room?.recovering.size;
   const sidelined=room?.phase==='race'&&networkRaceView?.inLobby;
   $('net-lobby').hidden=networkWaiting||!room?.id||!!room.relayRequest&&!room.relay?.connected||room.phase!=='lobby'&&!sidelined;
@@ -19542,7 +20061,7 @@ function renderNetworkLobby() {
   netText('net-start',paused?'▶ Continue race':sidelined?'Return everyone to lobby':'Start race');
   $('net-start').disabled=paused?!networkRaceView.snapshot.pauseRoster.every(p=>!p.required||p.ready):
     !sidelined&&(settling||room.recovering.size>0||room.players.length<2||!room.players.every(p=>p.ready));
-  $('net-invite').hidden=!room.host||!!sidelined||!!room.relayRequest;
+  $('net-invite').hidden=!room.host||room.transport==='peer'||!!sidelined||!!room.relayRequest;
   $('net-invite').disabled=room.busy||room.players.length>=maxNetworkPlayers;
   $('net-refresh-invite').disabled=room.busy;
 }
@@ -19599,9 +20118,12 @@ function networkBegin() {
   try {round=new NetworkRound(room.settings,room.players.map(player=>({...player})),networkToken(),room.id);}
   catch(error) {netStatus('Could not prepare the course '+error.message);return;}
   room.round=round;room.phase='race';
-  const packet={kind:'round',id:round.id,settings:room.settings,players:round.players,tune:round.tune,snapshot:round.snapshot()};
+  const packet=networkRoundPacket(round);
   transmitNetwork(room,packet);
   enterNetworkRace(room,packet,round.local);
+}
+function networkRoundPacket(round) {
+  return {kind:'round',id:round.id,settings:round.settings,players:round.players,tune:round.tune,snapshot:round.snapshot()};
 }
 function enterNetworkRace(room,packet,hostGame=null) {
   networkWaiting=false;stopNetworkScan();$('net-pair').hidden=true;closeModal();audio.unlock();
@@ -19998,6 +20520,18 @@ function initializeMultiplayer() {
     networkWaiting=false;
     if($('net-pair').dataset.reopen==='true') $('net-pair').hidden=false;
     renderNetworkLobby();
+  });
+  on('net-peer-enable','change',event=>togglePeerMode(event.target.checked));
+  on('net-peer-auto','change',event=>localWrite(peerRetryPreference,event.target.checked?'':'off'));
+  on('net-peer-host','click',createPeerLobby);
+  on('net-peer-join','click',joinPeerCode);
+  on('net-peer-join-code','input',event=>event.target.setCustomValidity(''));
+  on('net-peer-join-code','keydown',event=>{if(event.key==='Enter') joinPeerCode();});
+  on('net-peer-new-code','click',()=>networkRoom?.link.rotateCode());
+  on('net-peer-close-code','click',()=>{networkRoom?.link.stopInvites();renderPeerPanel();});
+  on('net-peer-copy-code','click',async()=>{
+    try {await navigator.clipboard.writeText($('net-peer-code').textContent);netStatus('Join code copied.');}
+    catch {netStatus('Read the join code displayed above to your guest.');}
   });
   on('net-leave','click',openEndMultiplayer);
   on('net-full','click',fullscreen);
