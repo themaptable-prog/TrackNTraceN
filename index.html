@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#202224">
-<title>Track’n’Trace’n v0.18</title>
+<title>Track’n’Trace’n v0.19</title>
 <style>
 :root{color-scheme:dark;--ink:#152a2b;--deep:#102223;--panel:#1c3535;--edge:#39504c;--cream:#fff1d0;--muted:#b7c6b6;--orange:#ffab67;--orange-hot:#ffc391;--green:#d7ec9b;--mono:ui-monospace,SFMono-Regular,Consolas,monospace;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box} [hidden]{display:none!important} html,body{margin:0;width:100%;height:100%;background:var(--deep);color:var(--cream);overscroll-behavior:none} body{overflow:hidden} button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation} button:focus-visible{outline:2px solid var(--orange);outline-offset:3px} button:disabled{opacity:.43;cursor:default} button,.tag{border:1px solid var(--edge);border-radius:9px;background:#263e3d} button:active:not(:disabled){filter:brightness(1.13)} .icon{display:grid;place-items:center;min-width:43px;height:43px;font-size:20px}
@@ -77,8 +77,6 @@
 
 .carousel-surface{touch-action:pan-y;user-select:none}
 .carousel-surface canvas{pointer-events:none}
-.carousel-surface .slide-surface{transform:translateX(var(--swipe-shift,0px));transition:transform .2s ease-out;pointer-events:none}
-.carousel-surface.swiping .slide-surface{transition:none}
 #courses{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:5px;max-height:none;overflow:hidden;padding:0}
 #courses button{display:grid;min-width:0;min-height:0;overflow:hidden;padding:0;background:#1b3331;border:1px solid var(--line);border-radius:8px;color:var(--muted);text-align:left}
 #courses button canvas{width:100%;aspect-ratio:2.7;object-fit:cover;display:block;opacity:.75;background:#314a3f}
@@ -169,7 +167,6 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 .pause-tray button,.orientation button{min-height:42px}
 .orientation section{width:min(400px,100%);border-color:#6a8573;box-shadow:0 14px 44px #0d1e1dbf}
 .orientation button{padding-inline:15px}
-@media(prefers-reduced-motion:reduce){.carousel-surface .slide-surface{transition:none}}
 
 
 #multiplayer{max-width:850px;height:100dvh;overflow:auto;overscroll-behavior:contain;margin:0 auto;padding:16px clamp(10px,4vw,28px) 36px}
@@ -267,7 +264,7 @@ select.vehicle-name{width:100%;margin:0;padding:4px 8px;font-size:clamp(15px,2.4
 
 .course-strip{touch-action:pan-y}
 .course-strip .course-list{overflow:hidden;touch-action:pan-y;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
-.course-strip .course-list button{min-width:0;transform:translateX(var(--swipe-shift,0px))}
+.course-strip .course-list button{min-width:0}
 .course-strip #vehicle-tiles canvas{display:block;width:100%;height:clamp(29px,6vh,48px);object-fit:contain}
 .vehicle-hero{display:grid;place-items:center;border:1px solid var(--line);border-radius:10px;background:#1c3931}
 .vehicle-hero canvas{display:block;max-width:100%;height:clamp(53px,11vh,95px);object-fit:contain}
@@ -382,7 +379,7 @@ button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(
 <main id="setup">
  <div class="wrap">
   <header class="masthead">
-   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.18</span></div>
+   <div class="brand"><h1 class="wordmark">Track’n’<em>Trace’n</em></h1><span class="version">v0.19</span></div>
    <div class="mast-actions"><button id="net-open" class="tool-button toolbar-action">Multiplayer</button><button id="tuning-open" class="tool-button toolbar-action tuning-action" aria-haspopup="dialog">Development tuning</button><button id="creator-open" class="tool-button">Course creator</button><button class="icon" id="sound" aria-label="Mute audio" title="Mute audio">♫</button><button class="icon" id="full" aria-label="Fullscreen" title="Fullscreen">⛶</button></div>
   </header>
   <div id="setup-pickers"><div class="layout" id="picker-layout">
@@ -391,7 +388,7 @@ button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(
     <div class="course-hero" id="course-preview" role="group" aria-label="Selected course"><canvas id="preview" width="960" height="528" aria-hidden="true"></canvas>
      <div class="course-heading"><div aria-live="polite"><p id="course-kind"></p><h2 id="course-name"></h2></div><button id="records" class="tool-button">Records</button></div>
     </div>
-    <div class="course-strip" id="course-pager" role="group" aria-label="Course carousel">
+    <div class="course-strip" id="course-pager" role="group" aria-label="Course carousel" tabindex="0">
      <button class="icon" id="prev-course" aria-label="Previous course">‹</button>
      <div id="courses" class="course-list" aria-label="Course thumbnails" tabindex="0"></div>
      <button class="icon" id="next-course" aria-label="Next course">›</button>
@@ -511,7 +508,7 @@ button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(
   <p id="net-saved-empty">Create a lobby or join one on the same Wi-Fi. A saved lobby can race with any two to four players.</p>
   <ul id="net-saved-list" aria-label="Saved lobbies"></ul>
   <div class="net-buttons"><button id="net-create-saved" class="primary">Create lobby</button><button id="net-join-saved">Join lobby</button></div>
-  <details id="net-known"><summary>Known devices</summary><p id="net-known-empty">Devices appear here after pairing with a saved lobby.</p><ul id="net-known-list"></ul></details>
+  <details id="net-known"><summary>Known devices</summary><label id="net-presence-row" class="net-peer-toggle" hidden><input type="checkbox" id="net-presence"> Share online status with paired devices</label><p id="net-known-empty">Devices appear here after pairing with a saved lobby.</p><ul id="net-known-list"></ul></details>
   <details><summary>Quick QR play</summary><div class="net-buttons"><button id="net-host-direct">Host multiplayer</button><button id="net-join-direct">Join multiplayer</button></div></details>
   <details id="net-relay-options"><summary>Lobby relay tab</summary><div class="net-buttons"><button id="net-relay-open">Open relay tab</button><button id="net-relay-host">Host a race via relay</button><button id="net-relay-join">Join a race via relay</button></div></details>
  </section>
@@ -552,6 +549,7 @@ button:not(.primary):not(.lobby-remove):not([data-paint]):not(.race-cancel):not(
  </section>
  <section id="net-lobby" class="net-panel" hidden>
   <div class="net-lobby-head"><h2 id="net-lobby-title">Lobby</h2></div>
+  <p id="net-handoff-session" hidden>This session was handed off. Connected players can keep racing. New invites need a new session.</p>
   <div class="net-buttons" id="net-host-invites" hidden>
    <button id="net-invite">Invite by QR</button><button id="net-attach-relay">Connect a relay</button><button id="net-detach-relay" hidden>Disconnect relay</button>
   </div>
@@ -5307,48 +5305,10 @@ function choosePickerVehicle(type,paint=options.paint) {
 function changeVehicle(by) {
   choosePickerVehicle(mod(options.type+by,vehicles.length));
 }
-function attachCarousel(id,step,enabled=()=>true) {
-  const node=$(id);
-  let gesture=null, blockNextClick=false;
-  const reset=()=>{
-    node.classList?.remove('swiping');
-    node.style.setProperty('--swipe-shift','0px');
-    gesture=null;
-  };
-  node.addEventListener('pointerdown',e=>{
-    if(!enabled()||e.button!==0||gesture) return;
-    blockNextClick=false;
-    gesture={id:e.pointerId,x:e.clientX,y:e.clientY,dragging:false};
-  });
-  node.addEventListener('pointermove',e=>{
-    if(gesture?.id!==e.pointerId) return;
-    const dx=e.clientX-gesture.x,dy=e.clientY-gesture.y;
-    if(!gesture.dragging) {
-      if(Math.abs(dy)>9&&Math.abs(dy)>Math.abs(dx)) {reset();return;}
-      if(Math.abs(dx)<10||Math.abs(dx)<Math.abs(dy)*1.18) return;
-      gesture.dragging=true;node.classList?.add('swiping');
-      try {node.setPointerCapture(e.pointerId);} catch {}
-    }
-    node.style.setProperty('--swipe-shift',clamp(dx*.38,-64,64)+'px');
-  });
-  node.addEventListener('pointerup',e=>{
-    if(gesture?.id!==e.pointerId) return;
-    const distance=e.clientX-gesture.x, dragging=gesture.dragging;
-    reset();
-    if(!dragging) return;
-    blockNextClick=true;
-    if(Math.abs(distance)>=38) step(distance<0?1:-1);
-  });
-  node.addEventListener('pointercancel',reset);
-  node.addEventListener('lostpointercapture',e=>{if(e.target===node) reset();});
-
-  node.addEventListener('click',e=>{
-    if(!blockNextClick||e.detail===0) return;
-    blockNextClick=false;e.preventDefault();e.stopImmediatePropagation();
-  },true);
-  node.addEventListener('keydown',e=>{
-    if(!enabled()||e.key!=='ArrowLeft'&&e.key!=='ArrowRight') return;
-    e.preventDefault();step(e.key==='ArrowLeft'?-1:1);
+function attachCarouselKeys(id,step,enabled=()=>true) {
+  $(id).addEventListener('keydown',event=>{
+    if(!enabled()||event.key!=='ArrowLeft'&&event.key!=='ArrowRight') return;
+    event.preventDefault();step(event.key==='ArrowLeft'?-1:1);
   });
 }
 function initializeFleetControls() {
@@ -17966,7 +17926,7 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 });
 // multiplayer/connection.js
 // Multiplayer connection: offline pairing codes and WebRTC data channels.
-const multiplayerVersion='0.18';
+const multiplayerVersion='0.19';
 const maxNetworkPlayers=4;
 const maxNetworkMessage=65536;
 const networkToken=()=>Array.from(crypto.getRandomValues(new Uint8Array(12)),b=>b.toString(16).padStart(2,'0')).join('');
@@ -18077,12 +18037,12 @@ async function localPairing(peer,id,role) {
   return encodePairing({id,role,sdp});
 }
 class DirectRoomConnection {
-  constructor(events,limit=maxNetworkPlayers-1) {
-    this.events=events;this.limit=limit;this.peers=new Map();this.closed=false;
+  constructor(events,limit=maxNetworkPlayers-1,iceServers=[]) {
+    this.events=events;this.limit=limit;this.iceServers=iceServers;this.peers=new Map();this.closed=false;
   }
   createPeer(id) {
     if(typeof RTCPeerConnection!=='function') throw Error('This browser does not support direct pairing.');
-    const pc=new RTCPeerConnection({iceServers:[]});
+    const pc=new RTCPeerConnection({iceServers:this.iceServers});
     const peer={pc,id,channel:null,joinTimer:null,recoveryTimer:null};
     this.peers.set(id,peer);
     pc.addEventListener('connectionstatechange',()=>{
@@ -18479,14 +18439,20 @@ function renderKnownDevices() {
     name.textContent=localRead('tnt-device-name-'+device)||peer.name||'Device';
     const joined=entries.filter(entry=>entry.lobby);
     const connected=peer.kind==='Relay'?networkRoom?.relay?.relayDevice===peer.device:deviceConnected(peer.device);
-    const status=connected?'Connected':lastDeviceContact(peer.seen??entries[0].lobby?.seen);
+    const result=presenceResults.get(device);
+    const live=result&&(result.checking||result.until>Date.now())?result:null;
+    const status=connected?'Connected':live?.status||lastDeviceContact(peer.seen??entries[0].lobby?.seen);
     state.textContent=status+' · ID '+shortNetworkId(peer.device)+' · '+(joined.length?joined.map(({lobby,peer:p})=>
       lobby.name+' ('+p.role+')').join(', '):peer.kind==='Relay'?'Relay tab':'No saved lobby');
     const latest=[...joined].sort((a,b)=>(b.peer.seen||b.lobby.seen||0)-(a.peer.seen||a.lobby.seen||0))[0];
     if(latest) state.textContent+=' · '+methodLabel(latest.peer.method||latest.lobby.lastMethod);
     details.append(name,state);row.append(details);
     if(connected&&networkRoom) row.append(button('Return to lobby',reenterLobby));
+    else if(live?.lobby) row.append(button('Open '+(savedLobbies().find(lobby=>lobby.id===live.lobby)?.name||'lobby'),()=>selectSavedLobby(live.lobby)));
     else if(latest) row.append(button('Last lobby',()=>selectSavedLobby(latest.lobby.id)));
+    if(!connected&&presenceReady&&presenceContacts(device).length) {
+      const check=button('Check online',()=>checkPeerPresence(device));check.disabled=!!live?.checking;row.append(check);
+    }
     row.append(button('Rename',()=>{
       openModal('net-rename-device','Name this device',body=>{
         const input=document.createElement('input');input.value=name.textContent;input.maxLength=22;input.setAttribute('aria-label','Device name');
@@ -18526,7 +18492,7 @@ function methodLabel(method) {
   return lobbyMethods[method]||({Direct:'Direct QR','Relay tab':'Relay',PeerJS:'PeerJS'})[method]||'Direct QR';
 }
 function setLobbyMethod(room,method,played=false) {
-  if(!room?.lobby) return;
+  if(!room?.lobby||room.migrated) return;
   room.lobby.lastMethod=method;
   if(played) room.lobby.lastPlayed=Date.now();
   writeSavedLobby(room.lobby);
@@ -18783,6 +18749,8 @@ function normalizePeerCode(value) {
   const code=value.toUpperCase().replace(/[\s-]/g,'');
   return code.length===8&&[...code].every(letter=>peerJoinAlphabet.includes(letter))?code:null;
 }
+const peerClientOptions=()=>({host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
+  config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}],sdpSemantics:'unified-plan'}});
 function loadPeerJS() {
   if(typeof window.Peer==='function') return Promise.resolve(window.Peer);
   if(peerLoading) return peerLoading;
@@ -18838,8 +18806,7 @@ class PeerJSRoomConnection {
     this.registerMain();
   }
   register(id,kind) {
-    const client=new this.Peer(id,{host:'0.peerjs.com',port:443,path:'/',secure:true,debug:0,
-      config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}],sdpSemantics:'unified-plan'}});
+    const client=new this.Peer(id,peerClientOptions());
     const node={client,kind,id,active:true,attempt:0,ready:false};
     const valid=()=>node.active&&!this.closed;
     client.on('open',()=>{
@@ -19154,7 +19121,7 @@ function peerLinkFor(room) {
   return room?.host?room.link.peerLink:room?.transport==='peer'?room.link:null;
 }
 function enableLobbyPeer(room,invite=false) {
-  if(!peerMode||room!==networkRoom||!room?.host||!room.lobby) return;
+  if(!peerMode||room!==networkRoom||!room?.host||!room.lobby||room.migrated) return;
   let link=peerLinkFor(room);
   if(!link) {
     link=room.link.peerLink=new PeerJSRoomConnection(room,room.link.events,window.Peer);
@@ -19188,7 +19155,7 @@ async function togglePeerMode(enable) {
   const generation=++peerConsentGeneration;
   peerEnabling=enable;
   if(!enable) {
-    peerMode=false;
+    peerMode=false;stopPeerPresence();
     if(networkRoom?.host) disableLobbyPeer(networkRoom);
     else if(networkRoom?.transport==='peer') {
       networkRoom.link.send(networkRoom.hostId,{kind:'peer-leaving'});
@@ -19217,9 +19184,10 @@ async function togglePeerMode(enable) {
   }
 }
 function renderPeerPanel() {
+  renderPresenceControl();
   const room=networkRoom;
-  const link=peerLinkFor(room);
-  $('net-peer-panel').hidden=!!localLobbyRelay||!!room&&!networkWaiting&&!link&&!(room.host&&peerMode&&room.lobby);
+  const link=peerLinkFor(room),canInvite=room?.host&&peerMode&&room.lobby&&!room.migrated;
+  $('net-peer-panel').hidden=!!localLobbyRelay||!!room&&!networkWaiting&&!link&&!canInvite;
   $('net-peer-auto-row').hidden=!peerMode||!!localLobbyRelay;
   $('net-peer-auto').checked=localRead(peerRetryPreference)!=='off';
   const toggle=$('net-peer-enable'),offline=navigator.onLine===false;
@@ -19228,8 +19196,8 @@ function renderPeerPanel() {
   toggle.setAttribute('aria-pressed',String(peerMode||peerEnabling));
   toggle.textContent=peerEnabling?'PeerJS connecting…':offline?'PeerJS offline':peerMode?'PeerJS on':'PeerJS off';
   toggle.title=toggle.disabled?'Internet unavailable · QR and relay remain available':toggle.textContent;
-  $('net-peer-session').hidden=!link&&!(room?.host&&peerMode&&room.lobby);
-  $('net-peer-new-code').hidden=!room?.host||!room.lobby||!peerMode||room.phase!=='lobby';
+  $('net-peer-session').hidden=!link&&!canInvite;
+  $('net-peer-new-code').hidden=!canInvite||room.phase!=='lobby';
   netText('net-peer-new-code',link?.code?'New join code':'Invite via PeerJS');
   $('net-peer-close-code').hidden=!link?.code;
   $('net-peer-code').hidden=!link?.inviteReady;
@@ -19258,6 +19226,130 @@ function joinPeerCode(input) {
   const code=normalizePeerCode(input.value);
   if(!code) {input.setCustomValidity('Enter the eight-character join code shown by the host.');input.reportValidity();return;}
   openPeerRoom(false,null,code);
+}
+
+// multiplayer/peer-presence.js
+// A lookup is shared only after both saved devices prove possession of their pairing ticket.
+const peerPresenceLabel=peerLabel+'-presence';
+let presenceClient=null,presenceReady=false;
+const presenceSessions=new Set(),presenceResults=new Map();
+function presenceContacts(device) {
+  return savedLobbies().flatMap(lobby=>{
+    const peer=lobby.kind==='host'?lobby.members.find(member=>member.device===device):
+      lobby.hostDevice===device?{ticket:lobby.ticket,seen:lobby.seen}:null;
+    return lobbyToken(peer?.ticket)?[{id:lobby.id,ticket:peer.ticket,seen:peer.seen||0}]:[];
+  }).sort((a,b)=>b.seen-a.seen);
+}
+function stopPeerPresence() {
+  const client=presenceClient;
+  presenceClient=null;presenceReady=false;presenceResults.clear();
+  for(const session of presenceSessions) session.finish();
+  client?.destroy();
+  renderPresenceControl();
+}
+function renderPresenceControl() {
+  $('net-presence-row').hidden=!peerMode;
+  $('net-presence').checked=!!presenceClient;
+  $('net-presence').disabled=!presenceClient&&navigator.onLine===false;
+}
+function setPeerPresence(enabled) {
+  if(!enabled) {
+    stopPeerPresence();renderKnownDevices();netStatus('PeerJS presence off.');return;
+  }
+  if(!peerMode||presenceClient||navigator.onLine===false) return;
+  let client;
+  try {client=new window.Peer(peerRoute('presence',networkDeviceId),peerClientOptions());}
+  catch {netStatus('Could not start PeerJS presence.');renderPresenceControl();return;}
+  presenceClient=client;
+  client.on('open',()=>{
+    if(presenceClient!==client) return;
+    presenceReady=true;netStatus('PeerJS presence on for this tab. Only paired devices can check your status.');
+    renderKnownDevices();
+  });
+  client.on('connection',link=>{
+    if(presenceClient!==client||link.label!==peerPresenceLabel||link.serialization!=='raw'||
+      presenceSessions.size>=6) {link.close();return;}
+    peerPresenceSession(link);
+  });
+  client.on('disconnected',()=>{
+    if(presenceClient!==client) return;
+    presenceReady=false;renderKnownDevices();
+    if(navigator.onLine&&client.disconnected) try {client.reconnect();} catch {}
+  });
+  client.on('error',error=>{
+    if(presenceClient!==client||error.type==='peer-unavailable') return;
+    stopPeerPresence();renderKnownDevices();netStatus('PeerJS presence unavailable. You can enable it again from Known devices.');
+  });
+  renderPresenceControl();
+  netStatus('Starting PeerJS presence…');
+}
+function checkPeerPresence(device) {
+  const contact=presenceContacts(device)[0];
+  if(!presenceReady||!contact||presenceSessions.size>=6||presenceResults.get(device)?.checking) return;
+  let link;
+  try {link=presenceClient.connect(peerRoute('presence',device),{label:peerPresenceLabel,serialization:'raw',reliable:true});}
+  catch {}
+  if(link) peerPresenceSession(link,device,contact);
+  else presenceResults.set(device,{status:'Could not check',until:Date.now()+30000});
+  renderKnownDevices();
+}
+function peerPresenceSession(link,device,contact) {
+  const outgoing=!!contact,state={};
+  let step='opening',active=true,processing=false,result=null;
+  const send=packet=>{if(active&&link.open) link.send(JSON.stringify(packet));};
+  const session={finish:()=>{
+    if(!active) return;
+    active=false;clearTimeout(timer);presenceSessions.delete(session);link.close();
+    if(outgoing&&presenceClient) {
+      presenceResults.set(device,{...(result||{status:'No presence reply'}),until:Date.now()+30000});
+      renderKnownDevices();
+    }
+  }};
+  const timer=setTimeout(session.finish,7000);
+  presenceSessions.add(session);
+  if(outgoing) presenceResults.set(device,{checking:true,status:'Checking…'});
+  link.on('close',session.finish);link.on('error',session.finish);
+  link.on('open',()=>{
+    if(!active) return;
+    step=outgoing?'challenge':'probe';
+    if(outgoing) {
+      Object.assign(state,{device:networkDeviceId,lobby:contact.id,guestNonce:networkToken()});
+      send({kind:'probe',device:state.device,lobby:state.lobby,nonce:state.guestNonce});
+    }
+  });
+  link.on('data',async raw=>{
+    if(!active) return;
+    if(processing||typeof raw!=='string'||raw.length>1000) {session.finish();return;}
+    processing=true;
+    try {
+      const packet=decodeNetworkPacket(raw);
+      if(step==='probe'&&packet?.kind==='probe'&&lobbyToken(packet.device)&&lobbyToken(packet.nonce)&&
+        link.peer===peerRoute('presence',packet.device)) {
+        contact=presenceContacts(packet.device).find(item=>item.id===packet.lobby);
+        if(!contact) {session.finish();return;}
+        Object.assign(state,{device:packet.device,lobby:contact.id,guestNonce:packet.nonce,hostNonce:networkToken(),
+          context:peerHandshakeContext({conn:link},true)});
+        const proof=await peerTicketProof(contact.ticket,state,'presence-responder');
+        step='proof';send({kind:'challenge',nonce:state.hostNonce,proof});
+      } else if(step==='challenge'&&packet?.kind==='challenge'&&lobbyToken(packet.nonce)) {
+        Object.assign(state,{hostNonce:packet.nonce,context:peerHandshakeContext({conn:link},false)});
+        if(!peerProofMatches(await peerTicketProof(contact.ticket,state,'presence-responder'),packet.proof)) {session.finish();return;}
+        const proof=await peerTicketProof(contact.ticket,state,'presence-requester');
+        step='status';send({kind:'proof',proof});
+      } else if(step==='proof'&&packet?.kind==='proof') {
+        if(!peerProofMatches(await peerTicketProof(contact.ticket,state,'presence-requester'),packet.proof)) {session.finish();return;}
+        const room=networkRoom,activeLobby=room?.id&&room.lobby?.id;
+        const shared=activeLobby&&presenceContacts(state.device).some(item=>item.id===activeLobby);
+        step='sent';send({kind:'status',active:!!room?.id,lobby:shared?activeLobby:null});
+      } else if(step==='status'&&packet?.kind==='status') {
+        const own=savedLobbies().find(lobby=>lobby.id===packet.lobby&&presenceContacts(device).some(item=>item.id===lobby.id));
+        result=own?{status:'Online · '+own.name,lobby:own.id}:
+          {status:packet.active===true?'Online · in another lobby':'Online'};
+        session.finish();
+      } else session.finish();
+    } catch {session.finish();}
+    finally {processing=false;}
+  });
 }
 
 // multiplayer/local-lobby-relay.js
@@ -19523,7 +19615,7 @@ function beginRelayRace(host,lobby=null) {
   return room;
 }
 function attachLobbyRelay(room) {
-  if(!room||room.relay) return;
+  if(!room||room.relay||room.migrated) return;
   room.relayRequest=room.host?'host':'guest';
   if(!room.host) room.joinMethod='relay';
   room.relay=new RelayRaceClient(room);
@@ -19538,6 +19630,295 @@ function openRelayTab() {
   else if(!networkRoom) startLocalRelay();
   else netStatus('The relay tab could not open. Allow pop-ups and try again.');
   return !!tab;
+}
+
+// multiplayer/host-handoff.js
+// The current host introduces replacement WebRTC links over the established game channels.
+const handoffDriverFields=[
+  'car','oil','scars','streak','cargo','basePropCount','recoveryUntil','slipUntil','slideHeading','dropAfter',
+  'elapsed','finished','networkResult','route','routeArc','totalDistance','moving','wallTime','bumpTime','materialTime',
+  'emissionTime','boost','hits','objectScore','bonusPoints','power','pickupNotice','pickupPasses','chainScore',
+  'chainCount','lastChain','lossHit','nextGate','splits','progress','touchWall','curbTime','avoid','pinned','stalled'
+];
+const handoffChunkSize=12000,handoffMaxChunks=128;
+function captureHandoffState(room,successor) {
+  const round=room.round;
+  return {players:room.players.filter(player=>player.id!==room.id),settings:room.settings,phase:room.phase,
+    turn:room.turn===room.id?successor:room.turn,oldHost:room.id,
+    roster:room.handoffRoster||(room.lobby?[
+      {name:room.players.find(player=>player.id===room.id)?.name||'Host',device:networkDeviceId,role:'Original host'},
+      ...room.lobby.members.map(({ticket,...member})=>({...member,role:'Guest'}))
+    ]:null),
+    race:round&&{id:round.id,players:round.players,tune:round.tune,elapsed:round.elapsed,countdown:round.countdown,
+      done:!!round.done,props:round.props,pickupField:round.pickupField,carContacts:[...round.carContacts],
+      drivers:[...round.drivers].map(([id,game])=>[id,Object.fromEntries(handoffDriverFields.map(key=>[key,game[key]])),
+        [...game.contacts],game.impacts.slice(-4)])}};
+}
+function restoreHandoffRound(data,localId) {
+  if(!data.race) return null;
+  const race=data.race,round=new NetworkRound(networkSettings(data.settings),race.players,race.id,localId);
+  Object.assign(round,{tune:race.tune,elapsed:race.elapsed,countdown:race.countdown,done:race.done,
+    props:race.props,pickupField:race.pickupField,carContacts:new Map(race.carContacts)});
+  for(const [id,fields,contacts,impacts] of race.drivers) {
+    const game=round.drivers.get(id);
+    Object.assign(game,fields,{props:round.props,pickupField:round.pickupField,contacts:new Map(contacts),
+      impacts,tune:race.tune});
+  }
+  // JSON encodes Infinity as null for pickups with no next spawn scheduled.
+  for(const slot of round.pickupField.slots) if(slot.next===null) slot.next=Infinity;
+  round.withdraw(data.oldHost);
+  const active=[...round.drivers.values()].find(driver=>!driver.finished);
+  if(active&&!round.done) round.pause(active.networkId,'menu',true);
+  round.checkOutcome();
+  return round;
+}
+class HandoffLobbyConnection {
+  constructor(room,links) {
+    this.room=room;this.links=links;
+    for(const [id,entry] of links) entry.link.events={
+      open:()=>{},
+      message:(_,packet)=>{if(networkRoom===room&&room.link===this) networkMessage(room,id,packet);},
+      leave:(_,reason)=>{if(networkRoom===room&&room.link===this) networkDeparture(room,id,reason);},
+      recovering:(_,active)=>{if(networkRoom===room&&room.link===this) networkRecovery(room,id,active);}
+    };
+  }
+  send(id,packet) {
+    const entry=this.links.get(id);
+    if(entry) entry.link.send(entry.physical,packet);
+  }
+  remove(id,reason='',notify=false) {
+    const entry=this.links.get(id);
+    if(!entry) return;
+    this.links.delete(id);entry.link.remove(entry.physical,reason,notify);entry.link.close();
+  }
+  close() {
+    for(const id of this.links.keys()) this.remove(id);
+  }
+}
+function clearNetworkHandoff(room) {
+  const handoff=room.handoff;
+  if(!handoff) return;
+  room.handoff=null;clearTimeout(handoff.timer);
+  for(const entry of handoff.links?.values()||[]) entry.link.close();
+}
+function cancelNetworkHandoff(room,message,notify=true) {
+  const handoff=room.handoff;
+  if(!handoff) return;
+  if(notify) {
+    const packet={kind:'handoff-cancel',token:handoff.token,text:message};
+    if(room.host) transmitNetwork(room,packet);else room.link.send(room.hostId,packet);
+  }
+  clearNetworkHandoff(room);
+  if(modalType==='net-handoff') returnToNetworkMenu();
+  netStatus(message);if(run?.network) showRaceAnnouncement(message);
+}
+function offerNetworkHandoff(room,successor) {
+  if(networkRoom!==room||!room.host||room.handoff||room.closing||room.recovering.size||
+    !room.players.some(player=>player.id===successor&&player.id!==room.id)) return;
+  const handoff={token:networkToken(),successor,stage:'offer',
+    timer:setTimeout(()=>cancelNetworkHandoff(room,'Host handoff expired.'),20000)};
+  room.handoff=handoff;
+  const hostName=room.players.find(player=>player.id===room.id)?.name||'The host';
+  room.link.send(successor,{kind:'handoff-offer',token:handoff.token,name:hostName});
+  openModal('net-handoff','Waiting for the next host',body=>{
+    body.append(paragraph('The next host needs to accept. This tab will return to the main menu when everyone has switched over.'));
+    setModalActions(button('Cancel handoff',()=>cancelNetworkHandoff(room,'Host handoff cancelled.')));
+  },()=>cancelNetworkHandoff(room,'Host handoff cancelled.'));
+}
+function acceptNetworkHandoff(room,packet) {
+  room.handoff={token:packet.token,stage:'offered',
+    timer:setTimeout(()=>cancelNetworkHandoff(room,'Host handoff expired.',false),21000)};
+  openModal('net-handoff','Take over as host?',body=>{
+    body.append(paragraph(networkName(packet.name)+' wants you to host the rest of this session. Keep this tab open so the other players can finish.'));
+    setModalActions(button('Decline',()=>cancelNetworkHandoff(room,'The next host declined.')),
+      button('Accept host handoff',()=>{
+        room.handoff.stage='accepted';closeModal();
+        room.link.send(room.hostId,{kind:'handoff-accept',token:packet.token});
+      },'primary'));
+  },()=>cancelNetworkHandoff(room,'The next host declined.'));
+}
+function handoffSignal(room,handoff,to,signal,code) {
+  room.link.send(room.hostId,{kind:'handoff-signal',token:handoff.token,to,signal,code});
+}
+function prepareHandoffLinks(room,packet) {
+  const handoff=room.handoff||{token:packet.token};
+  if(handoff.token!==packet.token||handoff.links||!Array.isArray(packet.routes)) return;
+  if(packet.successor===room.id&&handoff.stage!=='accepted') return;
+  room.handoff=handoff;clearTimeout(handoff.timer);
+  handoff.successor=packet.successor;handoff.stage='links';handoff.links=new Map();handoff.chunks=[];
+  handoff.timer=setTimeout(()=>cancelNetworkHandoff(room,'Could not finish the host handoff.'),35000);
+  for(const [id,online] of packet.routes) {
+    const entry={physical:null,ready:false};
+    const events={
+      open:physical=>{
+        entry.physical=physical;entry.ready=true;
+        if([...handoff.links.values()].every(route=>route.ready)&&!handoff.ready) {
+          handoff.ready=true;room.link.send(room.hostId,{kind:'handoff-ready',token:handoff.token});
+        }
+      },
+      message:(_,message)=>{
+        if(room.id===handoff.successor&&message.kind==='handoff-joined'&&message.token===handoff.token)
+          entry.arrived=true;
+      },recovering:()=>{},
+      leave:()=>{if(room.handoff===handoff) cancelNetworkHandoff(room,'A replacement race connection was lost.');}
+    };
+    const iceServers=online&&peerMode?[{urls:'stun:stun.l.google.com:19302'}]:[];
+    entry.link=new DirectRoomConnection(events,1,iceServers);
+    handoff.links.set(id,entry);
+  }
+  if(room.id!==packet.successor) return;
+  if(!handoff.links.size) {
+    handoff.ready=true;room.link.send(room.hostId,{kind:'handoff-ready',token:handoff.token});return;
+  }
+  for(const [id,entry] of handoff.links) entry.link.offer(false).then(offer=>{
+    if(room.handoff!==handoff) return;
+    entry.physical=offer.id;handoffSignal(room,handoff,id,'offer',offer.code);
+  }).catch(()=>{if(room.handoff===handoff) cancelNetworkHandoff(room,'Could not open a replacement race connection.');});
+}
+async function receiveHandoffSignal(room,handoff,packet) {
+  const entry=handoff.links?.get(packet.from);
+  if(!entry) return;
+  try {
+    if(packet.signal==='offer'&&room.id!==handoff.successor) {
+      const reply=await entry.link.answer(packet.code);
+      if(room.handoff===handoff) handoffSignal(room,handoff,packet.from,'answer',reply);
+    } else if(packet.signal==='answer'&&room.id===handoff.successor) await entry.link.accept(packet.code,entry.physical);
+  } catch {
+    if(room.handoff===handoff) cancelNetworkHandoff(room,'Could not connect the players to the next host.');
+  }
+}
+function sendHandoffState(room,handoff) {
+  handoff.stage='state';
+  try {
+    const raw=JSON.stringify(captureHandoffState(room,handoff.successor));
+    const total=Math.ceil(raw.length/handoffChunkSize);
+    if(total>handoffMaxChunks) throw Error('State too large');
+    for(let i=0;i<total;i++) room.link.send(handoff.successor,{kind:'handoff-state',token:handoff.token,
+      i,total,data:raw.slice(i*handoffChunkSize,(i+1)*handoffChunkSize)});
+  } catch {cancelNetworkHandoff(room,'Could not package the current race for transfer.');}
+}
+function stageHandoffState(room,handoff,packet) {
+  const pieces=handoff.chunks;
+  if(!handoff.ready||handoff.successor!==room.id||handoff.staged||!Number.isInteger(packet.total)||
+    packet.total<1||packet.total>handoffMaxChunks||packet.i!==pieces.length||typeof packet.data!=='string'||
+    packet.data.length>handoffChunkSize) return;
+  pieces.push(packet.data);
+  if(pieces.length!==packet.total) return;
+  try {
+    const data=JSON.parse(pieces.join(''));
+    const settings=networkSettings(data.settings);
+    const round=restoreHandoffRound(data,room.id);
+    if(!data.players.some(player=>player.id===room.id)||!!round!==(data.phase==='race')) throw Error('Invalid race state');
+    handoff.staged={...data,settings,round};
+    room.link.send(room.hostId,{kind:'handoff-staged',token:handoff.token});
+  } catch {cancelNetworkHandoff(room,'The next host could not load the race.');}
+}
+function finishOutgoingHandoff(room,handoff) {
+  room.closing=true;
+  transmitNetwork(room,{kind:'handoff-commit',token:handoff.token,successor:handoff.successor,name:handoff.name,
+    players:room.players.filter(player=>player.id!==room.id)});
+  clearTimeout(handoff.timer);
+  room.endTimer=setTimeout(()=>{
+    if(networkRoom!==room) return;
+    leaveNetworkRoom();closeMultiplayer();
+  },450);
+}
+function activateHandoff(room,handoff,packet) {
+  if(!handoff.ready||packet.successor!==handoff.successor||!Array.isArray(packet.players)) return;
+  const hosting=room.id===handoff.successor,staged=handoff.staged;
+  if(hosting&&!staged) return;
+  clearTimeout(handoff.timer);room.handoff=null;
+  const oldLink=room.link;
+  room.relay?.close();room.relay=null;room.relayRequest=null;room.recovering.clear();room.temporaryController=null;
+  room.link=new HandoffLobbyConnection(room,handoff.links);
+  room.host=hosting;room.hostId=hosting?null:handoff.successor;room.authorityId=handoff.successor;
+  room.transport='handoff';room.migrated=true;room.controller=handoff.successor;room.handoffToken=handoff.token;
+  room.players=packet.players;
+  if(networkRaceView) networkRaceView.pausedShown=false;
+  if(room.turn===staged?.oldHost||!room.players.some(player=>player.id===room.turn)) room.turn=handoff.successor;
+  if(hosting) {
+    room.turn=staged.turn;room.settings=staged.settings;room.phase=staged.phase;room.round=staged.round;
+    room.handoffRoster=staged.roster;
+    if(room.round&&networkRaceView) {
+      const game=room.round.local;
+      game.trail=run.trail;game.networkPlayers=room.round.players;
+      game.pickupView=room.round.snapshot().pickups;
+      run=game;
+      networkRaceView.inputs.length=0;networkRaceView.menuPause=false;
+      networkRaceView.localPauses?.delete('menu');
+    }
+    room.handoffArrivals=new Set(room.players.filter(player=>player.id!==room.id&&!handoff.links.get(player.id)?.arrived).map(player=>player.id));
+    if(!room.handoffArrivals.size) finishHandoffArrival(room);
+    else room.handoffArrivalTimer=setTimeout(()=>{
+      for(const id of room.handoffArrivals) room.link.remove(id,'Could not reach the new host.',true);
+      finishHandoffArrival(room);
+    },8000);
+  } else {
+    room.handoffRoster=room.lobby?.roster;
+    room.link.send(room.hostId,{kind:'handoff-joined',token:handoff.token});
+  }
+  // Let the old host’s commit reach every other guest before closing this tab’s old link.
+  setTimeout(()=>oldLink.close(),200);
+  if(modalType==='net-handoff') closeModal();
+  const notice=networkName(packet.name)+' is now hosting.';
+  netStatus(notice);if(run?.network) showRaceAnnouncement(notice);
+  if(run?.network&&networkRaceView?.done&&!networkRaceView.inLobby) showNetworkResults();
+  renderNetworkLobby();
+}
+function finishHandoffArrival(room) {
+  clearTimeout(room.handoffArrivalTimer);room.handoffArrivals=null;
+  if(room.phase==='lobby') resetNetworkReady(room);
+  sendNetworkLobby(room);
+  if(room.round) {
+    broadcastNetworkSnapshot(room);
+    if(!room.round.done&&!networkRaceView?.inLobby&&(modalType==='net-race'||$('modal').hidden)) networkExitControls(false);
+  }
+}
+function handleNetworkHandoff(room,id,packet) {
+  if(room.host&&packet.kind==='handoff-joined') {
+    if(packet.token===room.handoffToken&&room.handoffArrivals?.delete(id)&&!room.handoffArrivals.size) finishHandoffArrival(room);
+    return;
+  }
+  if(!lobbyToken(packet.token)) return;
+  const handoff=room.handoff;
+  if(room.host) {
+    if(!handoff||packet.token!==handoff.token||!room.players.some(player=>player.id===id&&id!==room.id)) return;
+    if(packet.kind==='handoff-accept'&&handoff.stage==='offer'&&id===handoff.successor) {
+      handoff.stage='links';handoff.ready=new Set();clearTimeout(handoff.timer);
+      handoff.timer=setTimeout(()=>cancelNetworkHandoff(room,'The replacement connections did not finish opening.'),32000);
+      const successor=room.players.find(player=>player.id===id);
+      handoff.name=successor.name;
+      const remaining=room.players.filter(player=>player.id!==room.id);
+      if(room.round&&!room.round.done) {
+        const active=remaining.find(player=>!room.round.drivers.get(player.id)?.finished);
+        if(active) room.round.pause(active.id,'menu',true);
+        broadcastNetworkSnapshot(room);
+      }
+      for(const player of remaining) {
+        const targets=player===successor?remaining.filter(other=>other!==player):[successor];
+        room.link.send(player.id,{kind:'handoff-prepare',token:handoff.token,successor:id,
+          routes:targets.map(other=>[other.id,player.method==='peer'&&other.method==='peer'])});
+      }
+    } else if(packet.kind==='handoff-cancel') cancelNetworkHandoff(room,'Host handoff cancelled. The current host is still connected.');
+    else if(packet.kind==='handoff-signal'&&handoff.stage==='links') {
+      const {to,code,signal}=packet;
+      if(!room.players.some(player=>player.id===to&&to!==room.id&&to!==id)||typeof code!=='string'||code.length>20000||
+        !(id===handoff.successor&&signal==='offer'||to===handoff.successor&&signal==='answer')) return;
+      room.link.send(to,{kind:'handoff-signal',token:handoff.token,from:id,code,signal});
+    } else if(packet.kind==='handoff-ready'&&handoff.stage==='links') {
+      handoff.ready.add(id);
+      if(handoff.ready.size===room.players.length-1) sendHandoffState(room,handoff);
+    } else if(packet.kind==='handoff-staged'&&handoff.stage==='state'&&id===handoff.successor) finishOutgoingHandoff(room,handoff);
+  } else if(id===room.hostId) {
+    if(packet.kind==='handoff-offer'&&!handoff) acceptNetworkHandoff(room,packet);
+    else if(packet.kind==='handoff-prepare') prepareHandoffLinks(room,packet);
+    else if(handoff?.token===packet.token) {
+      if(packet.kind==='handoff-cancel') cancelNetworkHandoff(room,packet.text||'Host handoff cancelled.',false);
+      else if(packet.kind==='handoff-signal') receiveHandoffSignal(room,handoff,packet);
+      else if(packet.kind==='handoff-state') stageHandoffState(room,handoff,packet);
+      else if(packet.kind==='handoff-commit') activateHandoff(room,handoff,packet);
+    }
+  }
 }
 
 // multiplayer/ui.js
@@ -19564,7 +19945,10 @@ function leaveNetworkRoom(message='') {
   if(modalType.startsWith('net-')||lobbyPicker&&['rules','pickups'].includes(modalType)) closeModal();
   stopNetworkScan();
   const room=networkRoom;networkRoom=null;networkWaiting=false;pendingLobbySwitch=null;clearTimeout(lobbySwitchTimer);
-  if(room) {clearTimeout(room.readyTimer);clearTimeout(room.endTimer);room.relay?.close();room.link?.close();}
+  if(room) {
+    clearTimeout(room.readyTimer);clearTimeout(room.endTimer);clearTimeout(room.handoffArrivalTimer);
+    clearNetworkHandoff(room);room.relay?.close();room.link?.close();
+  }
   if(run?.network) leaveNetworkRace();
   $('net-pair').hidden=true;
   $('net-code').value='';$('net-code-out').value='';
@@ -19578,7 +19962,7 @@ function localNetworkDriver() {
 }
 function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=null,transport='direct'}={}) {
   leaveNetworkRoom();
-  const room={host,lobby,transport,joinMethod:transport,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),relayPeerIds:new Set(),id:host?'host':null,phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
+  const room={host,lobby,transport,joinMethod:transport,save:save||!!lobby,repair,relayRequest,memberTickets:new Map(),relayPeerIds:new Set(),id:host?'host':null,authorityId:'host',phase:'waiting',players:[],settings:null,turn:null,round:null,courseTabs:new Map(),sharedCourse:null,draft:localNetworkDriver(),controller:host?'host':null,
     readyRevision:0,readyUntil:0,recovering:new Set(),suggestions:new Map()};
   if(host) {
     room.phase='lobby';room.players.push({id:'host',device:lobby?networkDeviceId:null,...room.draft,name:room.draft.name||'Host',ready:false});
@@ -19587,10 +19971,10 @@ function makeNetworkRoom(host,{lobby=null,save=false,repair=false,relayRequest=n
     room.turn='host';
   }
   const events={
-    open:id=>{if(networkRoom===room&&!room.host) sendNetworkHello(room,id);},
-    message:(id,packet)=>{if(networkRoom===room) networkMessage(room,id,packet);},
-    leave:(id,reason)=>{if(networkRoom===room) networkDeparture(room,id,reason);},
-    recovering:(id,active)=>{if(networkRoom===room) networkRecovery(room,id,active);}
+    open:id=>{if(networkRoom===room&&!room.migrated&&!room.host) sendNetworkHello(room,id);},
+    message:(id,packet)=>{if(networkRoom===room&&!room.migrated) networkMessage(room,id,packet);},
+    leave:(id,reason)=>{if(networkRoom===room&&!room.migrated) networkDeparture(room,id,reason);},
+    recovering:(id,active)=>{if(networkRoom===room&&!room.migrated) networkRecovery(room,id,active);}
   };
   room.link=host?new HostLobbyConnection(events):transport==='peer'?new PeerJSRoomConnection(room,events,window.Peer):new DirectRoomConnection(events);
   networkWaiting=false;networkRoom=room;openMultiplayer();
@@ -19602,6 +19986,8 @@ function sendNetworkHello(room,id) {
     lobbyId:room.lobby?.id,ticket:room.transport==='peer'?undefined:room.lobby?.ticket,repair:room.repair,device:room.save?networkDeviceId:null,round:networkRaceView?.id});
 }
 function networkRecovery(room,id,active) {
+  if(active&&room.host&&room.handoff&&!room.closing)
+    cancelNetworkHandoff(room,'A connection was interrupted. Host handoff cancelled.');
   if(active) room.recovering.add(id);else room.recovering.delete(id);
   if(room.host) {
     if(room.phase==='lobby') {
@@ -19619,6 +20005,9 @@ function networkRecovery(room,id,active) {
   renderNetworkLobby();
 }
 function networkDeparture(room,id,reason) {
+  if(room.closing) return;
+  if(room.host&&room.handoff&&room.players.some(player=>player.id===id))
+    cancelNetworkHandoff(room,'A player disconnected. Host handoff cancelled.');
   if(!room.host) {
     const racing=!!run?.network;
     leaveNetworkRoom(racing?'Race ended because the host disconnected.':reason||'The lobby closed.');
@@ -19629,7 +20018,7 @@ function networkDeparture(room,id,reason) {
   const player=room.players.find(p=>p.id===id);
   if(!player) {renderNetworkLobby();netStatus(reason||'Pairing ended.');return;}
   room.players=room.players.filter(p=>p.id!==id);
-  if(room.controller===id) room.controller='host';
+  if(room.controller===id) room.controller=room.authorityId;
   if(room.turn===id) room.turn=room.controller;
   if(room.phase==='lobby') resetNetworkReady(room);
   if(room.round&&!room.round.done) {
@@ -19659,8 +20048,22 @@ function openEndMultiplayer() {
     }
   },'race-cancel');
   openModal('net-leave','Leave lobby?',body=>{
-    body.append(paragraph(room.host?'Everyone will disconnect. Your saved lobby will still be available.':'You’ll disconnect and return to the main menu.'));
-    setModalActions(button('Cancel',returnToNetworkMenu),action);
+    const guests=room.host&&!room.recovering.size&&!room.handoffArrivals?room.players.filter(player=>player.id!==room.id):[];
+    if(guests.length&&!room.handoff) {
+      const label=document.createElement('label'),next=document.createElement('select');
+      label.className='net-driver';label.append('Next host',next);
+      const ordered=room.round?networkResults(room.round.snapshot(),room.settings,room.round.players):[];
+      const last=ordered.filter(driver=>!driver.result&&guests.some(player=>player.id===driver.id)).at(-1);
+      for(const player of guests) next.add(new Option(player.name,player.id));
+      if(last) next.value=last.id;
+      body.append(paragraph('Hand off this session to another player, or close it for everyone.'),label);
+      action.textContent='× Close for everyone';
+      setModalActions(button('Cancel',returnToNetworkMenu),
+        button('Hand off and leave',()=>offerNetworkHandoff(room,next.value),'primary'),action);
+    } else {
+      body.append(paragraph(room.host?'Everyone will disconnect. Your saved lobby will still be available.':'You’ll disconnect and return to the main menu.'));
+      setModalActions(button('Cancel',returnToNetworkMenu),action);
+    }
   },returnToNetworkMenu);
 }
 function returnToNetworkMenu() {
@@ -19670,11 +20073,11 @@ function returnToNetworkMenu() {
   else if(run?.network&&networkRaceView?.snapshot.paused?.length) networkExitControls(false);
 }
 function transmitNetwork(room,packet) {
-  for(const player of room.players) if(player.id!=='host') room.link.send(player.id,packet);
+  for(const player of room.players) if(player.id!==room.id) room.link.send(player.id,packet);
 }
 function sendNetworkLobby(room) {
   transmitNetwork(room,{kind:'lobby',players:room.players,turn:room.turn,controller:room.controller,settings:room.settings,phase:room.phase,
-    savedRoster:room.lobby?[{name:room.players[0]?.name||'Host',device:networkDeviceId,role:'Host'},
+    savedRoster:room.migrated?room.handoffRoster:room.lobby?[{name:room.players[0]?.name||'Host',device:networkDeviceId,role:'Host'},
       ...room.lobby.members.map(p=>({name:p.name,device:p.device,role:'Guest',seen:p.seen,method:p.method,connections:p.connections}))]:null,
     readyRevision:room.readyRevision,readyWait:Math.max(0,room.readyUntil-performance.now())});
   renderNetworkLobby();
@@ -19698,6 +20101,7 @@ function broadcastNetworkSnapshot(room) {
 }
 function endNetworkRoom(room,toMenu=false) {
   if(room.closing) return;
+  clearNetworkHandoff(room);
   room.closing=true;transmitNetwork(room,{kind:'room-ended'});
   room.endTimer=setTimeout(()=>{
     if(networkRoom!==room) return;
@@ -19706,8 +20110,10 @@ function endNetworkRoom(room,toMenu=false) {
   },200);
 }
 function manageNetworkLobby(room,id,packet) {
+  if(room.handoff&&room.handoff.stage!=='offer'||room.handoffArrivals) return;
   const player=room.players.find(p=>p.id===id);
   if(packet.kind==='hello') {
+    if(room.migrated) return;
     const resuming=packet.peerVerified===true&&!!player&&room.memberTickets.get(id)===packet.ticket;
     const error=packet.version!==multiplayerVersion?'Both devices must use Track N Trace v'+multiplayerVersion+'.':
       room.phase!=='lobby'&&!resuming?'A race is running. Ask for an invite when the lobby reopens.':
@@ -19746,7 +20152,7 @@ function manageNetworkLobby(room,id,packet) {
   }
   if(!player) return;
   const controls=id===room.controller;
-  if(packet.kind==='terminate'&&(controls||id==='host')) {endNetworkRoom(room);return;}
+  if(packet.kind==='terminate'&&(controls||id===room.id)) {endNetworkRoom(room);return;}
   if(room.phase==='race'&&packet.kind==='driver'&&room.round.drivers.get(id)?.finished) {
     const driver=networkDriver(packet.driver);
     Object.assign(player,{...driver,name:driver.name||player.name,ready:false});sendNetworkLobby(room);return;
@@ -19770,7 +20176,7 @@ function manageNetworkLobby(room,id,packet) {
       round.withdraw(id,packet.concede===true?'Conceded':'Retired to lobby');
     }
     else if(packet.kind==='end-round'&&controls) room.round.end('Round ended');
-    else if(packet.kind==='next-round'&&(controls||id==='host')&&room.round.done) {networkNextRound();return;}
+    else if(packet.kind==='next-round'&&(controls||id===room.id)&&room.round.done) {networkNextRound();return;}
     else return;
     room.round.checkOutcome();broadcastNetworkSnapshot(room);
     return;
@@ -19790,7 +20196,7 @@ function manageNetworkLobby(room,id,packet) {
     room.controller=packet.player;resetNetworkReady(room);
   } else if(packet.kind==='pass-director'&&id===room.turn&&room.players.some(p=>p.id===packet.player)) {
     room.turn=packet.player;room.lastSuggestion=null;resetNetworkReady(room);
-  } else if(packet.kind==='remove-driver'&&controls&&packet.player!=='host'&&room.players.some(p=>p.id===packet.player)) {
+  } else if(packet.kind==='remove-driver'&&controls&&packet.player!==room.id&&room.players.some(p=>p.id===packet.player)) {
     room.link.send(packet.player,{kind:'removed'});
     setTimeout(()=>room.link.remove(packet.player,'Removed from multiplayer.',true),70);return;
   } else if(packet.kind==='settings'&&id===room.turn) {
@@ -19798,9 +20204,9 @@ function manageNetworkLobby(room,id,packet) {
       const settings=networkSettings(packet.settings);
       if(JSON.stringify(settings)===JSON.stringify(room.settings)) return;
       room.settings=settings;resetNetworkReady(room);
-      if(room.lobby) {room.lobby.settings=settings;writeSavedLobby(room.lobby);}
+      if(room.lobby&&!room.migrated) {room.lobby.settings=settings;writeSavedLobby(room.lobby);}
     } catch(error) {
-      if(id==='host') netStatus(error.message);
+      if(id===room.id) netStatus(error.message);
       else room.link.send(id,{kind:'notice',text:error.message});
     }
   } else return;
@@ -19808,6 +20214,7 @@ function manageNetworkLobby(room,id,packet) {
 }
 function networkMessage(room,id,packet) {
   if(room.closing) return;
+  if(packet.kind.startsWith('handoff-')) {handleNetworkHandoff(room,id,packet);return;}
   if(room.host) {
     if(packet.kind==='hello'&&!id.startsWith('peer-')) delete packet.peerVerified;
     manageNetworkLobby(room,id,packet);return;
@@ -19832,7 +20239,7 @@ function networkMessage(room,id,packet) {
   if(!room.id) return;
   if(packet.kind==='lobby') {
     room.players=packet.players;room.settings=packet.settings;room.turn=packet.turn;room.phase=packet.phase;room.controller=packet.controller;
-    if(room.lobby&&Array.isArray(packet.savedRoster)&&JSON.stringify(room.lobby.roster)!==JSON.stringify(packet.savedRoster)) {
+    if(room.lobby&&!room.migrated&&Array.isArray(packet.savedRoster)&&JSON.stringify(room.lobby.roster)!==JSON.stringify(packet.savedRoster)) {
       room.lobby.roster=packet.savedRoster;writeSavedLobby(room.lobby);
     }
     if(room.pickupDraft&&(room.turn!==room.id||room.phase!=='lobby'||
@@ -19854,7 +20261,7 @@ function localNetworkAction(packet) {
   const room=networkRoom;
   if(!room) return;
   const message=room.phase==='race'?{...packet,round:networkRaceView?.id||room.round?.id}:packet;
-  if(room.host) manageNetworkLobby(room,'host',message);
+  if(room.host) manageNetworkLobby(room,room.id,message);
   else room.link.send(room.hostId,message);
 }
 const suggestionLabels={
@@ -19899,7 +20306,7 @@ function sendRuleSuggestion(room,player,packet) {
   if(!next) return;
   room.suggestions.set(player.id,next);
   const splash={kind:'rule-splash',field,value,sender:player.id,colour:vehicles[player.type].palette[player.color]};
-  if(room.turn==='host') showRuleSuggestion(room,splash);
+  if(room.turn===room.id) showRuleSuggestion(room,splash);
   else room.link.send(room.turn,splash);
 }
 function requestRuleSuggestion(changes) {
@@ -19991,7 +20398,7 @@ function showNetworkPair(title,text,code='',action='',method='') {
 }
 async function makeNetworkInvite(replace=false) {
   const room=networkRoom;
-  if(!room?.host||room.busy||room.phase!=='lobby') return;
+  if(!room?.host||room.migrated||room.busy||room.phase!=='lobby') return;
   room.repair=true;
   try {
     room.busy=true;renderNetworkLobby();netStatus('Making an invite…');
@@ -20110,8 +20517,9 @@ function renderNetworkLobby() {
   const own=room.players.find(p=>p.id===room.id);
   const chooser=room.players.find(p=>p.id===room.turn);
   netText('net-lobby-title',room.lobby?.name||'Lobby');
-  const roster=room.host?room.lobby?.members:room.lobby?.roster;
-  const known=room.host?1+(roster?.length||0):roster?.length||2;
+  $('net-handoff-session').hidden=!room.migrated;
+  const roster=room.migrated?room.handoffRoster:room.host?room.lobby?.members:room.lobby?.roster;
+  const known=room.host&&!room.migrated?1+(roster?.length||0):roster?.length||2;
   $('net-member-details').hidden=!room.lobby;
   netText('net-member-count',known+' known · '+room.players.length+' connected · '+room.players.filter(p=>p.ready).length+' ready');
   $('net-member-list').replaceChildren(...(roster||[]).filter(person=>person.device!==networkDeviceId).map(person=>{
@@ -20140,7 +20548,7 @@ function renderNetworkLobby() {
     const current=networkRaceView?.snapshot.cars.find(car=>car.id===player.id);
     ready.textContent=room.recovering.has(player.id)?'Reconnecting':sidelined?current?.result||'Racing':player.ready?'Ready':'Choosing';ready.dataset.ready=String(player.ready);
     row.append(art,swatch,name,details);
-    for(const [active,label] of [[host,'Host'],[player.id==='host'&&!host,'Connection host'],[director,'Race Director']]) if(active) {
+    for(const [active,label] of [[host,'Host'],[player.id===room.authorityId&&!host,'Connection host'],[director,'Race Director']]) if(active) {
       const role=document.createElement('span');role.className='net-role'+(label==='Race Director'?' director':'');
       role.textContent=label;row.append(role);
     }
@@ -20152,7 +20560,7 @@ function renderNetworkLobby() {
     if(controls&&player!==own&&!sidelined) {
       const pass=button('Pass host controls',()=>localNetworkAction({kind:'pass-controls',player:player.id}));
       pass.setAttribute('aria-label','Pass host controls to '+player.name);row.append(pass);
-      if(player.id!=='host') {
+      if(player.id!==room.authorityId) {
         const remove=button('Remove',()=>localNetworkAction({kind:'remove-driver',player:player.id}));
         remove.setAttribute('aria-label','Remove '+player.name);row.append(remove);
       }
@@ -20202,7 +20610,7 @@ function renderNetworkLobby() {
   netText('net-start',paused?'▶ Continue race':sidelined?'Return everyone to lobby':'Start race');
   $('net-start').disabled=paused?!networkRaceView.snapshot.pauseRoster.every(p=>!p.required||p.ready):
     !sidelined&&(settling||room.recovering.size>0||room.players.length<2||!room.players.every(p=>p.ready));
-  $('net-host-invites').hidden=!room.host||!!sidelined;
+  $('net-host-invites').hidden=!room.host||room.migrated||!!sidelined;
   $('net-attach-relay').hidden=!!room.relay;
   $('net-detach-relay').hidden=!room.relay;
   $('net-invite').disabled=room.busy||room.players.length>=maxNetworkPlayers;
@@ -20397,6 +20805,7 @@ function updateNetworkRace(dt) {
   const room=networkRoom,view=networkRaceView;
   if(!room||!view||view.done) return;
   if(room.host) {
+    if(room.closing||room.handoffArrivals||room.handoff&&room.handoff.stage!=='offer') return;
     if(room.round.step(dt)) {
       broadcastNetworkSnapshot(room);
     }
@@ -20570,7 +20979,10 @@ function networkNextRound() {
   if(!room?.host||!room.round?.done) return;
   const roster=room.round.players,was=roster.findIndex(p=>p.id===room.turn);
   const following=roster.slice(was+1).concat(roster.slice(0,was+1)).find(p=>room.players.some(q=>p.id===q.id));
-  if(room.temporaryController) {room.controller=room.temporaryController;room.temporaryController=null;}
+  if(room.temporaryController) {
+    room.controller=room.players.some(player=>player.id===room.temporaryController)?room.temporaryController:room.authorityId;
+    room.temporaryController=null;
+  }
   room.turn=following?.id||room.controller;room.round=null;room.phase='lobby';
   resetNetworkReady(room);leaveNetworkRace();sendNetworkLobby(room);
   netStatus('Choose the next course and rules.');
@@ -20664,8 +21076,12 @@ function initializeMultiplayer() {
   on('net-peer-enable','click',()=>togglePeerMode(!peerMode&&!peerEnabling));
   for(const event of ['online','offline']) window.addEventListener(event,()=>{
     renderPeerPanel();
+    if(event==='online'&&presenceClient?.disconnected) {
+      try {presenceClient.reconnect();} catch {}
+    }
     if(!$('multiplayer').hidden) netStatus(event==='offline'?'Internet unavailable. QR and relay are available.':'Internet connection available.');
   });
+  on('net-presence','change',event=>setPeerPresence(event.target.checked));
   on('net-peer-auto','change',event=>localWrite(peerRetryPreference,event.target.checked?'':'off'));
   on('net-peer-new-code','click',()=>enableLobbyPeer(networkRoom,true));
   on('net-peer-close-code','click',()=>{peerLinkFor(networkRoom)?.stopInvites();renderPeerPanel();});
@@ -21371,19 +21787,12 @@ for(const name of ['pointerup','pointercancel','lostpointercapture']) {
 $('start').addEventListener('click',startSelectedRun);
 $('rules-open').addEventListener('click',openRaceRules);
 $('pickup-rules-open').addEventListener('click',openPickupRules);
-attachCarousel('course-pager',changeCourse,()=>lobbyPicker?.canChoose!==false);
-$('courses').addEventListener('wheel',event=>{
-  if(!event.deltaX||lobbyPicker?.canChoose===false) return;
-  event.preventDefault();
-  const now=performance.now(),strip=$('courses');
-  if(now-(strip.lastWheel||0)<170) return;
-  strip.lastWheel=now;changeCourse(Math.sign(event.deltaX));
-},{passive:false});
+attachCarouselKeys('course-pager',changeCourse,()=>lobbyPicker?.canChoose!==false);
 $('course-select').addEventListener('change',event=>{
   const course=(lobbyPicker?.courses||courses).find(c=>c.id===event.target.value);
   if(course) choosePickerCourse(course);
 });
-attachCarousel('vehicle-carousel',changeVehicle);
+attachCarouselKeys('vehicle-carousel',changeVehicle);
 $('records').addEventListener('click',()=>showRecords(options.course));
 $('ghost-select').addEventListener('change',e=>{options.ghost=e.target.value;saveOptions();});
 $('races-tab').addEventListener('click',()=>choosePickerCategory(false));
